@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { EventForm } from "@/components/admin/EventForm";
@@ -18,6 +19,7 @@ export default async function EditEventPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const [event, communities] = await withDbRetry(() =>
     Promise.all([getEventById(db, id), listCommunitiesForSelect(db)])

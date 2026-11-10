@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +21,7 @@ export default async function AdminCommunitiesPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
+  await connection();
   const { q, page } = await searchParams;
   const query = (q ?? "").trim().slice(0, 120);
   const { communities, total, page: current, pages } = await withDbRetry(() =>

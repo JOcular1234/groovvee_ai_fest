@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { ApplyForm } from "@/components/applications/ApplyForm";
 import { issueFormToken } from "@/lib/form-token";
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 // Issues a fresh signed form token per render.
 export const instant = false;
 
-export default function ApplyToSpeakPage() {
+export default async function ApplyToSpeakPage() {
+  // issueFormToken uses unstable values (Date.now) — keep them request-time.
+  await connection();
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
       <div className="bg-grid absolute inset-0" aria-hidden />

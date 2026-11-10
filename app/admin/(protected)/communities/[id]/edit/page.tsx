@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { CommunityForm } from "@/components/admin/CommunityForm";
@@ -17,6 +18,7 @@ export default async function EditCommunityPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const community = await withDbRetry(() => getCommunityById(db, id));
   if (!community) notFound();

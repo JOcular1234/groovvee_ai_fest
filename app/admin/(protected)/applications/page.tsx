@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Search } from "lucide-react";
 import Link from "next/link";
 
@@ -31,6 +32,7 @@ export default async function AdminApplicationsPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string; status?: string }>;
 }) {
+  await connection();
   const sp = await searchParams;
   const query = (sp.q ?? "").trim().slice(0, 120);
   const status =

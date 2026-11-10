@@ -33,8 +33,11 @@ export async function submitApplicationAction(
   _prev: ApplyFormState,
   formData: FormData
 ): Promise<ApplyFormState> {
-  // Honeypot: real users never see or fill this field.
-  if (String(formData.get("website") ?? "") !== "") {
+  // Honeypot: real users never see or fill this field. Named "gvf_extra" so
+  // browser autofill/managers won't populate it (a name like "website" gets
+  // autofilled and discards legitimate submissions).
+  if (String(formData.get("gvf_extra") ?? "") !== "") {
+    console.warn("[apply] honeypot triggered — fake success returned");
     return { ok: true, done: true }; // pretend success — waste the bot's time
   }
   // Minimum-fill-time token (process-signed; see lib/form-token.ts).

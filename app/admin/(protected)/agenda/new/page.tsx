@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { AgendaForm } from "@/components/admin/AgendaForm";
 import { db, withDbRetry } from "@/lib/db";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function NewAgendaItemPage() {
+  await connection();
   const [events, speakers] = await withDbRetry(() =>
     Promise.all([listEventsForAgendaSelect(db), listSpeakersForSelect(db)])
   );

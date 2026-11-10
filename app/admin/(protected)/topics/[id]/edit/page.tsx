@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { TopicForm } from "@/components/admin/TopicForm";
@@ -17,6 +18,7 @@ export default async function EditTopicPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const topic = await withDbRetry(() => getTopicById(db, id));
   if (!topic) notFound();

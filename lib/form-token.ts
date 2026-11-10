@@ -1,12 +1,24 @@
 import { createHmac, randomBytes } from "crypto";
 
-// Per-process signing key. Forms are short-lived, so a rotating key is fine —
-// a restart or a different instance simply invalidates in-flight tokens and
-// the user re-submits. A stable env secret can replace this later.
-const KEY = randomBytes(32);
+// Signing key for form tokens. FORM_SIGNING_SECRET is required in production
+// so tokens stay valid across instances/restarts; development falls back to a
+// per-process key (a restart simply invalidates in-flight tokens).
+const DEV_KEY = randomBytes(32);
+
+function signingKey(): Buffer | string {
+  const secret = process.env.FORM_SIGNING_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("FORM_SIGNING_SECRET is not configured");
+  }
+  return DEV_KEY;
+}
 
 function sign(ts: number): string {
-  return createHmac("sha256", KEY).update(String(ts)).digest("hex").slice(0, 32);
+  return createHmac("sha256", signingKey())
+    .update(String(ts))
+    .digest("hex")
+    .slice(0, 32);
 }
 
 // Token a public form renders at load time: "<timestamp>.<hmac>".

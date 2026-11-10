@@ -50,11 +50,12 @@ export function ApplyForm({ token }: { token: string }) {
   return (
     <form action={formAction} className="border border-white/10 bg-panel p-6 sm:p-8">
       <input type="hidden" name="started" value={token} />
-      {/* Honeypot — invisible to humans, tempting to bots. */}
+      {/* Honeypot — invisible to humans, tempting to bots. Nonstandard name
+          prevents browser autofill from populating it for real users. */}
       <div className="absolute -left-250" aria-hidden="true">
         <label>
           Website
-          <input name="website" tabIndex={-1} autoComplete="off" />
+          <input name="gvf_extra" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
 

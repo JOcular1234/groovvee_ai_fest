@@ -77,6 +77,14 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum MessageStatus {
+  NEW
+  READ
+  IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+}
+
 model Admin {
   id                   String               @id @default(cuid())
   name                 String
@@ -89,6 +97,7 @@ model Admin {
   updatedAt            DateTime             @updatedAt
   sessions             Session[]
   reviewedApplications SpeakerApplication[] @relation("ApplicationReviewer")
+  reviewedMessages     ContactMessage[]     @relation("MessageReviewer")
   judgingScores        JudgingScore[]
 
   @@map("admins")
@@ -409,16 +418,24 @@ model NewsPost {
 }
 
 model ContactMessage {
-  id        String      @id @default(cuid())
-  name      String
-  email     String
-  type      InquiryType @default(GENERAL)
-  subject   String?
-  message   String      @db.Text
-  readAt    DateTime?
-  createdAt DateTime    @default(now())
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  type        InquiryType   @default(GENERAL)
+  subject     String?
+  message     String        @db.Text
+  status      MessageStatus @default(NEW)
+  readAt      DateTime?
+  reviewNotes String?       @db.Text
+  reviewedAt  DateTime?
+  reviewerId  String?
+  reviewer    Admin?        @relation("MessageReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
+  @@index([status, createdAt])
   @@index([type, createdAt])
+  @@index([readAt])
   @@map("contact_messages")
 }
 

@@ -16,7 +16,8 @@
     "test:communities": "tsx scripts/test-communities.ts",
     "test:events": "tsx scripts/test-events.ts",
     "test:agenda": "tsx scripts/test-agenda.ts",
-    "test:applications": "tsx scripts/test-applications.ts"
+    "test:applications": "tsx scripts/test-applications.ts",
+    "test:messages": "tsx scripts/test-messages.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",

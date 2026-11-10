@@ -91,10 +91,24 @@ export default async function AdminPage() {
               Student tribes, campus groups and industry circles.
             </p>
           </Link>
+          <Link
+            href="/admin/messages"
+            className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
+          >
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
+              Inbox
+            </p>
+            <h2 className="mt-2 font-display text-2xl uppercase group-hover:text-volt">
+              Messages
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              Contact-form inquiries, reviews and internal notes.
+            </p>
+          </Link>
         </div>
         <p className="mt-8 text-sm text-muted">
-          Events, competitions, news and inbox management arrive in later
-          stages.
+          Events, agenda, competitions, news and applications management are
+          available from the navigation above.
         </p>
         <div className="mt-8">
           <LogoutButton />

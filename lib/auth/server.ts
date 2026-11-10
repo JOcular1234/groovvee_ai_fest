@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 
 import { db, withDbRetry } from "@/lib/db";
@@ -12,6 +13,9 @@ import {
 } from "@/lib/auth/session";
 
 export async function getCurrentAdmin(): Promise<SessionAdmin | null> {
+  // Declares request-time rendering: the session lookup below uses unstable
+  // values (Date comparisons) that must never run inside the static shell.
+  await connection();
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;

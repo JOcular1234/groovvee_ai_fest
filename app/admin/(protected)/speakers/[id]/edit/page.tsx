@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { SpeakerForm } from "@/components/admin/SpeakerForm";
@@ -21,6 +22,7 @@ export default async function EditSpeakerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const speaker = await withDbRetry(() => getSpeakerById(db, id));
   if (!speaker) notFound();

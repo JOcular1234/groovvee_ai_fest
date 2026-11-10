@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { AgendaForm } from "@/components/admin/AgendaForm";
@@ -22,6 +23,7 @@ export default async function EditAgendaItemPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const { id } = await params;
   const [item, speakers] = await withDbRetry(() =>
     Promise.all([getAgendaItemById(db, id), listSpeakersForSelect(db)])

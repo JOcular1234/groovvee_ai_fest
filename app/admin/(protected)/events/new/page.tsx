@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { EventForm } from "@/components/admin/EventForm";
 import { db, withDbRetry } from "@/lib/db";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function NewEventPage() {
+  await connection();
   const communities = await withDbRetry(() => listCommunitiesForSelect(db));
 
   return (
