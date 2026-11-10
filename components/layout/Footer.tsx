@@ -14,6 +14,7 @@ export async function Footer() {
     <footer className="relative overflow-hidden border-t-2 border-volt bg-ink">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-12 md:grid-cols-[2fr_1fr_1fr]">
+          
           <div>
             <p className="font-display text-2xl uppercase leading-none">
               Groovvee

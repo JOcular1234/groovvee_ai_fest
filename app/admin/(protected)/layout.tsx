@@ -50,6 +50,9 @@ export default async function ProtectedAdminLayout({
             <Link href="/admin/applications" className={navLink}>
               Applications
             </Link>
+            <Link href="/admin/hack-wars" className={navLink}>
+              Hack Wars
+            </Link>
             <Link href="/admin/messages" className={navLink}>
               Messages
             </Link>

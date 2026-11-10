@@ -17,6 +17,7 @@
     "test:events": "tsx scripts/test-events.ts",
     "test:agenda": "tsx scripts/test-agenda.ts",
     "test:applications": "tsx scripts/test-applications.ts",
+    "test:hack-wars": "tsx scripts/test-hack-wars.ts",
     "test:messages": "tsx scripts/test-messages.ts"
   },
   "dependencies": {

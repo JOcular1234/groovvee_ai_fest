@@ -96,8 +96,9 @@ model Admin {
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   sessions             Session[]
-  reviewedApplications SpeakerApplication[] @relation("ApplicationReviewer")
-  reviewedMessages     ContactMessage[]     @relation("MessageReviewer")
+  reviewedApplications SpeakerApplication[]     @relation("ApplicationReviewer")
+  reviewedMessages     ContactMessage[]         @relation("MessageReviewer")
+  reviewedCompetitions CompetitionApplication[] @relation("CompetitionApplicationReviewer")
   judgingScores        JudgingScore[]
 
   @@map("admins")
@@ -341,6 +342,7 @@ model CompetitionParticipant {
   team      CompetitionTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
   name      String
   email     String?
+  school    String?
   role      String?
   createdAt DateTime        @default(now())
 
@@ -349,19 +351,31 @@ model CompetitionParticipant {
 }
 
 model CompetitionApplication {
-  id            String            @id @default(cuid())
-  competitionId String
-  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Restrict)
-  teamId        String?
-  team          CompetitionTeam?  @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  contactName   String
-  email         String
-  notes         String?           @db.Text
-  status        ApplicationStatus @default(PENDING)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id                 String            @id @default(cuid())
+  competitionId      String
+  competition        Competition       @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  teamId             String?
+  team               CompetitionTeam?  @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  contactName        String
+  email              String
+  phone              String
+  school             String
+  major              String?
+  gradYear           Int?
+  intro              String            @db.Text
+  previousExperience String?           @db.Text
+  notes              String?           @db.Text
+  status             ApplicationStatus @default(PENDING)
+  reviewerId         String?
+  reviewer           Admin?            @relation("CompetitionApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewedAt         DateTime?
+  reviewNotes        String?           @db.Text
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
+  @@unique([competitionId, email])
   @@index([competitionId, status])
+  @@index([teamId])
   @@map("competition_applications")
 }
 
