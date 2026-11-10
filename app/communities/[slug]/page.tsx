@@ -21,6 +21,9 @@ export async function generateMetadata({
   };
 }
 
+// Dynamic slug params — renders per request over cached queries.
+export const instant = false;
+
 export default async function CommunityPage({
   params,
 }: {
