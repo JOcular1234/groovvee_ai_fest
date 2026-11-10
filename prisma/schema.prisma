@@ -1,0 +1,445 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum SessionType {
+  KEYNOTE
+  TALK
+  PANEL
+  WORKSHOP
+  DEMO
+  NETWORKING
+  BREAK
+  OTHER
+}
+
+enum TicketKind {
+  FREE
+  PAID
+}
+
+enum RegistrationStatus {
+  COMING_SOON
+  OPEN
+  CLOSED
+}
+
+enum CommunityType {
+  STUDENT_TRIBE
+  CAMPUS
+  CREATIVE
+  INDUSTRY
+}
+
+enum EventSource {
+  GROOVVEE
+  EXTERNAL
+}
+
+enum CompetitionKind {
+  HACK_WARS
+  CONTEST
+  COMMUNITY_CONTEST
+}
+
+enum CompetitionStatus {
+  UPCOMING
+  REGISTRATION_OPEN
+  RUNNING
+  COMPLETED
+}
+
+enum InquiryType {
+  GENERAL
+  PARTNERSHIP
+  SPONSORSHIP
+  STUDIO_PARTICIPATION
+  EVENTS
+  PRESS
+  COMMUNITY
+  SPEAKER_APPLICATION
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+model Admin {
+  id                   String               @id @default(cuid())
+  name                 String
+  email                String               @unique
+  passwordHash         String
+  role                 AdminRole            @default(ADMIN)
+  isActive             Boolean              @default(true)
+  lastLoginAt          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  sessions             Session[]
+  reviewedApplications SpeakerApplication[] @relation("ApplicationReviewer")
+  judgingScores        JudgingScore[]
+
+  @@map("admins")
+}
+
+model Session {
+  id             String   @id @default(cuid())
+  adminId        String
+  admin          Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  tokenHash      String   @unique
+  expiresAt      DateTime
+  lastActivityAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model LoginThrottle {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  attempts    Int       @default(0)
+  windowStart DateTime
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([lockedUntil])
+  @@map("login_throttles")
+}
+
+model Speaker {
+  id           String               @id @default(cuid())
+  name         String
+  title        String
+  organization String
+  bio          String               @db.Text
+  imageUrl     String?
+  socials      Json?
+  featured     Boolean              @default(false)
+  published    Boolean              @default(false)
+  sortOrder    Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  agendaItems  AgendaItem[]
+  applications SpeakerApplication[]
+
+  @@index([published, featured, sortOrder])
+  @@map("speakers")
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  imageUrl    String?
+  published   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, sortOrder])
+  @@map("topics")
+}
+
+model AgendaItem {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  type        SessionType @default(TALK)
+  startsAt    DateTime
+  endsAt      DateTime
+  location    String?
+  published   Boolean     @default(false)
+  sortOrder   Int         @default(0)
+  speakers    Speaker[]
+  eventId     String?
+  event       Event?      @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([eventId])
+  @@index([startsAt])
+  @@index([published, sortOrder])
+  @@map("agenda_items")
+}
+
+model TicketType {
+  id            String     @id @default(cuid())
+  name          String
+  description   String     @db.Text
+  kind          TicketKind
+  priceMinor    Int        @default(0)
+  currency      String     @default("USD") @db.VarChar(3)
+  totalQuantity Int?
+  maxPerOrder   Int        @default(10)
+  salesStartAt  DateTime?
+  salesEndAt    DateTime?
+  isActive      Boolean    @default(true)
+  sortOrder     Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("ticket_types")
+}
+
+model EventSettings {
+  id                 String             @id @default(cuid())
+  eventName          String
+  tagline            String?
+  eventDate          DateTime?
+  venue              String?
+  address            String?
+  description        String?            @db.Text
+  registrationStatus RegistrationStatus @default(COMING_SOON)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("event_settings")
+}
+
+model Community {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  type        CommunityType
+  description String        @db.Text
+  imageUrl    String?
+  city        String?
+  country     String?
+  joinUrl     String?
+  featured    Boolean       @default(false)
+  published   Boolean       @default(false)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  events      Event[]
+
+  @@index([type, published, sortOrder])
+  @@map("communities")
+}
+
+model Event {
+  id           String        @id @default(cuid())
+  title        String
+  slug         String        @unique
+  description  String        @db.Text
+  startsAt     DateTime
+  endsAt       DateTime?
+  timezone     String        @default("UTC")
+  city         String?
+  country      String?
+  region       String?
+  venueName    String?
+  isOnline     Boolean       @default(false)
+  url          String?
+  imageUrl     String?
+  source       EventSource   @default(GROOVVEE)
+  externalId   String?
+  communityId  String?
+  community    Community?    @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  featured     Boolean       @default(false)
+  published    Boolean       @default(false)
+  sortOrder    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  competitions Competition[]
+  agendaItems  AgendaItem[]
+
+  @@index([published, startsAt])
+  @@index([communityId])
+  @@index([region, published])
+  @@map("events")
+}
+
+model Competition {
+  id           String                   @id @default(cuid())
+  title        String
+  slug         String                   @unique
+  kind         CompetitionKind
+  description  String                   @db.Text
+  status       CompetitionStatus        @default(UPCOMING)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  prizeText    String?
+  rulesUrl     String?
+  imageUrl     String?
+  eventId      String?
+  event        Event?                   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  featured     Boolean                  @default(false)
+  published    Boolean                  @default(false)
+  sortOrder    Int                      @default(0)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  rounds       CompetitionRound[]
+  teams        CompetitionTeam[]
+  applications CompetitionApplication[]
+  submissions  ChallengeSubmission[]
+
+  @@index([kind, published])
+  @@map("competitions")
+}
+
+model CompetitionRound {
+  id            String                @id @default(cuid())
+  competitionId String
+  competition   Competition           @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?               @db.Text
+  startsAt      DateTime?
+  endsAt        DateTime?
+  sortOrder     Int                   @default(0)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  submissions   ChallengeSubmission[]
+
+  @@index([competitionId, sortOrder])
+  @@map("competition_rounds")
+}
+
+model CompetitionTeam {
+  id            String                   @id @default(cuid())
+  competitionId String
+  competition   Competition              @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  name          String
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  participants  CompetitionParticipant[]
+  applications  CompetitionApplication[]
+  submissions   ChallengeSubmission[]
+
+  @@index([competitionId])
+  @@map("competition_teams")
+}
+
+model CompetitionParticipant {
+  id        String          @id @default(cuid())
+  teamId    String
+  team      CompetitionTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  role      String?
+  createdAt DateTime        @default(now())
+
+  @@index([teamId])
+  @@map("competition_participants")
+}
+
+model CompetitionApplication {
+  id            String            @id @default(cuid())
+  competitionId String
+  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  teamId        String?
+  team          CompetitionTeam?  @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  contactName   String
+  email         String
+  notes         String?           @db.Text
+  status        ApplicationStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([competitionId, status])
+  @@map("competition_applications")
+}
+
+model ChallengeSubmission {
+  id            String            @id @default(cuid())
+  competitionId String
+  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  roundId       String?
+  round         CompetitionRound? @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  teamId        String?
+  team          CompetitionTeam?  @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  title         String
+  description   String?           @db.Text
+  url           String?
+  submittedAt   DateTime          @default(now())
+  scores        JudgingScore[]
+
+  @@index([competitionId])
+  @@index([teamId])
+  @@map("challenge_submissions")
+}
+
+model JudgingScore {
+  id           String              @id @default(cuid())
+  submissionId String
+  submission   ChallengeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  judgeId      String?
+  judge        Admin?              @relation(fields: [judgeId], references: [id], onDelete: SetNull)
+  score        Int
+  notes        String?
+  createdAt    DateTime            @default(now())
+
+  @@unique([submissionId, judgeId])
+  @@index([submissionId])
+  @@map("judging_scores")
+}
+
+model NewsPost {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  excerpt       String    @db.VarChar(500)
+  body          String    @db.Text
+  coverImageUrl String?
+  sourceUrl     String?
+  authorName    String?
+  publishedAt   DateTime?
+  published     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+  @@map("news_posts")
+}
+
+model ContactMessage {
+  id        String      @id @default(cuid())
+  name      String
+  email     String
+  type      InquiryType @default(GENERAL)
+  subject   String?
+  message   String      @db.Text
+  readAt    DateTime?
+  createdAt DateTime    @default(now())
+
+  @@index([type, createdAt])
+  @@map("contact_messages")
+}
+
+model SpeakerApplication {
+  id           String            @id @default(cuid())
+  name         String
+  email        String
+  organization String?
+  talkTitle    String?
+  bio          String            @db.Text
+  links        Json?
+  status       ApplicationStatus @default(PENDING)
+  speakerId    String?
+  speaker      Speaker?          @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+  reviewerId   String?
+  reviewer     Admin?            @relation("ApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+  reviewNotes  String?           @db.Text
+  createdAt    DateTime          @default(now())
+
+  @@index([status, createdAt])
+  @@index([reviewerId])
+  @@map("speaker_applications")
+}

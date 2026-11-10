@@ -1,0 +1,48 @@
+{
+  "name": "groovvee-ai-fest",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:check": "tsx scripts/db-check.ts",
+    "provision:admin": "tsx scripts/provision-admin.ts",
+    "test:auth": "tsx scripts/test-auth.ts",
+    "test:speakers": "tsx scripts/test-speakers.ts",
+    "test:topics": "tsx scripts/test-topics.ts",
+    "test:communities": "tsx scripts/test-communities.ts",
+    "test:events": "tsx scripts/test-events.ts",
+    "test:agenda": "tsx scripts/test-agenda.ts",
+    "test:applications": "tsx scripts/test-applications.ts"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.2.2",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "dotenv": "^18.0.9",
+    "framer-motion": "^14.10.1",
+    "lucide-react": "^1.70.0",
+    "next": "16.4.5",
+    "pg": "^8.23.1",
+    "prisma": "^7.10.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.5",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}
