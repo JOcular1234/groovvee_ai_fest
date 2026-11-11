@@ -47,11 +47,16 @@ export default async function EventPage({
     getEventProgramme(event.id),
   ]);
 
+  // Linked locations show the structured state/province; unlinked legacy
+  // events fall back to their free-text region as before.
+  const subdivision = event.locationId
+    ? event.stateProvince
+    : (event.stateProvince ?? event.region);
   const location = event.isOnline
     ? "Online event"
     : [
         event.venueName,
-        [event.city, event.region, event.country].filter(Boolean).join(", "),
+        [event.city, subdivision, event.country].filter(Boolean).join(", "),
       ]
         .filter(Boolean)
         .join(" · ");

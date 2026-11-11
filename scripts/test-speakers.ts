@@ -187,16 +187,28 @@ async function main() {
       ordered.findIndex((s) => s.id === s2.id)
   );
 
-  // moveSpeaker operates on the global ordering — s2's upward neighbour may be
-  // a non-test speaker, so assert the swap semantics, not adjacency to s1.
-  const before = (await queryPublishedSpeakers(scriptDb)).map((s) => s.id);
+  // moveSpeaker operates on the global admin ordering (drafts included), so
+  // assert the swap semantics against that ordering — s2's upward neighbour
+  // may be a non-test or unpublished speaker invisible in the public list.
+  const adminIds = async () =>
+    (
+      await scriptDb.speaker.findMany({
+        orderBy: [
+          { sortOrder: "asc" },
+          { createdAt: "asc" },
+          { id: "asc" },
+        ],
+        select: { id: true },
+      })
+    ).map((s) => s.id);
+  const before = await adminIds();
   const s2Index = before.indexOf(s2.id);
   const neighborId = before[s2Index - 1];
   check(
     "moveSpeaker swaps neighbours",
     await moveSpeaker(scriptDb, s2.id, -1)
   );
-  const afterMove = (await queryPublishedSpeakers(scriptDb)).map((s) => s.id);
+  const afterMove = await adminIds();
   check(
     "order actually changed (swapped with predecessor)",
     afterMove[s2Index - 1] === s2.id && afterMove[s2Index] === neighborId

@@ -85,6 +85,30 @@ export function timeZoneLabel(date: Date, tz: string): string {
   return offset ? `${name} (${offset})` : name;
 }
 
+// "2026-12-04" — the local calendar date of `date` in `tz`. Used for
+// timezone-correct calendar grouping (never startsAt.toISOString().slice(0,10),
+// which would group by the UTC date instead).
+export function zonedDateKey(date: Date, tz: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (t: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+// "18:30" — wall time in `tz`.
+export function formatEventTime(date: Date, tz: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 // UTC instant → "YYYY-MM-DDTHH:mm" wall time in `tz`, for datetime-local inputs.
 export function utcToZonedLocalInput(date: Date, tz: string): string {
   const parts = new Intl.DateTimeFormat("en-CA", {

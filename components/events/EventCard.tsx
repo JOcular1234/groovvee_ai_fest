@@ -11,6 +11,7 @@ export type EventCardData = {
   startsAt: Date;
   timezone: string;
   city: string | null;
+  stateProvince: string | null;
   country: string | null;
   venueName: string | null;
   isOnline: boolean;
@@ -21,7 +22,12 @@ export type EventCardData = {
 export function EventCard({ event }: { event: EventCardData }) {
   const location = event.isOnline
     ? "Online"
-    : [event.venueName, [event.city, event.country].filter(Boolean).join(", ")]
+    : [
+        event.venueName,
+        [event.city, event.stateProvince, event.country]
+          .filter(Boolean)
+          .join(", "),
+      ]
         .filter(Boolean)
         .join(" · ");
 

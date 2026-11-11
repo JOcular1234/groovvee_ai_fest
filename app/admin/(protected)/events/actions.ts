@@ -50,8 +50,10 @@ export async function saveEventAction(
     endsAtLocal: formData.get("endsAt") ?? "",
     timezone: formData.get("timezone") ?? "UTC",
     city: formData.get("city") ?? "",
+    stateProvince: formData.get("stateProvince") ?? "",
     country: formData.get("country") ?? "",
     region: formData.get("region") ?? "",
+    locationId: formData.get("locationId") ?? "",
     venueName: formData.get("venueName") ?? "",
     isOnline: formData.get("isOnline") === "on",
     url: formData.get("url") ?? "",
@@ -94,6 +96,12 @@ export async function saveEventAction(
       return {
         ok: false,
         errors: { communityId: ["That community no longer exists."] },
+      };
+    }
+    if (err instanceof Error && err.message === "invalid_location") {
+      return {
+        ok: false,
+        errors: { locationId: ["That location no longer exists."] },
       };
     }
     return { ok: false, message: "Could not save the event. Try again." };

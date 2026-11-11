@@ -1,15 +1,31 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { ArrowUpRight, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { EventCalendar } from "@/components/events/EventCalendar";
 import { EventCard } from "@/components/events/EventCard";
+import { EventsMapLazy } from "@/components/events/EventsMapLazy";
+import { mapRegionByKey } from "@/data/map-regions";
+import {
+  currentMonth,
+  groupEventsByDate,
+  monthFetchRange,
+  monthLabel,
+  monthParam,
+  parseMonthParam,
+  shiftMonth,
+} from "@/lib/calendar";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
+import { locationLabel } from "@/lib/locations";
 import {
   getFeaturedOrNextEvent,
   getPublicEventFilterOptions,
   getPublicEvents,
+  getPublicEventsInRange,
 } from "@/lib/public/events";
+import { getCityIndex, getEventsMapData } from "@/lib/public/locations";
 import { EVENT_SOURCES } from "@/lib/validation/event";
 
 export const metadata: Metadata = {
@@ -36,29 +52,71 @@ export default async function EventsPage({
     q?: string;
     region?: string;
     country?: string;
+    location?: string;
     source?: string;
     view?: string;
+    month?: string;
+    map?: string;
     page?: string;
   }>;
 }) {
+  // Renders per request (filters + current month depend on now).
+  await connection();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 120);
   const region = sp.region || undefined;
   const country = sp.country || undefined;
+  const locationId = sp.location || undefined;
   const source: "GROOVVEE" | "EXTERNAL" | undefined =
     sp.source === "GROOVVEE" || sp.source === "EXTERNAL" ? sp.source : undefined;
-  const view = sp.view === "past" ? "past" : "upcoming";
+  const view =
+    sp.view === "calendar"
+      ? "calendar"
+      : sp.view === "past"
+        ? "past"
+        : sp.view === "map"
+          ? "map"
+          : "upcoming";
+  const isCalendar = view === "calendar";
+  const isMap = view === "map";
+  const initialMapRegion = mapRegionByKey(sp.map).key;
+  const thisMonth = currentMonth();
+  const month = parseMonthParam(sp.month) ?? thisMonth;
   const page = Math.max(1, Number(sp.page) || 1);
-  const filtered = !!(q || region || country || source);
+  const filtered = !!(q || region || country || locationId || source);
 
-  const filters = { q: q || undefined, region, country, source };
+  const filters = { q: q || undefined, region, country, source, locationId };
 
-  const [result, options, hero] = await Promise.all([
-    getPublicEvents(filters, view, page),
-    getPublicEventFilterOptions(),
+  const optionsP = getPublicEventFilterOptions();
+  const cityIndexP = getCityIndex();
+  const heroP =
     view === "upcoming" && !filtered && page === 1
       ? getFeaturedOrNextEvent()
-      : Promise.resolve(null),
+      : Promise.resolve(null);
+
+  let result: Awaited<ReturnType<typeof getPublicEvents>> | null = null;
+  let byDate: Map<
+    string,
+    Awaited<ReturnType<typeof getPublicEventsInRange>>[number][]
+  > | null = null;
+  let mapData: Awaited<ReturnType<typeof getEventsMapData>> | null = null;
+  if (isCalendar) {
+    const { from, to } = monthFetchRange(month);
+    const inRange = await getPublicEventsInRange(from, to, filters);
+    byDate = groupEventsByDate(inRange, month);
+  } else if (isMap) {
+    mapData = await getEventsMapData();
+  } else {
+    result = await getPublicEvents(
+      filters,
+      view === "past" ? "past" : "upcoming",
+      page
+    );
+  }
+  const [options, cityIndex, hero] = await Promise.all([
+    optionsP,
+    cityIndexP,
+    heroP,
   ]);
 
   const href = (over: Record<string, string | undefined>) => {
@@ -67,8 +125,10 @@ export default async function EventsPage({
       q: q || undefined,
       region,
       country,
+      location: locationId,
       source,
-      view: view === "past" ? "past" : undefined,
+      view: view === "upcoming" ? undefined : view,
+      month: isCalendar ? monthParam(month) : undefined,
       page: undefined,
       ...over,
     };
@@ -178,6 +238,18 @@ export default async function EventsPage({
               </option>
             ))}
           </select>
+          <select
+            name="location"
+            defaultValue={locationId ?? ""}
+            className={selectClass}
+          >
+            <option value="">All cities</option>
+            {cityIndex.cities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {locationLabel(c)}
+              </option>
+            ))}
+          </select>
           <select name="source" defaultValue={source ?? ""} className={selectClass}>
             <option value="">All events</option>
             {EVENT_SOURCES.map((s) => (
@@ -186,60 +258,147 @@ export default async function EventsPage({
               </option>
             ))}
           </select>
-          {view === "past" && <input type="hidden" name="view" value="past" />}
+          {view !== "upcoming" && (
+            <input type="hidden" name="view" value={view} />
+          )}
+          {isCalendar && (
+            <input type="hidden" name="month" value={monthParam(month)} />
+          )}
           <button
             type="submit"
             className="border border-white/25 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
           >
             Filter
           </button>
+          {filtered && (
+            <Link
+              href={href({
+                q: undefined,
+                region: undefined,
+                country: undefined,
+                location: undefined,
+                source: undefined,
+              })}
+              className="px-2 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-volt"
+            >
+              Clear
+            </Link>
+          )}
         </form>
 
-        <div className="mt-10 flex gap-6 border-b border-white/10 font-mono text-[11px] font-bold uppercase tracking-[0.25em]">
+        <div className="mt-10 flex items-end justify-between gap-6 border-b border-white/10 font-mono text-[11px] font-bold uppercase tracking-[0.25em]">
+          <div className="flex gap-6">
+            <Link
+              href={href({ view: undefined, month: undefined })}
+              className={`pb-3 transition-colors ${
+                view === "upcoming"
+                  ? "border-b-2 border-volt text-volt"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Upcoming
+            </Link>
+            <Link
+              href={href({ view: "past", month: undefined })}
+              className={`pb-3 transition-colors ${
+                view === "past"
+                  ? "border-b-2 border-volt text-volt"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Past events
+            </Link>
+            <Link
+              href={href({ view: "calendar", month: undefined })}
+              className={`pb-3 transition-colors ${
+                isCalendar
+                  ? "border-b-2 border-volt text-volt"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Calendar
+            </Link>
+            <Link
+              href={href({ view: "map", month: undefined })}
+              className={`pb-3 transition-colors ${
+                isMap
+                  ? "border-b-2 border-volt text-volt"
+                  : "text-muted hover:text-white"
+              }`}
+            >
+              Map
+            </Link>
+          </div>
           <Link
-            href={href({ view: undefined })}
-            className={`pb-3 transition-colors ${
-              view === "upcoming"
-                ? "border-b-2 border-volt text-volt"
-                : "text-muted hover:text-white"
-            }`}
+            href="/events/cities"
+            className="pb-3 text-muted transition-colors hover:text-volt"
           >
-            Upcoming
-          </Link>
-          <Link
-            href={href({ view: "past" })}
-            className={`pb-3 transition-colors ${
-              view === "past"
-                ? "border-b-2 border-volt text-volt"
-                : "text-muted hover:text-white"
-            }`}
-          >
-            Past events
+            Cities →
           </Link>
         </div>
 
-        {result.events.length === 0 ? (
-          <div className="mt-12 border border-white/10 bg-panel p-12 text-center">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
-              {filtered ? "No matches" : "Coming soon"}
-            </p>
-            <p className="mx-auto mt-4 max-w-md text-muted">
-              {filtered
-                ? "No events match these filters. Try widening your search."
-                : view === "upcoming"
-                  ? "No upcoming events are published yet — check back soon."
-                  : "No past events to show yet."}
-            </p>
-          </div>
-        ) : (
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {result.events.map((e) => (
-              <EventCard key={e.id} event={e} />
-            ))}
-          </div>
+        {isCalendar && byDate && (
+          <>
+            <div className="mt-8 flex items-center justify-between font-mono text-[11px] font-bold uppercase tracking-[0.25em]">
+              <Link
+                href={href({ month: monthParam(shiftMonth(month, -1)) })}
+                className="border border-white/25 px-4 py-2 text-white transition-colors hover:border-volt hover:text-volt"
+              >
+                ← {monthLabel(shiftMonth(month, -1))}
+              </Link>
+              <div className="text-center">
+                <p className="font-display text-2xl uppercase text-white">
+                  {monthLabel(month)}
+                </p>
+                {(month.year !== thisMonth.year ||
+                  month.month !== thisMonth.month) && (
+                  <Link
+                    href={href({ month: undefined })}
+                    className="text-[10px] text-muted transition-colors hover:text-volt"
+                  >
+                    Back to {monthLabel(thisMonth)}
+                  </Link>
+                )}
+              </div>
+              <Link
+                href={href({ month: monthParam(shiftMonth(month, 1)) })}
+                className="border border-white/25 px-4 py-2 text-white transition-colors hover:border-volt hover:text-volt"
+              >
+                {monthLabel(shiftMonth(month, 1))} →
+              </Link>
+            </div>
+            <EventCalendar month={month} byDate={byDate} filtered={filtered} />
+          </>
         )}
 
-        {result.pages > 1 && (
+        {isMap && mapData && (
+          <EventsMapLazy data={mapData} initialRegion={initialMapRegion} />
+        )}
+
+        {!isCalendar && !isMap &&
+          result &&
+          (result.events.length === 0 ? (
+            <div className="mt-12 border border-white/10 bg-panel p-12 text-center">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+                {filtered ? "No matches" : "Coming soon"}
+              </p>
+              <p className="mx-auto mt-4 max-w-md text-muted">
+                {filtered
+                  ? "No events match these filters. Try widening your search."
+                  : view === "upcoming"
+                    ? "No upcoming events are published yet — check back soon."
+                    : "No past events to show yet."}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {result.events.map((e) => (
+                <EventCard key={e.id} event={e} />
+              ))}
+            </div>
+          ))}
+
+        {!isCalendar && result && result.pages > 1 && (
           <div className="mt-10 flex items-center justify-between font-mono text-xs uppercase tracking-[0.2em]">
             <Link
               href={href({ page: String(result.page - 1) })}

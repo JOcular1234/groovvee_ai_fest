@@ -6,6 +6,7 @@ import { EventForm } from "@/components/admin/EventForm";
 import { utcToZonedLocalInput } from "@/lib/datetime";
 import { db, withDbRetry } from "@/lib/db";
 import { getEventById, listCommunitiesForSelect } from "@/lib/events";
+import { listLocationsForSelect } from "@/lib/locations";
 
 export const metadata: Metadata = {
   title: "Edit Event · Admin",
@@ -21,8 +22,12 @@ export default async function EditEventPage({
 }) {
   await connection();
   const { id } = await params;
-  const [event, communities] = await withDbRetry(() =>
-    Promise.all([getEventById(db, id), listCommunitiesForSelect(db)])
+  const [event, communities, locations] = await withDbRetry(() =>
+    Promise.all([
+      getEventById(db, id),
+      listCommunitiesForSelect(db),
+      listLocationsForSelect(db),
+    ])
   );
   if (!event) notFound();
 
@@ -39,6 +44,7 @@ export default async function EditEventPage({
         <div className="mt-10">
           <EventForm
             communities={communities}
+            locations={locations}
             event={{
               id: event.id,
               title: event.title,
@@ -55,12 +61,14 @@ export default async function EditEventPage({
                 : "",
               timezone: event.timezone,
               city: event.city ?? "",
+              stateProvince: event.stateProvince ?? "",
               country: event.country ?? "",
               region: event.region ?? "",
               venueName: event.venueName ?? "",
               isOnline: event.isOnline,
               url: event.url ?? "",
               imageUrl: event.imageUrl ?? "",
+              locationId: event.locationId ?? "",
               communityId: event.communityId ?? "",
               featured: event.featured,
               published: event.published,

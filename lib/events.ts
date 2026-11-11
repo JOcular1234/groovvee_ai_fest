@@ -1,6 +1,7 @@
 import type { Prisma } from "@/lib/generated/prisma/client";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 import { zonedToUtc } from "@/lib/datetime";
+import { eventGeoFromLocation } from "@/lib/locations";
 import {
   isUniqueViolation,
   SlugConflictError,
@@ -19,6 +20,7 @@ const publicSelect = {
   endsAt: true,
   timezone: true,
   city: true,
+  stateProvince: true,
   country: true,
   region: true,
   venueName: true,
@@ -26,6 +28,7 @@ const publicSelect = {
   url: true,
   imageUrl: true,
   source: true,
+  locationId: true,
   communityId: true,
   community: { select: { name: true, slug: true } },
 } satisfies Prisma.EventSelect;
@@ -42,6 +45,7 @@ export type AdminEventFilters = {
   source?: "GROOVVEE" | "EXTERNAL";
   region?: string;
   country?: string;
+  locationId?: string;
   sort?: EventSort;
 };
 
@@ -62,25 +66,44 @@ const nextSlug = (db: PrismaClient, base: string) =>
 
 // Converts the form's wall-clock datetimes to UTC instants for storage.
 // Returns null when a supplied datetime is invalid for the event timezone.
-function eventData(input: EventInput) {
+// When a Location is selected it is authoritative for geography — submitted
+// city/stateProvince/country/region are ignored and re-derived server-side.
+// Without a location the submitted (legacy) text fields are kept as-is.
+async function eventData(db: PrismaClient, input: EventInput) {
   const startsAt = zonedToUtc(input.startsAtLocal, input.timezone);
   const endsAt = input.endsAtLocal
     ? zonedToUtc(input.endsAtLocal, input.timezone)
     : null;
   if (!startsAt || (input.endsAtLocal && !endsAt)) return null;
+
+  let geo = {
+    city: input.city,
+    stateProvince: input.stateProvince,
+    country: input.country,
+    region: input.region,
+  };
+  let locationId: string | null = null;
+  if (input.locationId) {
+    const location = await db.location.findUnique({
+      where: { id: input.locationId },
+    });
+    if (!location) throw new Error("invalid_location");
+    locationId = location.id;
+    geo = eventGeoFromLocation(location);
+  }
+
   return {
     title: input.title,
     description: input.description,
     source: input.source,
     externalId: input.externalId,
     timezone: input.timezone,
-    city: input.city,
-    country: input.country,
-    region: input.region,
+    ...geo,
     venueName: input.venueName,
     isOnline: input.isOnline,
     url: input.url,
     imageUrl: input.imageUrl,
+    locationId,
     communityId: input.communityId,
     featured: input.featured,
     published: input.published,
@@ -112,6 +135,7 @@ export async function listEventsForAdmin(
   if (opts.source) where.source = opts.source;
   if (opts.region) where.region = opts.region;
   if (opts.country) where.country = opts.country;
+  if (opts.locationId) where.locationId = opts.locationId;
 
   const orderBy: Prisma.EventOrderByWithRelationInput[] =
     opts.sort === "recent"
@@ -159,7 +183,7 @@ export async function getEventById(db: PrismaClient, id: string) {
 }
 
 export async function createEvent(db: PrismaClient, input: EventInput) {
-  const data = eventData(input);
+  const data = await eventData(db, input);
   if (!data) throw new Error("invalid_datetime");
   if (!(await communityExists(db, data.communityId)))
     throw new Error("invalid_community");
@@ -193,7 +217,7 @@ export async function updateEvent(
   });
   if (!existing) return null;
 
-  const data = eventData(input);
+  const data = await eventData(db, input);
   if (!data) throw new Error("invalid_datetime");
   if (!(await communityExists(db, data.communityId)))
     throw new Error("invalid_community");
@@ -288,6 +312,7 @@ export type PublicEventFilters = {
   region?: string;
   country?: string;
   source?: "GROOVVEE" | "EXTERNAL";
+  locationId?: string;
 };
 
 function publicWhere(filters: PublicEventFilters = {}): Prisma.EventWhereInput {
@@ -302,6 +327,7 @@ function publicWhere(filters: PublicEventFilters = {}): Prisma.EventWhereInput {
   if (filters.region) where.region = filters.region;
   if (filters.country) where.country = filters.country;
   if (filters.source) where.source = filters.source;
+  if (filters.locationId) where.locationId = filters.locationId;
   return where;
 }
 
@@ -338,6 +364,31 @@ export async function queryPublicEvents(
     page: p,
     pages: Math.max(1, Math.ceil(total / PUBLIC_EVENTS_PAGE_SIZE)),
   };
+}
+
+// Published events overlapping [from, to). An event overlaps when it starts
+// before `to` AND either its endsAt reaches `from`, or it has no endsAt and
+// starts inside the range (an instant event occupies its start date only).
+// The caller widens `from`/`to` past timezone extremes (see monthFetchRange
+// in lib/calendar.ts) and does local-date grouping afterwards.
+export async function queryPublicEventsInRange(
+  db: PrismaClient,
+  from: Date,
+  to: Date,
+  filters: PublicEventFilters = {}
+) {
+  return db.event.findMany({
+    where: {
+      ...publicWhere(filters),
+      startsAt: { lt: to },
+      OR: [
+        { endsAt: { gte: from } },
+        { endsAt: null, startsAt: { gte: from } },
+      ],
+    },
+    orderBy: [{ startsAt: "asc" }, { title: "asc" }],
+    select: publicSelect,
+  });
 }
 
 export async function queryPublicEventFilterOptions(db: PrismaClient) {

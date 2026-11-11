@@ -46,6 +46,11 @@ enum EventSource {
   EXTERNAL
 }
 
+enum LocationType {
+  CITY
+  COUNTRY_FALLBACK
+}
+
 enum CompetitionKind {
   HACK_WARS
   CONTEST
@@ -243,35 +248,63 @@ model Community {
   @@map("communities")
 }
 
+// Canonical geography for events and discovery. `stateProvince` is "" (not
+// null) when a place has none so the @@unique triple below actually dedupes
+// — Postgres treats NULLs as distinct inside unique constraints.
+model Location {
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  type          LocationType @default(CITY)
+  stateProvince String       @default("")
+  country       String
+  countryCode   String       @db.VarChar(2)
+  region        String
+  latitude      Float
+  longitude     Float
+  timezone      String?
+  events        Event[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([name, stateProvince, countryCode])
+  @@index([region, countryCode])
+  @@map("locations")
+}
+
 model Event {
-  id           String        @id @default(cuid())
-  title        String
-  slug         String        @unique
-  description  String        @db.Text
-  startsAt     DateTime
-  endsAt       DateTime?
-  timezone     String        @default("UTC")
-  city         String?
-  country      String?
-  region       String?
-  venueName    String?
-  isOnline     Boolean       @default(false)
-  url          String?
-  imageUrl     String?
-  source       EventSource   @default(GROOVVEE)
-  externalId   String?
-  communityId  String?
-  community    Community?    @relation(fields: [communityId], references: [id], onDelete: SetNull)
-  featured     Boolean       @default(false)
-  published    Boolean       @default(false)
-  sortOrder    Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  competitions Competition[]
-  agendaItems  AgendaItem[]
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  startsAt      DateTime
+  endsAt        DateTime?
+  timezone      String        @default("UTC")
+  city          String?
+  stateProvince String?
+  country       String?
+  region        String?
+  venueName     String?
+  isOnline      Boolean       @default(false)
+  url           String?
+  imageUrl      String?
+  source        EventSource   @default(GROOVVEE)
+  externalId    String?
+  locationId    String?
+  location      Location?     @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  communityId   String?
+  community     Community?    @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  featured      Boolean       @default(false)
+  published     Boolean       @default(false)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  competitions  Competition[]
+  agendaItems   AgendaItem[]
 
   @@index([published, startsAt])
   @@index([communityId])
+  @@index([locationId])
   @@index([region, published])
   @@map("events")
 }

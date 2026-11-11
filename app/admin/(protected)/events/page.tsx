@@ -6,6 +6,7 @@ import Link from "next/link";
 import { EventRowActions } from "@/components/admin/EventRowActions";
 import { db, withDbRetry } from "@/lib/db";
 import { listEventFilterOptions, listEventsForAdmin } from "@/lib/events";
+import { listLocationsForSelect, locationLabel } from "@/lib/locations";
 import { EVENT_SOURCE_LABELS, EVENT_SOURCES } from "@/lib/validation/event";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function AdminEventsPage({
     source?: string;
     region?: string;
     country?: string;
+    location?: string;
     sort?: string;
   }>;
 }) {
@@ -51,23 +53,29 @@ export default async function AdminEventsPage({
     sp.source === "GROOVVEE" || sp.source === "EXTERNAL" ? sp.source : undefined;
   const region = sp.region || undefined;
   const country = sp.country || undefined;
+  const locationId = sp.location || undefined;
   const sort = sp.sort === "recent" ? "recent" : "date";
 
-  const [{ events, total, page: current, pages }, { regions, countries }] =
-    await withDbRetry(async () =>
-      Promise.all([
-        listEventsForAdmin(db, {
-          q: query || undefined,
-          page: Number(sp.page) || 1,
-          status,
-          source,
-          region,
-          country,
-          sort,
-        }),
-        listEventFilterOptions(db),
-      ])
-    );
+  const [
+    { events, total, page: current, pages },
+    { regions, countries },
+    locations,
+  ] = await withDbRetry(async () =>
+    Promise.all([
+      listEventsForAdmin(db, {
+        q: query || undefined,
+        page: Number(sp.page) || 1,
+        status,
+        source,
+        region,
+        country,
+        locationId,
+        sort,
+      }),
+      listEventFilterOptions(db),
+      listLocationsForSelect(db),
+    ])
+  );
 
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
@@ -76,6 +84,7 @@ export default async function AdminEventsPage({
     if (source) params.set("source", source);
     if (region) params.set("region", region);
     if (country) params.set("country", country);
+    if (locationId) params.set("location", locationId);
     if (sort !== "date") params.set("sort", sort);
     if (p > 1) params.set("page", String(p));
     const s = params.toString();
@@ -150,6 +159,18 @@ export default async function AdminEventsPage({
               </option>
             ))}
           </select>
+          <select
+            name="location"
+            defaultValue={locationId ?? ""}
+            className={selectClass}
+          >
+            <option value="">All locations</option>
+            {locations.map((l) => (
+              <option key={l.id} value={l.id}>
+                {locationLabel(l)}
+              </option>
+            ))}
+          </select>
           <select name="sort" defaultValue={sort} className={selectClass}>
             <option value="date">By date</option>
             <option value="recent">Recently updated</option>
@@ -201,7 +222,9 @@ export default async function AdminEventsPage({
                     <td className="px-4 py-3 text-xs text-muted">
                       {e.isOnline
                         ? "Online"
-                        : [e.city, e.country].filter(Boolean).join(", ") || "—"}
+                        : [e.city, e.stateProvince, e.country]
+                            .filter(Boolean)
+                            .join(", ") || "—"}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted">
                       {EVENT_SOURCE_LABELS[e.source] ?? e.source}

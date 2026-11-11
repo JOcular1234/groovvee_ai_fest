@@ -15,6 +15,10 @@
     "test:topics": "tsx scripts/test-topics.ts",
     "test:communities": "tsx scripts/test-communities.ts",
     "test:events": "tsx scripts/test-events.ts",
+    "seed:locations": "tsx scripts/seed-locations.ts",
+    "test:locations": "tsx scripts/test-locations.ts",
+    "test:calendar": "tsx scripts/test-calendar.ts",
+    "test:map": "tsx scripts/test-map.ts",
     "test:agenda": "tsx scripts/test-agenda.ts",
     "test:applications": "tsx scripts/test-applications.ts",
     "test:hack-wars": "tsx scripts/test-hack-wars.ts",
@@ -32,7 +36,9 @@
     "prisma": "^7.10.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-simple-maps": "^5.0.5",
     "server-only": "^0.0.1",
+    "world-atlas": "^2.0.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {

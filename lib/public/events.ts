@@ -9,6 +9,7 @@ import {
   queryFeaturedOrNextEvent,
   queryPublicEventFilterOptions,
   queryPublicEvents,
+  queryPublicEventsInRange,
   queryPublishedEvents,
   queryRelatedEvents,
   type PublicEventFilters,
@@ -42,6 +43,16 @@ export async function getPublicEvents(
   "use cache";
   cacheTag(EVENTS_CACHE_TAG);
   return withDbRetry(() => queryPublicEvents(db, filters, when, page));
+}
+
+export async function getPublicEventsInRange(
+  from: Date,
+  to: Date,
+  filters: PublicEventFilters = {}
+) {
+  "use cache";
+  cacheTag(EVENTS_CACHE_TAG);
+  return withDbRetry(() => queryPublicEventsInRange(db, from, to, filters));
 }
 
 export async function getPublicEventFilterOptions() {

@@ -7,6 +7,7 @@ import {
   saveEventAction,
   type EventFormState,
 } from "@/app/admin/(protected)/events/actions";
+import { locationLabel } from "@/lib/locations";
 import { slugify } from "@/lib/slug";
 import { EVENT_SOURCES } from "@/lib/validation/event";
 
@@ -21,12 +22,14 @@ export type EventFormValues = {
   endsAtLocal: string;
   timezone: string;
   city: string;
+  stateProvince: string;
   country: string;
   region: string;
   venueName: string;
   isOnline: boolean;
   url: string;
   imageUrl: string;
+  locationId: string;
   communityId: string;
   featured: boolean;
   published: boolean;
@@ -34,6 +37,16 @@ export type EventFormValues = {
 };
 
 export type CommunityOption = { id: string; name: string };
+
+export type LocationOption = {
+  id: string;
+  name: string;
+  type: string;
+  stateProvince: string;
+  country: string;
+  countryCode: string;
+  region: string;
+};
 
 const initialState: EventFormState = { ok: false };
 
@@ -55,9 +68,11 @@ function FieldError({ errors }: { errors?: string[] }) {
 export function EventForm({
   event,
   communities,
+  locations,
 }: {
   event?: EventFormValues;
   communities: CommunityOption[];
+  locations: LocationOption[];
 }) {
   const [state, formAction, pending] = useActionState(
     saveEventAction,
@@ -66,6 +81,16 @@ export function EventForm({
   const [slug, setSlug] = useState(event?.slug ?? "");
   const slugEdited = useRef(!!event);
   const slugChanged = !!event && event.published && slug !== event.slug;
+  const [locationId, setLocationId] = useState(event?.locationId ?? "");
+  const [locationQuery, setLocationQuery] = useState("");
+  const selectedLocation = locations.find((l) => l.id === locationId);
+  const lq = locationQuery.trim().toLowerCase();
+  const locationMatches = lq
+    ? locations.filter((l) => locationLabel(l).toLowerCase().includes(lq))
+    : locations;
+  const legacyGeo = [event?.city, event?.stateProvince, event?.country]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <form
@@ -198,49 +223,82 @@ export function EventForm({
         <FieldError errors={state.errors?.description} />
       </div>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-3">
-        <div>
-          <label htmlFor="city" className={labelClass}>
-            City
-          </label>
-          <input
-            id="city"
-            name="city"
-            defaultValue={event?.city}
-            maxLength={120}
-            className={inputClass}
-            placeholder="Lagos"
-          />
-          <FieldError errors={state.errors?.city} />
-        </div>
-        <div>
-          <label htmlFor="country" className={labelClass}>
-            Country
-          </label>
-          <input
-            id="country"
-            name="country"
-            defaultValue={event?.country}
-            maxLength={120}
-            className={inputClass}
-            placeholder="Nigeria"
-          />
-          <FieldError errors={state.errors?.country} />
-        </div>
-        <div>
-          <label htmlFor="region" className={labelClass}>
-            Region
-          </label>
-          <input
-            id="region"
-            name="region"
-            defaultValue={event?.region}
-            maxLength={120}
-            className={inputClass}
-            placeholder="West Africa"
-          />
-          <FieldError errors={state.errors?.region} />
-        </div>
+      <div className="mt-6">
+        <label htmlFor="locationSearch" className={labelClass}>
+          Location
+        </label>
+        {/* Legacy text geography is preserved untouched when no Location is
+            selected — the server re-derives these fields when one is. */}
+        <input type="hidden" name="city" value={event?.city ?? ""} />
+        <input
+          type="hidden"
+          name="stateProvince"
+          value={event?.stateProvince ?? ""}
+        />
+        <input type="hidden" name="country" value={event?.country ?? ""} />
+        <input type="hidden" name="region" value={event?.region ?? ""} />
+        <input type="hidden" name="locationId" value={locationId} />
+        {selectedLocation ? (
+          <div className="flex items-center justify-between gap-4 border border-volt/40 bg-ink px-4 py-3">
+            <span className="text-sm text-white">
+              {locationLabel(selectedLocation)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setLocationId("")}
+              className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-volt"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              id="locationSearch"
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              className={inputClass}
+              placeholder="Search city or country…"
+              autoComplete="off"
+            />
+            <ul className="mt-2 max-h-56 overflow-y-auto border border-white/10">
+              {locationMatches.map((l) => (
+                <li key={l.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocationId(l.id);
+                      setLocationQuery("");
+                    }}
+                    className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left text-sm text-white transition-colors hover:bg-white/5"
+                  >
+                    <span>{locationLabel(l)}</span>
+                    {l.type === "COUNTRY_FALLBACK" && (
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-muted">
+                        Country
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+              {locationMatches.length === 0 && (
+                <li className="px-4 py-3 text-sm text-muted">
+                  No locations match.
+                </li>
+              )}
+            </ul>
+          </>
+        )}
+        <p className="mt-1 text-xs text-muted/70">
+          Selecting a location sets city, country and region automatically.
+          Leave empty for online events or places not yet listed.
+        </p>
+        {!selectedLocation && legacyGeo && (
+          <p className="mt-1 text-xs text-muted/70">
+            Current: {legacyGeo} — select a location to link this event.
+          </p>
+        )}
+        <FieldError errors={state.errors?.locationId} />
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-3">

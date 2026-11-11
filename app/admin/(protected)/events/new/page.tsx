@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { EventForm } from "@/components/admin/EventForm";
 import { db, withDbRetry } from "@/lib/db";
 import { listCommunitiesForSelect } from "@/lib/events";
+import { listLocationsForSelect } from "@/lib/locations";
 
 export const metadata: Metadata = {
   title: "New Event · Admin",
@@ -14,7 +15,9 @@ export const instant = false;
 
 export default async function NewEventPage() {
   await connection();
-  const communities = await withDbRetry(() => listCommunitiesForSelect(db));
+  const [communities, locations] = await withDbRetry(() =>
+    Promise.all([listCommunitiesForSelect(db), listLocationsForSelect(db)])
+  );
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8">
@@ -27,7 +30,7 @@ export default async function NewEventPage() {
           Add event<span className="text-volt">.</span>
         </h1>
         <div className="mt-10">
-          <EventForm communities={communities} />
+          <EventForm communities={communities} locations={locations} />
         </div>
       </div>
     </section>

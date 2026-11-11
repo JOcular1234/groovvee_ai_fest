@@ -74,9 +74,11 @@ export const eventInputSchema = z
       .max(64)
       .refine(isValidTimeZone, "Must be a valid IANA timezone (e.g. Africa/Lagos)"),
     city: optionalText(120),
+    stateProvince: optionalText(120),
     country: optionalText(120),
     region: optionalText(120),
     venueName: optionalText(200),
+    locationId: optionalText(64),
     isOnline: z.boolean().default(false),
     url: optionalHttps,
     imageUrl: imageUrlSchema.transform((u) => (u === "" ? null : u)),
