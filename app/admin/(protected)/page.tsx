@@ -48,6 +48,11 @@ const SECTIONS: {
         title: "News",
         description: "AI news posts and dispatches.",
       },
+      {
+        href: "/admin/competitions",
+        title: "Competitions",
+        description: "Hack Wars, contests, rounds and registration status.",
+      },
     ],
   },
   {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { event } from "@/data/event";
+import Link from "next/link";
+import { formatEventDateTime } from "@/lib/datetime";
 import { Reveal } from "@/components/ui/Reveal";
 
 type TimeLeft = {
@@ -28,22 +29,29 @@ const units: { key: keyof TimeLeft; label: string }[] = [
   { key: "seconds", label: "Seconds" },
 ];
 
-export function Countdown() {
-  const [target] = useState<Date | null>(() =>
-    event.startDate ? new Date(event.startDate) : null
+export type CountdownTarget = {
+  iso: string;
+  title: string;
+  slug: string;
+  timezone: string;
+};
+
+export function Countdown({ target }: { target: CountdownTarget | null }) {
+  const [targetDate] = useState<Date | null>(() =>
+    target ? new Date(target.iso) : null
   );
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
-    if (!target) return;
-    const tick = () => setTimeLeft(getTimeLeft(target));
+    if (!targetDate) return;
+    const tick = () => setTimeLeft(getTimeLeft(targetDate));
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [target]);
+  }, [targetDate]);
 
   const started =
-    target !== null &&
+    targetDate !== null &&
     timeLeft !== null &&
     timeLeft.days + timeLeft.hours + timeLeft.minutes + timeLeft.seconds === 0;
 
@@ -67,8 +75,24 @@ export function Countdown() {
                 </>
               )}
             </h2>
+            {target && (
+              <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-muted">
+                To{" "}
+                <Link
+                  href={`/events/${target.slug}`}
+                  className="text-volt transition-colors hover:text-white"
+                >
+                  {target.title}
+                </Link>
+                {" · "}
+                {formatEventDateTime(
+                  new Date(target.iso),
+                  target.timezone
+                )}
+              </p>
+            )}
           </div>
-          {!target && (
+          {!targetDate && (
             <p className="max-w-sm font-mono text-xs uppercase leading-relaxed tracking-[0.2em] text-muted">
               Date announcement coming soon — follow along for the drop.
             </p>

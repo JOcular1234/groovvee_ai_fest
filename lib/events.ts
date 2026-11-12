@@ -178,6 +178,14 @@ export async function listCommunitiesForSelect(db: PrismaClient) {
   });
 }
 
+export async function listEventsForSelect(db: PrismaClient) {
+  return db.event.findMany({
+    orderBy: [{ startsAt: "desc" }],
+    select: { id: true, title: true },
+    take: 200,
+  });
+}
+
 export async function getEventById(db: PrismaClient, id: string) {
   return db.event.findUnique({ where: { id } });
 }

@@ -443,6 +443,7 @@ model Competition {
   status       CompetitionStatus        @default(UPCOMING)
   startsAt     DateTime?
   endsAt       DateTime?
+  timezone     String                   @default("UTC")
   prizeText    String?
   rulesUrl     String?
   imageUrl     String?

@@ -10,13 +10,27 @@ import { Experience } from "@/components/home/Experience";
 import { TicketPromotion } from "@/components/home/TicketPromotion";
 import { Sponsors } from "@/components/home/Sponsors";
 import { Faq } from "@/components/home/Faq";
+import { getFeaturedOrNextEvent } from "@/lib/public/events";
 
-export default function Home() {
+export default async function Home() {
+  const nextEvent = await getFeaturedOrNextEvent();
+
   return (
     <>
       <Hero />
       <Ticker />
-      <Countdown />
+      <Countdown
+        target={
+          nextEvent
+            ? {
+                iso: nextEvent.startsAt.toISOString(),
+                title: nextEvent.title,
+                slug: nextEvent.slug,
+                timezone: nextEvent.timezone,
+              }
+            : null
+        }
+      />
       <About />
       <FeaturedCommunities />
       <UpcomingEvents />

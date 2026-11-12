@@ -11,6 +11,7 @@ import {
   Radar,
   Swords,
   Tags,
+  Trophy,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,6 +37,7 @@ const GROUPS: {
       { href: "/admin/events", label: "Events", icon: CalendarDays },
       { href: "/admin/agenda", label: "Agenda", icon: ListOrdered },
       { href: "/admin/news", label: "News", icon: Newspaper },
+      { href: "/admin/competitions", label: "Competitions", icon: Trophy },
     ],
   },
   {

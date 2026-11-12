@@ -18,6 +18,8 @@
     "test:events": "tsx scripts/test-events.ts",
     "seed:locations": "tsx scripts/seed-locations.ts",
     "seed:communities": "tsx scripts/seed-communities.ts",
+    "seed:events": "tsx scripts/seed-events.ts",
+    "seed:hack-wars": "tsx scripts/seed-hack-wars.ts",
     "test:locations": "tsx scripts/test-locations.ts",
     "test:calendar": "tsx scripts/test-calendar.ts",
     "test:map": "tsx scripts/test-map.ts",
@@ -25,7 +27,8 @@
     "test:applications": "tsx scripts/test-applications.ts",
     "test:hack-wars": "tsx scripts/test-hack-wars.ts",
     "test:messages": "tsx scripts/test-messages.ts",
-    "test:discovery": "tsx scripts/test-discovery.ts"
+    "test:discovery": "tsx scripts/test-discovery.ts",
+    "test:competitions": "tsx scripts/test-competitions.ts"
   },
   "dependencies": {
     "@google/genai": "^2.32.0",
