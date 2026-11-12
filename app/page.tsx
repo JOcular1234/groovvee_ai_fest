@@ -17,7 +17,21 @@ export default async function Home() {
 
   return (
     <>
-      <Hero />
+      <Hero
+        nextEvent={
+          nextEvent
+            ? {
+                title: nextEvent.title,
+                slug: nextEvent.slug,
+                iso: nextEvent.startsAt.toISOString(),
+                timezone: nextEvent.timezone,
+                venue: nextEvent.venueName,
+                city: nextEvent.city,
+                isOnline: nextEvent.isOnline,
+              }
+            : null
+        }
+      />
       <Ticker />
       <Countdown
         target={

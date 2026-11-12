@@ -5,7 +5,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 export function About() {
   return (
     <section id="about" className="bg-ink py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="w-full px-5 sm:px-10 2xl:px-16">
         <SectionHeading
           eyebrow="About the festival"
           title={

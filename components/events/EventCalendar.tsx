@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 
 import {
   buildCalendarGrid,
@@ -21,28 +22,34 @@ export type CalendarEventItem = {
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MAX_CHIPS = 3;
 
-function dateKeyLabel(key: string) {
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-volt";
+
+function dateKeyParts(key: string) {
   const [y, m, d] = key.split("-").map(Number);
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(y, m - 1, d)));
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const fmt = (o: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-GB", { ...o, timeZone: "UTC" }).format(date);
+  return {
+    weekday: fmt({ weekday: "short" }),
+    day: fmt({ day: "numeric" }),
+    month: fmt({ month: "short" }),
+    full: fmt({ weekday: "long", day: "numeric", month: "long" }),
+  };
 }
 
 function eventPlace(e: CalendarEventItem) {
   if (e.isOnline) return "Online";
   return [e.venueName, [e.city, e.country].filter(Boolean).join(", ")]
     .filter(Boolean)
-    .join(" · ");
+    .join(", ");
 }
 
-function EventLink({ e }: { e: CalendarEventItem }) {
+function EventChip({ e }: { e: CalendarEventItem }) {
   return (
     <Link
       href={`/events/${e.slug}`}
-      className="block truncate text-left text-[11px] text-white transition-colors hover:text-volt"
+      className={`block truncate border-l-2 border-volt bg-volt/10 px-1.5 py-1 text-left text-[11px] leading-tight text-white transition-colors hover:bg-volt/20 hover:text-volt ${focusRing}`}
       title={`${e.title} — ${eventPlace(e) || "Location TBA"}`}
     >
       <span className="font-mono text-volt">
@@ -68,14 +75,14 @@ export function EventCalendar({
 
   if (total === 0) {
     return (
-      <div className="mt-10 border border-white/10 bg-panel p-12 text-center">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+      <div className="mt-8 border border-white/10 bg-panel p-8 text-center sm:p-12">
+        <p className="font-display text-3xl uppercase">
           {filtered ? "No matches" : "Quiet month"}
         </p>
         <p className="mx-auto mt-4 max-w-md text-muted">
           {filtered
             ? `No events in ${monthLabel(month)} match these filters.`
-            : `No events scheduled in ${monthLabel(month)} — try another month.`}
+            : `No events scheduled in ${monthLabel(month)}. Try another month.`}
         </p>
       </div>
     );
@@ -83,47 +90,80 @@ export function EventCalendar({
 
   return (
     <div className="mt-8">
-      {/* Desktop month grid */}
-      <div className="hidden border border-white/10 bg-panel md:block">
+      <p className="mb-3 text-sm text-muted" role="status">
+        {total} {total === 1 ? "event" : "events"} in {monthLabel(month)}
+      </p>
+
+      {/* Desktop month grid (cells are too narrow for titles below lg) */}
+      <div className="hidden border border-white/10 bg-panel lg:block">
         <div className="grid grid-cols-7 border-b border-white/10">
           {WEEKDAYS.map((d) => (
             <div
               key={d}
-              className="px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
+              className="px-3 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
             >
               {d}
             </div>
           ))}
         </div>
+
         {weeks.map((week, i) => (
           <div
             key={i}
             className="grid grid-cols-7 divide-x divide-white/5 border-b border-white/5 last:border-b-0"
           >
-            {week.map((cell) => {
-              const dayEvents = cell.inMonth ? (byDate.get(cell.dateKey) ?? []) : [];
+            {week.map((cell, col) => {
+              const dayEvents = cell.inMonth
+                ? (byDate.get(cell.dateKey) ?? [])
+                : [];
+              const isToday = cell.dateKey === todayKey;
+              const visible = dayEvents.slice(0, MAX_CHIPS);
+              const rest = dayEvents.slice(MAX_CHIPS);
               return (
                 <div
                   key={cell.dateKey}
-                  className={`min-h-28 p-2 ${
-                    cell.inMonth ? "" : "bg-ink/60"
-                  } ${cell.dateKey === todayKey ? "outline -outline-offset-1 outline-volt/60" : ""}`}
+                  className={`min-h-32 p-2 ${
+                    !cell.inMonth
+                      ? "bg-ink/60"
+                      : col >= 5
+                        ? "bg-white/[0.02]"
+                        : ""
+                  }`}
                 >
                   <p
-                    className={`font-mono text-[10px] font-bold ${
-                      cell.inMonth ? "text-white" : "text-muted/40"
+                    className={`inline-flex min-w-6 justify-center px-1 py-0.5 font-mono text-[11px] font-bold ${
+                      isToday
+                        ? "bg-volt text-ink"
+                        : cell.inMonth
+                          ? "text-white"
+                          : "text-muted/40"
                     }`}
+                    aria-label={isToday ? `Today, ${cell.day}` : undefined}
                   >
                     {cell.day}
                   </p>
                   <div className="mt-1.5 space-y-1">
-                    {dayEvents.slice(0, MAX_CHIPS).map((e) => (
-                      <EventLink key={`${cell.dateKey}-${e.slug}`} e={e} />
+                    {visible.map((e) => (
+                      <EventChip key={`${cell.dateKey}-${e.slug}`} e={e} />
                     ))}
-                    {dayEvents.length > MAX_CHIPS && (
-                      <p className="font-mono text-[10px] text-muted">
-                        +{dayEvents.length - MAX_CHIPS} more
-                      </p>
+                    {rest.length > 0 && (
+                      <details className="group">
+                        <summary
+                          className={`cursor-pointer list-none px-1.5 py-1 font-mono text-[10px] text-muted transition-colors hover:text-volt [&::-webkit-details-marker]:hidden ${focusRing}`}
+                        >
+                          <span className="group-open:hidden">
+                            +{rest.length} more
+                          </span>
+                          <span className="hidden group-open:inline">
+                            Show less
+                          </span>
+                        </summary>
+                        <div className="mt-1 space-y-1">
+                          {rest.map((e) => (
+                            <EventChip key={`${cell.dateKey}-${e.slug}`} e={e} />
+                          ))}
+                        </div>
+                      </details>
                     )}
                   </div>
                 </div>
@@ -133,35 +173,67 @@ export function EventCalendar({
         ))}
       </div>
 
-      {/* Mobile: chronological agenda list */}
-      <div className="md:hidden">
+      {/* Mobile + tablet: chronological agenda */}
+      <ol className="lg:hidden">
         {[...byDate.entries()]
           .sort(([a], [b]) => (a < b ? -1 : 1))
-          .map(([key, dayEvents]) => (
-            <div key={key} className="border-b border-white/10 py-4">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt">
-                {dateKeyLabel(key)}
-              </p>
-              <div className="mt-3 space-y-3">
-                {dayEvents.map((e) => (
-                  <Link
-                    key={`${key}-${e.slug}`}
-                    href={`/events/${e.slug}`}
-                    className="block"
-                  >
-                    <p className="font-mono text-xs text-volt">
-                      {formatEventTime(e.startsAt, e.timezone)} {e.timezone}
+          .map(([key, dayEvents]) => {
+            const p = dateKeyParts(key);
+            const isToday = key === todayKey;
+            return (
+              <li
+                key={key}
+                className="grid grid-cols-[3.5rem_1fr] gap-4 border-t border-white/10 py-5 first:border-t-0 sm:grid-cols-[4.5rem_1fr] sm:gap-6"
+              >
+                <div
+                  className={`self-start border px-2 py-2 text-center ${
+                    isToday
+                      ? "border-volt bg-volt text-ink"
+                      : "border-white/15 text-white"
+                  }`}
+                >
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.15em]">
+                    {p.weekday}
+                  </p>
+                  <p className="font-display text-2xl leading-none">{p.day}</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.15em] opacity-70">
+                    {p.month}
+                  </p>
+                </div>
+
+                <div className="min-w-0 space-y-3">
+                  <h3 className="sr-only">{p.full}</h3>
+                  {isToday && (
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-volt">
+                      Today
                     </p>
-                    <p className="mt-1 font-semibold text-white">{e.title}</p>
-                    <p className="mt-0.5 text-xs text-muted">
-                      {eventPlace(e) || "Location TBA"}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
+                  )}
+                  {dayEvents.map((e) => (
+                    <Link
+                      key={`${key}-${e.slug}`}
+                      href={`/events/${e.slug}`}
+                      className={`block border border-white/10 bg-panel p-4 transition-colors hover:border-volt ${focusRing}`}
+                    >
+                      <p className="font-mono text-xs text-volt">
+                        {formatEventTime(e.startsAt, e.timezone)}{" "}
+                        <span className="text-muted">{e.timezone}</span>
+                      </p>
+                      <p className="mt-1.5 font-semibold leading-snug text-white">
+                        {e.title}
+                      </p>
+                      <p className="mt-2 flex items-center gap-1.5 text-xs text-muted">
+                        <MapPin className="size-3.5 shrink-0" aria-hidden />
+                        <span className="min-w-0 truncate">
+                          {eventPlace(e) || "Location TBA"}
+                        </span>
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </li>
+            );
+          })}
+      </ol>
     </div>
   );
 }
