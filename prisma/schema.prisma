@@ -46,6 +46,20 @@ enum EventSource {
   EXTERNAL
 }
 
+enum DiscoveryRunStatus {
+  RUNNING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum DiscoveryReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DUPLICATE
+}
+
 enum LocationType {
   CITY
   COUNTRY_FALLBACK
@@ -105,6 +119,8 @@ model Admin {
   reviewedMessages     ContactMessage[]         @relation("MessageReviewer")
   reviewedCompetitions CompetitionApplication[] @relation("CompetitionApplicationReviewer")
   judgingScores        JudgingScore[]
+  discoveryRuns        DiscoveryRun[]
+  reviewedDiscoveries  DiscoveredEvent[]
 
   @@map("admins")
 }
@@ -264,8 +280,9 @@ model Location {
   longitude     Float
   timezone      String?
   events        Event[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  discoveries   DiscoveredEvent[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@unique([name, stateProvince, countryCode])
   @@index([region, countryCode])
@@ -301,12 +318,97 @@ model Event {
   updatedAt     DateTime      @updatedAt
   competitions  Competition[]
   agendaItems   AgendaItem[]
+  duplicateDiscoveries DiscoveredEvent[] @relation("DiscoveryDuplicates")
+  approvedDiscoveries  DiscoveredEvent[] @relation("ApprovedDiscoveries")
 
   @@index([published, startsAt])
   @@index([communityId])
   @@index([locationId])
   @@index([region, published])
   @@map("events")
+}
+
+// A single admin-triggered AI discovery run: what was searched, which
+// provider/model produced the candidates, and how it ended.
+model DiscoveryRun {
+  id              String             @id @default(cuid())
+  adminId         String
+  admin           Admin              @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  provider        String
+  model           String
+  params          Json
+  status          DiscoveryRunStatus @default(RUNNING)
+  eventsFound     Int                @default(0)
+  eventsInserted  Int                @default(0)
+  duplicatesFound Int                @default(0)
+  invalidCount    Int                @default(0)
+  error           String?
+  startedAt       DateTime           @default(now())
+  completedAt     DateTime?
+  candidates      DiscoveredEvent[]
+
+  @@index([status, startedAt])
+  @@index([adminId])
+  @@map("discovery_runs")
+}
+
+// An unreviewed event candidate proposed by a discovery provider.
+// Never public: candidates only become visible through an approved Event row.
+model DiscoveredEvent {
+  id                   String                @id @default(cuid())
+  runId                String
+  run                  DiscoveryRun          @relation(fields: [runId], references: [id], onDelete: Cascade)
+  title                String
+  normalizedTitle      String
+  description          String                @db.Text @default("")
+  startsAt             DateTime?
+  endsAt               DateTime?
+  timezone             String?
+  venueName            String?
+  city                 String?
+  stateProvince        String?
+  country              String?
+  locationId           String?
+  location             Location?             @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  registrationUrl      String?
+  // Where the information was found — preserved verbatim, never overwritten
+  // by a registration/ticketing link.
+  sourceUrl            String
+  sourceUrlNormalized  String
+  imageUrl             String?
+  provider             String
+  model                String
+  connector            String
+  externalId           String?
+  category             String?
+  confidence           String?
+  missingFields        String[]              @default([])
+  evidence             String?               @db.Text
+  // Possible duplicate of a published Event or another candidate — a flag
+  // for reviewers, never an automatic merge.
+  duplicateOfEventId   String?
+  duplicateOfEvent     Event?                @relation("DiscoveryDuplicates", fields: [duplicateOfEventId], references: [id], onDelete: SetNull)
+  duplicateOfCandidateId String?
+  duplicateOfCandidate DiscoveredEvent?      @relation("CandidateDuplicates", fields: [duplicateOfCandidateId], references: [id], onDelete: SetNull)
+  duplicateKind        String?
+  status               DiscoveryReviewStatus @default(PENDING)
+  reviewerAdminId      String?
+  reviewer             Admin?                @relation(fields: [reviewerAdminId], references: [id], onDelete: SetNull)
+  reviewedAt           DateTime?
+  reviewNotes          String?
+  approvedEventId      String?
+  approvedEvent        Event?                @relation("ApprovedDiscoveries", fields: [approvedEventId], references: [id], onDelete: SetNull)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  duplicateCandidates  DiscoveredEvent[]     @relation("CandidateDuplicates")
+
+  @@unique([connector, externalId])
+  @@index([status, createdAt])
+  @@index([runId])
+  @@index([locationId])
+  @@index([sourceUrlNormalized])
+  @@index([normalizedTitle])
+  @@map("discovered_events")
 }
 
 model Competition {

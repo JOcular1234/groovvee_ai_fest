@@ -22,9 +22,11 @@
     "test:agenda": "tsx scripts/test-agenda.ts",
     "test:applications": "tsx scripts/test-applications.ts",
     "test:hack-wars": "tsx scripts/test-hack-wars.ts",
-    "test:messages": "tsx scripts/test-messages.ts"
+    "test:messages": "tsx scripts/test-messages.ts",
+    "test:discovery": "tsx scripts/test-discovery.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.32.0",
     "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",

@@ -44,6 +44,9 @@ export default async function ProtectedAdminLayout({
             <Link href="/admin/events" className={navLink}>
               Events
             </Link>
+            <Link href="/admin/discoveries" className={navLink}>
+              Discoveries
+            </Link>
             <Link href="/admin/agenda" className={navLink}>
               Agenda
             </Link>
