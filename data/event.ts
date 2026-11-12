@@ -12,7 +12,7 @@ export const event = {
   dateDisplay: "Date to be announced",
   venue: "Venue to be announced",
   location: "Location to be announced",
-  contactEmail: "hello@example.com", // TODO: replace with real contact email
+  contactEmail: "mfonobongumoh75@gmail.com",
 };
 
 // Main navigation — the logo already links Home, so it's omitted here.

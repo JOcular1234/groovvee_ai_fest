@@ -14,6 +14,7 @@ const publicSelect = {
   name: true,
   slug: true,
   type: true,
+  category: true,
   description: true,
   imageUrl: true,
   city: true,
@@ -197,9 +198,15 @@ export async function moveCommunity(
 
 // --- Public queries (unpublished communities are never returned) ---
 
-export async function queryPublishedCommunities(db: PrismaClient) {
+export async function queryPublishedCommunities(
+  db: PrismaClient,
+  opts: { category?: CommunityInput["category"] } = {}
+) {
   return db.community.findMany({
-    where: publishedCommunityWhere,
+    where: {
+      ...publishedCommunityWhere,
+      ...(opts.category ? { category: opts.category } : {}),
+    },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: publicSelect,
   });

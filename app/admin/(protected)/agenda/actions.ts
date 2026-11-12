@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -28,7 +28,7 @@ export type AgendaActionResult =
   | { ok: false; message: string };
 
 function revalidateAgenda() {
-  revalidateTag(AGENDA_CACHE_TAG, "max");
+  updateTag(AGENDA_CACHE_TAG);
   revalidatePath("/admin/agenda");
   revalidatePath("/events");
 }

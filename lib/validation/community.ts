@@ -31,6 +31,49 @@ export const COMMUNITY_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   COMMUNITY_TYPES.map((t) => [t.value, t.label])
 );
 
+// Named creative/industry verticals — mirrors the CommunityCategory enum.
+export const COMMUNITY_CATEGORIES = [
+  { value: "FILM", label: "AI Filmmakers" },
+  { value: "MUSIC", label: "AI Music" },
+  { value: "FASHION", label: "AI Fashion" },
+  { value: "ADVERTISING", label: "AI Advertising" },
+  { value: "REAL_ESTATE", label: "AI Real Estate" },
+  { value: "LEGAL", label: "AI Legal" },
+  { value: "FINANCE", label: "AI Finance" },
+  { value: "ARCHITECTURE", label: "AI Architecture" },
+  { value: "CONSTRUCTION", label: "AI Construction" },
+  { value: "HEALTHCARE", label: "AI Healthcare" },
+  { value: "TELECOM", label: "AI Telecom" },
+  { value: "EDUCATION", label: "AI Education" },
+  { value: "SUSTAINABILITY", label: "AI Sustainability" },
+  { value: "MOBILITY", label: "AI Mobility" },
+  { value: "CONSUMER_PRODUCTS", label: "AI Consumer Products" },
+] as const;
+
+export const COMMUNITY_CATEGORY_VALUES = COMMUNITY_CATEGORIES.map(
+  (c) => c.value
+) as [string, ...string[]];
+
+export const COMMUNITY_CATEGORY_LABELS: Record<string, string> =
+  Object.fromEntries(COMMUNITY_CATEGORIES.map((c) => [c.value, c.label]));
+
+export type CommunityCategoryValue =
+  (typeof COMMUNITY_CATEGORIES)[number]["value"];
+
+export function isCommunityCategory(
+  v: string | undefined | null
+): v is CommunityCategoryValue {
+  return COMMUNITY_CATEGORY_VALUES.includes(v ?? "");
+}
+
+// Section headings need plurals ("Campus Communities", not "Campus Communitys").
+export const COMMUNITY_TYPE_PLURALS: Record<string, string> = {
+  STUDENT_TRIBE: "AI Student Tribes",
+  CAMPUS: "Campus Communities",
+  CREATIVE: "Creative AI Groups",
+  INDUSTRY: "Industry Groups",
+};
+
 const slugSchema = z
   .string()
   .trim()
@@ -46,6 +89,28 @@ export const communityInputSchema = z.object({
     .max(160, "Name is too long"),
   slug: slugSchema,
   type: z.enum(["STUDENT_TRIBE", "CAMPUS", "CREATIVE", "INDUSTRY"]),
+  // Optional creative/industry vertical — null for student tribes, campus
+  // groups and uncategorized communities.
+  category: z
+    .enum([
+      "FILM",
+      "MUSIC",
+      "FASHION",
+      "ADVERTISING",
+      "REAL_ESTATE",
+      "LEGAL",
+      "FINANCE",
+      "ARCHITECTURE",
+      "CONSTRUCTION",
+      "HEALTHCARE",
+      "TELECOM",
+      "EDUCATION",
+      "SUSTAINABILITY",
+      "MOBILITY",
+      "CONSUMER_PRODUCTS",
+    ])
+    .nullable()
+    .default(null),
   description: z
     .string()
     .trim()

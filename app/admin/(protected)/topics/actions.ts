@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/server";
@@ -25,7 +25,7 @@ export type TopicFormState = {
 export type TopicActionResult = { ok: true } | { ok: false; message: string };
 
 function revalidateTopics() {
-  revalidateTag(TOPICS_CACHE_TAG, "max");
+  updateTag(TOPICS_CACHE_TAG);
   revalidatePath("/admin/topics");
   revalidatePath("/topics");
   revalidatePath("/");

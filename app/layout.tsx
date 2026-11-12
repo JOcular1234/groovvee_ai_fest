@@ -3,7 +3,9 @@ import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/Navbar";
+import { NavbarVisibility } from "@/components/layout/NavbarVisibility";
 import { Footer } from "@/components/layout/Footer";
+import { FooterVisibility } from "@/components/layout/FooterVisibility";
 
 const anton = Anton({
   weight: "400",
@@ -47,9 +49,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col bg-ink font-sans text-white">
         <Providers>
-          <Navbar />
+          <NavbarVisibility>
+            <Navbar />
+          </NavbarVisibility>
           <main className="flex-1">{children}</main>
-          <Footer />
+          <FooterVisibility>
+            <Footer />
+          </FooterVisibility>
         </Providers>
       </body>
     </html>

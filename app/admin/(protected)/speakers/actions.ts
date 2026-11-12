@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/server";
@@ -32,9 +32,9 @@ export type SpeakerFormState = {
 export type SpeakerActionResult = { ok: true } | { ok: false; message: string };
 
 function revalidateSpeakers() {
-  revalidateTag(SPEAKERS_CACHE_TAG, "max");
+  updateTag(SPEAKERS_CACHE_TAG);
   // Speaker names render inside event programmes, so agenda cache goes too.
-  revalidateTag(AGENDA_CACHE_TAG, "max");
+  updateTag(AGENDA_CACHE_TAG);
   revalidatePath("/admin/speakers");
   revalidatePath("/speakers");
   revalidatePath("/");

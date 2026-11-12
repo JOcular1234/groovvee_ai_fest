@@ -15,9 +15,15 @@ import {
 // Provider-specific code stays in this module; the rest of the system only
 // sees the EventDiscoveryProvider interface.
 
-const MODEL = "gemini-2.5-flash";
+// Gemini retires models quickly (2.5-flash was pulled and the API told us to
+// use 3.8-flash) — keep the model env-overridable so deprecation is a config
+// change, not a deploy.
+const MODEL = process.env.GEMINI_DISCOVERY_MODEL ?? "gemini-3.8-flash";
 const TIMEOUT_MS = 90_000;
-const MAX_ATTEMPTS = 2; // one retry for transient failures
+// 503 UNAVAILABLE (demand spikes) is common on the free tier — a couple of
+// short backoffs ride out most spikes without blocking the admin too long.
+const MAX_ATTEMPTS = 4;
+const RETRY_DELAYS_MS = [2_000, 5_000, 10_000];
 
 // NOTE: responseMimeType/responseSchema can't be combined with tool use
 // (Google Search grounding) on Gemini 2.5 — the API rejects it with
@@ -103,7 +109,7 @@ export function createGeminiProvider(): EventDiscoveryProvider {
         } catch (err) {
           lastErr = err;
           if (attempt + 1 < MAX_ATTEMPTS && isRetryable(err)) {
-            await sleep(2000);
+            await sleep(RETRY_DELAYS_MS[attempt] ?? 10_000);
             continue;
           }
           throw err instanceof ProviderRequestError

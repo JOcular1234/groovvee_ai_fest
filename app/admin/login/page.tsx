@@ -16,7 +16,7 @@ export default async function AdminLoginPage() {
   if (admin) redirect("/admin");
 
   return (
-    <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden px-5 pt-24 pb-16">
+    <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden px-5 py-16">
       <div className="bg-grid absolute inset-0" aria-hidden />
       <div className="relative w-full max-w-md border border-white/10 bg-ink p-8 sm:p-10">
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">

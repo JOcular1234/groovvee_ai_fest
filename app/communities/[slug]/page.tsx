@@ -5,7 +5,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getCommunityBySlug } from "@/lib/public/communities";
-import { COMMUNITY_TYPE_LABELS } from "@/lib/validation/community";
+import {
+  COMMUNITY_CATEGORY_LABELS,
+  COMMUNITY_TYPE_LABELS,
+} from "@/lib/validation/community";
 
 export async function generateMetadata({
   params,
@@ -54,6 +57,11 @@ export default async function CommunityPage({
             <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
               <span className="inline-block size-2 bg-volt" aria-hidden />
               {COMMUNITY_TYPE_LABELS[community.type] ?? community.type}
+              {community.category && (
+                <span className="text-muted">
+                  · {COMMUNITY_CATEGORY_LABELS[community.category] ?? community.category}
+                </span>
+              )}
               {location && <span className="text-muted">· {location}</span>}
             </p>
             <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">

@@ -39,3 +39,14 @@ PROPOSED WEBSITE STRUCTURE
 9. Contact
 
 - Contact form and email
+
+
+
+What's actually left
+Content gaps (small): real contact email, seed the two December events, fill partnerships page with the two categories + studio pricing.
+
+Real features (medium): the 14-group taxonomy (I'd suggest a Community.category field or just seeded communities under CREATIVE/INDUSTRY + a dropdown filter), embed the map component on /communities with the "monthly events/hackathons/education" copy, build out /news (NewsPost is already modeled), and the studio-pricing display.
+
+Biggest ambiguity to flag: does the $700/$5,000 need payment, or just published pricing + a contact/sponsor inquiry? If payment — that's the ticket/registration work that hasn't been built yet. If display-only — it's an afternoon.
+
+Want me to knock out the quick wins first (email, two events, partnerships/pricing content), then tackle the community taxonomy + heatmap?

@@ -99,6 +99,21 @@ async function main() {
       (t) => communityInput({ type: t }).type === t
     )
   );
+  check(
+    "rejects bad category",
+    !communityFormSchema.safeParse({
+      ...communityInput(),
+      category: "ROBOTICS",
+    }).success
+  );
+  check(
+    "accepts a valid category",
+    communityInput({ category: "HEALTHCARE" }).category === "HEALTHCARE"
+  );
+  check(
+    "category defaults to null",
+    communityInput().category === null
+  );
 
   console.log("\n— Slug & CRUD —");
   const c1 = await createCommunity(
@@ -186,6 +201,31 @@ async function main() {
   check(
     "slug page returns published community",
     bySlug?.id === c3.id && bySlug.joinUrl === "https://example.com/join"
+  );
+
+  const c4 = await createCommunity(
+    scriptDb,
+    communityInput({
+      name: "TEST_Health Circle",
+      type: "INDUSTRY",
+      category: "HEALTHCARE",
+      published: true,
+    })
+  );
+  const filtered = await queryPublishedCommunities(scriptDb, {
+    category: "HEALTHCARE",
+  });
+  check(
+    "category filter returns matching communities",
+    filtered.some((c) => c.id === c4.id) &&
+      filtered.every((c) => c.category === "HEALTHCARE")
+  );
+  const unfiltered = await queryPublishedCommunities(scriptDb, {
+    category: "LEGAL",
+  });
+  check(
+    "other categories exclude the community",
+    !unfiltered.some((c) => c.id === c4.id)
   );
   check(
     "slug page excludes unpublished",

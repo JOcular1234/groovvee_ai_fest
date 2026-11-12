@@ -5,7 +5,10 @@ import Link from "next/link";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getFeaturedCommunities } from "@/lib/public/communities";
-import { COMMUNITY_TYPE_LABELS } from "@/lib/validation/community";
+import {
+  COMMUNITY_CATEGORY_LABELS,
+  COMMUNITY_TYPE_LABELS,
+} from "@/lib/validation/community";
 
 export async function FeaturedCommunities() {
   const communities = await getFeaturedCommunities();
@@ -65,7 +68,9 @@ export async function FeaturedCommunities() {
                   </div>
                   <div className="flex flex-1 flex-col p-6">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
-                      {COMMUNITY_TYPE_LABELS[c.type] ?? c.type}
+                      {(c.category && COMMUNITY_CATEGORY_LABELS[c.category]) ??
+                        COMMUNITY_TYPE_LABELS[c.type] ??
+                        c.type}
                     </p>
                     <h3 className="mt-3 font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt">
                       {c.name}

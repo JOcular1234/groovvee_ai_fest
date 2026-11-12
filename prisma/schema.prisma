@@ -41,6 +41,27 @@ enum CommunityType {
   INDUSTRY
 }
 
+// Named creative/industry verticals — the taxonomy behind the community
+// directory's group filter. Student tribes and campus communities leave
+// `category` null.
+enum CommunityCategory {
+  FILM
+  MUSIC
+  FASHION
+  ADVERTISING
+  REAL_ESTATE
+  LEGAL
+  FINANCE
+  ARCHITECTURE
+  CONSTRUCTION
+  HEALTHCARE
+  TELECOM
+  EDUCATION
+  SUSTAINABILITY
+  MOBILITY
+  CONSUMER_PRODUCTS
+}
+
 enum EventSource {
   GROOVVEE
   EXTERNAL
@@ -244,23 +265,25 @@ model EventSettings {
 }
 
 model Community {
-  id          String        @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
-  slug        String        @unique
+  slug        String            @unique
   type        CommunityType
-  description String        @db.Text
+  category    CommunityCategory?
+  description String            @db.Text
   imageUrl    String?
   city        String?
   country     String?
   joinUrl     String?
-  featured    Boolean       @default(false)
-  published   Boolean       @default(false)
-  sortOrder   Int           @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  featured    Boolean           @default(false)
+  published   Boolean           @default(false)
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   events      Event[]
 
   @@index([type, published, sortOrder])
+  @@index([category, published])
   @@map("communities")
 }
 

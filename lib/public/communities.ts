@@ -8,13 +8,16 @@ import {
   queryFeaturedCommunities,
   queryPublishedCommunities,
 } from "@/lib/communities";
+import type { CommunityInput } from "@/lib/validation/community";
 
 export const COMMUNITIES_CACHE_TAG = "communities";
 
-export async function getPublishedCommunities() {
+export async function getPublishedCommunities(
+  opts: { category?: CommunityInput["category"] } = {}
+) {
   "use cache";
   cacheTag(COMMUNITIES_CACHE_TAG);
-  return withDbRetry(() => queryPublishedCommunities(db));
+  return withDbRetry(() => queryPublishedCommunities(db, opts));
 }
 
 export async function getCommunityBySlug(slug: string) {

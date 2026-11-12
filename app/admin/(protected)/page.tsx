@@ -11,11 +11,77 @@ export const metadata: Metadata = {
 // Reads cookies() — must render per-request, never prerendered.
 export const instant = false;
 
+const SECTIONS: {
+  group: string;
+  cards: { href: string; title: string; description: string }[];
+}[] = [
+  {
+    group: "Content",
+    cards: [
+      {
+        href: "/admin/speakers",
+        title: "Speakers",
+        description: "Create, publish and order the speaker lineup.",
+      },
+      {
+        href: "/admin/topics",
+        title: "Topics",
+        description: "Curate the festival's subject tracks.",
+      },
+      {
+        href: "/admin/communities",
+        title: "Communities",
+        description: "Student tribes, campus groups and industry circles.",
+      },
+      {
+        href: "/admin/events",
+        title: "Events",
+        description: "Festival and external events, locations and sources.",
+      },
+      {
+        href: "/admin/agenda",
+        title: "Agenda",
+        description: "Sessions, speakers and event programmes.",
+      },
+      {
+        href: "/admin/news",
+        title: "News",
+        description: "AI news posts and dispatches.",
+      },
+    ],
+  },
+  {
+    group: "Inbox",
+    cards: [
+      {
+        href: "/admin/applications",
+        title: "Applications",
+        description: "Speaker applications — review, accept, promote.",
+      },
+      {
+        href: "/admin/hack-wars",
+        title: "Hack Wars",
+        description: "Competition entries for AI Hack Wars.",
+      },
+      {
+        href: "/admin/messages",
+        title: "Messages",
+        description: "Contact-form inquiries, reviews and internal notes.",
+      },
+      {
+        href: "/admin/discoveries",
+        title: "Discoveries",
+        description: "AI-discovered external events awaiting review.",
+      },
+    ],
+  },
+];
+
 export default async function AdminPage() {
   const admin = await getCurrentAdmin();
 
   return (
-    <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8">
+    <section className="relative overflow-hidden px-5 py-10 sm:px-8">
       <div className="bg-grid absolute inset-0" aria-hidden />
       <div className="relative mx-auto max-w-4xl">
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
@@ -48,68 +114,29 @@ export default async function AdminPage() {
             </div>
           </dl>
         </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <Link
-            href="/admin/speakers"
-            className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
-          >
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
-              Content
+
+        {SECTIONS.map((group) => (
+          <div key={group.group} className="mt-10">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+              {group.group}
             </p>
-            <h2 className="mt-2 font-display text-2xl uppercase group-hover:text-volt">
-              Speakers
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Create, publish and order the speaker lineup.
-            </p>
-          </Link>
-          <Link
-            href="/admin/topics"
-            className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
-          >
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
-              Content
-            </p>
-            <h2 className="mt-2 font-display text-2xl uppercase group-hover:text-volt">
-              Topics
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Curate the festival&apos;s subject tracks.
-            </p>
-          </Link>
-          <Link
-            href="/admin/communities"
-            className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
-          >
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
-              Content
-            </p>
-            <h2 className="mt-2 font-display text-2xl uppercase group-hover:text-volt">
-              Communities
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Student tribes, campus groups and industry circles.
-            </p>
-          </Link>
-          <Link
-            href="/admin/messages"
-            className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
-          >
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
-              Inbox
-            </p>
-            <h2 className="mt-2 font-display text-2xl uppercase group-hover:text-volt">
-              Messages
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Contact-form inquiries, reviews and internal notes.
-            </p>
-          </Link>
-        </div>
-        <p className="mt-8 text-sm text-muted">
-          Events, agenda, competitions, news and applications management are
-          available from the navigation above.
-        </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {group.cards.map((card) => (
+                <Link
+                  key={card.href}
+                  href={card.href}
+                  className="group border border-white/10 bg-panel p-6 transition-colors hover:border-volt"
+                >
+                  <h2 className="font-display text-2xl uppercase group-hover:text-volt">
+                    {card.title}
+                  </h2>
+                  <p className="mt-2 text-sm text-muted">{card.description}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+
         <div className="mt-8">
           <LogoutButton />
         </div>

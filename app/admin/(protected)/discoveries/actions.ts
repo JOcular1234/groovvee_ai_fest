@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/server";
@@ -31,8 +31,8 @@ function revalidateDiscoveries() {
 }
 
 function revalidatePublicEvents() {
-  revalidateTag(EVENTS_CACHE_TAG, "max");
-  revalidateTag(LOCATIONS_CACHE_TAG, "max");
+  updateTag(EVENTS_CACHE_TAG);
+  updateTag(LOCATIONS_CACHE_TAG);
   revalidatePath("/events");
   revalidatePath("/");
 }

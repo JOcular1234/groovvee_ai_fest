@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -78,7 +78,7 @@ export async function promoteApplicationAction(id: string): Promise<never> {
     }
     redirect("/admin/applications?error=promote");
   }
-  revalidateTag(SPEAKERS_CACHE_TAG, "max");
+  updateTag(SPEAKERS_CACHE_TAG);
   revalidateApplications(id);
   redirect(`/admin/speakers/${speakerId}/edit`);
 }

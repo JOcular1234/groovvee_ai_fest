@@ -8,8 +8,8 @@ import {
   queryPublishedSpeakers,
 } from "@/lib/speakers";
 
-// Tag-based cache: every speaker mutation calls revalidateTag("speakers"),
-// so public pages stay fast (cacheComponents) but never serve stale drafts.
+// Tag-based cache: every speaker mutation calls updateTag("speakers"), so
+// public pages stay fast (cacheComponents) but never serve stale drafts.
 export const SPEAKERS_CACHE_TAG = "speakers";
 
 export async function getPublishedSpeakers() {

@@ -22,7 +22,9 @@ const pool =
     max: 10,
     keepAlive: true,
     connectionTimeoutMillis: 30_000, // Neon compute wake-up can take ~10s
+    idleTimeoutMillis: 10_000, // drop idle clients before the pooler does
   });
+pool.on("error", () => {}); // idle-client socket errors are retried at query level
 const adapter = new PrismaPg(pool);
 
 export const db = globalForDb.prisma ?? new PrismaClient({ adapter });
@@ -33,13 +35,18 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Neon free-tier connections drop intermittently (autosuspend, pooler churn).
-// Retry transient network-level failures; never retry real query errors.
+// Retry transient failures — socket errnos and Prisma connection codes —
+// never retry real query errors.
 const TRANSIENT_CODES = new Set([
   "ETIMEDOUT",
   "ECONNRESET",
   "ECONNREFUSED",
   "EPIPE",
   "ENETUNREACH",
+  "P1001", // can't reach the database server
+  "P1002", // database server reachable but timed out
+  "P1017", // server closed the connection (idle pooler drop)
+  "P2024", // timed out fetching a connection from the pool
 ]);
 
 function transientCode(err: unknown): string | null {

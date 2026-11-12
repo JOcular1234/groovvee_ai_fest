@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/server";
@@ -28,7 +28,7 @@ export type CommunityActionResult =
   | { ok: false; message: string };
 
 function revalidateCommunities() {
-  revalidateTag(COMMUNITIES_CACHE_TAG, "max");
+  updateTag(COMMUNITIES_CACHE_TAG);
   revalidatePath("/admin/communities");
   revalidatePath("/communities");
   revalidatePath("/");
@@ -44,6 +44,7 @@ export async function saveCommunityAction(
     name: formData.get("name"),
     slug: String(formData.get("slug") ?? "").trim(),
     type: formData.get("type"),
+    category: String(formData.get("category") ?? "") || null,
     description: formData.get("description") ?? "",
     imageUrl: formData.get("imageUrl") ?? "",
     city: formData.get("city") ?? "",

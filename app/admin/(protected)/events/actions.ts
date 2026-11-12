@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/server";
@@ -28,7 +28,7 @@ export type EventActionResult =
   | { ok: false; message: string };
 
 function revalidateEvents() {
-  revalidateTag(EVENTS_CACHE_TAG, "max");
+  updateTag(EVENTS_CACHE_TAG);
   revalidatePath("/admin/events");
   revalidatePath("/events");
   revalidatePath("/");

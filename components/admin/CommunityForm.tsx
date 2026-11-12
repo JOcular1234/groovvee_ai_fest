@@ -8,13 +8,17 @@ import {
   type CommunityFormState,
 } from "@/app/admin/(protected)/communities/actions";
 import { slugify } from "@/lib/slug";
-import { COMMUNITY_TYPES } from "@/lib/validation/community";
+import {
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_TYPES,
+} from "@/lib/validation/community";
 
 export type CommunityFormValues = {
   id?: string;
   name: string;
   slug: string;
   type: string;
+  category: string;
   description: string;
   imageUrl: string;
   city: string;
@@ -137,6 +141,28 @@ export function CommunityForm({
             ))}
           </select>
           <FieldError errors={state.errors?.type} />
+        </div>
+        <div>
+          <label htmlFor="category" className={labelClass}>
+            Industry category
+          </label>
+          <select
+            id="category"
+            name="category"
+            defaultValue={community?.category ?? ""}
+            className={inputClass}
+          >
+            <option value="">None</option>
+            {COMMUNITY_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-muted/70">
+            For creative &amp; industry groups — powers the directory filter.
+          </p>
+          <FieldError errors={state.errors?.category} />
         </div>
         <div>
           <label htmlFor="imageUrl" className={labelClass}>

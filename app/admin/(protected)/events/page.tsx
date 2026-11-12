@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 
 import { EventRowActions } from "@/components/admin/EventRowActions";
+import {
+  adminLinkClass,
+  adminSelectClass,
+  adminTdClass,
+  adminTrClass,
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminPageShell,
+  AdminPagination,
+  AdminSearchBar,
+  AdminTable,
+  StatusBadge,
+} from "@/components/admin/ui";
 import { db, withDbRetry } from "@/lib/db";
 import { listEventFilterOptions, listEventsForAdmin } from "@/lib/events";
 import { listLocationsForSelect, locationLabel } from "@/lib/locations";
@@ -15,9 +27,6 @@ export const metadata: Metadata = {
 };
 
 export const instant = false;
-
-const selectClass =
-  "border border-white/15 bg-ink px-3 py-3 text-sm text-white outline-none focus:border-volt";
 
 function formatDate(d: Date, tz: string) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -92,226 +101,175 @@ export default async function AdminEventsPage({
   };
 
   return (
-    <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8">
-      <div className="bg-grid absolute inset-0" aria-hidden />
-      <div className="relative mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
-              Content
-            </p>
-            <h1 className="mt-4 font-display text-5xl uppercase leading-none sm:text-6xl">
-              Events<span className="text-volt">.</span>
-            </h1>
-          </div>
-          <Link
-            href="/admin/events/new"
-            className="inline-flex items-center gap-2 bg-volt px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
-          >
-            <Plus className="size-4" aria-hidden />
-            Add event
-          </Link>
-        </div>
+    <AdminPageShell>
+      <AdminPageHeader
+        eyebrow="Content"
+        title="Events"
+        action={{ href: "/admin/events/new", label: "Add event" }}
+      />
 
-        <form
-          action="/admin/events"
-          className="mt-10 flex flex-wrap items-end gap-2"
+      <AdminSearchBar
+        action="/admin/events"
+        placeholder="Search title or city…"
+        query={query}
+      >
+        <select
+          name="status"
+          defaultValue={status ?? ""}
+          className={adminSelectClass}
         >
-          <div className="relative min-w-55 flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
-            <input
-              type="search"
-              name="q"
-              defaultValue={query}
-              placeholder="Search title or city…"
-              className="w-full border border-white/15 bg-ink py-3 pl-10 pr-4 text-sm text-white placeholder:text-muted/50 outline-none focus:border-volt"
-            />
-          </div>
-          <select name="status" defaultValue={status ?? ""} className={selectClass}>
-            <option value="">All statuses</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-          </select>
-          <select name="source" defaultValue={source ?? ""} className={selectClass}>
-            <option value="">All sources</option>
-            {EVENT_SOURCES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <select name="region" defaultValue={region ?? ""} className={selectClass}>
-            <option value="">All regions</option>
-            {regions.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-          <select name="country" defaultValue={country ?? ""} className={selectClass}>
-            <option value="">All countries</option>
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            name="location"
-            defaultValue={locationId ?? ""}
-            className={selectClass}
-          >
-            <option value="">All locations</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>
-                {locationLabel(l)}
-              </option>
-            ))}
-          </select>
-          <select name="sort" defaultValue={sort} className={selectClass}>
-            <option value="date">By date</option>
-            <option value="recent">Recently updated</option>
-          </select>
-          <button
-            type="submit"
-            className="border border-white/25 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
-          >
-            Filter
-          </button>
-        </form>
+          <option value="">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+        <select
+          name="source"
+          defaultValue={source ?? ""}
+          className={adminSelectClass}
+        >
+          <option value="">All sources</option>
+          {EVENT_SOURCES.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <select
+          name="region"
+          defaultValue={region ?? ""}
+          className={adminSelectClass}
+        >
+          <option value="">All regions</option>
+          {regions.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+        <select
+          name="country"
+          defaultValue={country ?? ""}
+          className={adminSelectClass}
+        >
+          <option value="">All countries</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          name="location"
+          defaultValue={locationId ?? ""}
+          className={adminSelectClass}
+        >
+          <option value="">All locations</option>
+          {locations.map((l) => (
+            <option key={l.id} value={l.id}>
+              {locationLabel(l)}
+            </option>
+          ))}
+        </select>
+        <select name="sort" defaultValue={sort} className={adminSelectClass}>
+          <option value="date">By date</option>
+          <option value="recent">Recently updated</option>
+        </select>
+      </AdminSearchBar>
 
-        {events.length === 0 ? (
-          <div className="mt-12 border border-white/10 bg-panel p-10 text-center">
-            <p className="text-muted">
-              {query || status || source || region || country
-                ? "No events match these filters."
-                : "No events yet. Add your first event to get started."}
-            </p>
-          </div>
-        ) : (
-          <div className="mt-8 overflow-x-auto border border-white/10 bg-panel">
-            <table className="w-full min-w-235 text-left text-sm">
-              <thead>
-                <tr className="border-b border-white/10 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                  <th className="px-4 py-3 font-bold">Event</th>
-                  <th className="px-4 py-3 font-bold">Date</th>
-                  <th className="px-4 py-3 font-bold">Location</th>
-                  <th className="px-4 py-3 font-bold">Source</th>
-                  <th className="px-4 py-3 font-bold">Community</th>
-                  <th className="px-4 py-3 font-bold">Status</th>
-                  <th className="px-4 py-3 font-bold">Updated</th>
-                  <th className="px-4 py-3 text-right font-bold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((e, i) => (
-                  <tr key={e.id} className="border-b border-white/5 last:border-0">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-white">{e.title}</div>
-                      <div className="font-mono text-xs text-muted">
-                        /events/{e.slug}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted">
-                      {formatDate(e.startsAt, e.timezone)}
-                      <div className="font-mono text-[10px]">{e.timezone}</div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted">
-                      {e.isOnline
-                        ? "Online"
-                        : [e.city, e.stateProvince, e.country]
-                            .filter(Boolean)
-                            .join(", ") || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted">
-                      {EVENT_SOURCE_LABELS[e.source] ?? e.source}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted">
-                      {e.community?.name ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        <span
-                          className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] ${
-                            e.published
-                              ? "bg-volt/15 text-volt"
-                              : "bg-white/10 text-muted"
-                          }`}
-                        >
-                          {e.published ? "Published" : "Draft"}
-                        </span>
-                        {e.featured && (
-                          <span className="bg-volt px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink">
-                            Featured
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted">
-                      {new Intl.DateTimeFormat("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      }).format(e.updatedAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-3">
-                        <Link
-                          href={`/admin/events/${e.id}/edit`}
-                          className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-white transition-colors hover:text-volt"
-                        >
-                          Edit
-                        </Link>
-                        <EventRowActions
-                          id={e.id}
-                          title={e.title}
-                          published={e.published}
-                          featured={e.featured}
-                          isFirst={i === 0 && current === 1}
-                          isLast={i === events.length - 1 && current === pages}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {events.length === 0 ? (
+        <AdminEmptyState>
+          {query || status || source || region || country
+            ? "No events match these filters."
+            : "No events yet. Add your first event to get started."}
+        </AdminEmptyState>
+      ) : (
+        <AdminTable
+          minW="min-w-235"
+          headers={[
+            { label: "Event" },
+            { label: "Date" },
+            { label: "Location" },
+            { label: "Source" },
+            { label: "Community" },
+            { label: "Status" },
+            { label: "Updated" },
+            { label: "Actions", align: "right" },
+          ]}
+        >
+          {events.map((e, i) => (
+            <tr key={e.id} className={adminTrClass}>
+              <td className={adminTdClass}>
+                <div className="font-semibold text-white">{e.title}</div>
+                <div className="font-mono text-xs text-muted">
+                  /events/{e.slug}
+                </div>
+              </td>
+              <td className={`${adminTdClass} text-xs text-muted`}>
+                {formatDate(e.startsAt, e.timezone)}
+                <div className="font-mono text-[10px]">{e.timezone}</div>
+              </td>
+              <td className={`${adminTdClass} text-xs text-muted`}>
+                {e.isOnline
+                  ? "Online"
+                  : [e.city, e.stateProvince, e.country]
+                      .filter(Boolean)
+                      .join(", ") || "—"}
+              </td>
+              <td className={`${adminTdClass} text-xs text-muted`}>
+                {EVENT_SOURCE_LABELS[e.source] ?? e.source}
+              </td>
+              <td className={`${adminTdClass} text-xs text-muted`}>
+                {e.community?.name ?? "—"}
+              </td>
+              <td className={adminTdClass}>
+                <div className="flex flex-wrap gap-1.5">
+                  <StatusBadge tone={e.published ? "volt" : "muted"}>
+                    {e.published ? "Published" : "Draft"}
+                  </StatusBadge>
+                  {e.featured && (
+                    <span className="bg-volt px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink">
+                      Featured
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td className={`${adminTdClass} font-mono text-xs text-muted`}>
+                {new Intl.DateTimeFormat("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }).format(e.updatedAt)}
+              </td>
+              <td className={adminTdClass}>
+                <div className="flex items-center justify-end gap-3">
+                  <Link
+                    href={`/admin/events/${e.id}/edit`}
+                    className={adminLinkClass}
+                  >
+                    Edit
+                  </Link>
+                  <EventRowActions
+                    id={e.id}
+                    title={e.title}
+                    published={e.published}
+                    featured={e.featured}
+                    isFirst={i === 0 && current === 1}
+                    isLast={i === events.length - 1 && current === pages}
+                  />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </AdminTable>
+      )}
 
-        {pages > 1 && (
-          <div className="mt-6 flex items-center justify-between font-mono text-xs uppercase tracking-[0.2em]">
-            <Link
-              href={pageHref(current - 1)}
-              aria-disabled={current <= 1}
-              className={`border px-4 py-2 ${
-                current <= 1
-                  ? "pointer-events-none border-white/10 text-muted/40"
-                  : "border-white/25 text-white hover:border-volt hover:text-volt"
-              }`}
-            >
-              ← Prev
-            </Link>
-            <span className="text-muted">
-              Page {current} of {pages} · {total} events
-            </span>
-            <Link
-              href={pageHref(current + 1)}
-              aria-disabled={current >= pages}
-              className={`border px-4 py-2 ${
-                current >= pages
-                  ? "pointer-events-none border-white/10 text-muted/40"
-                  : "border-white/25 text-white hover:border-volt hover:text-volt"
-              }`}
-            >
-              Next →
-            </Link>
-          </div>
-        )}
-      </div>
-    </section>
+      <AdminPagination
+        page={current}
+        pages={pages}
+        total={total}
+        unit="events"
+        href={pageHref}
+      />
+    </AdminPageShell>
   );
 }
