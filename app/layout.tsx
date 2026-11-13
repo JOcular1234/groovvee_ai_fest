@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { NavbarVisibility } from "@/components/layout/NavbarVisibility";
 import { Footer } from "@/components/layout/Footer";
 import { FooterVisibility } from "@/components/layout/FooterVisibility";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const anton = Anton({
   weight: "400",
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <FooterVisibility>
             <Footer />
           </FooterVisibility>
+          <ChatWidget />
         </Providers>
       </body>
     </html>

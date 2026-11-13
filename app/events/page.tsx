@@ -645,7 +645,7 @@ export default async function EventsPage({
       <div className="bg-grid absolute inset-0" aria-hidden />
 
       {/* Page header */}
-      <header className="relative mx-auto max-w-7xl px-5 sm:px-8">
+      <header className="relative w-full px-5 sm:px-10 2xl:px-16">
         <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Global calendar
@@ -670,7 +670,7 @@ export default async function EventsPage({
       <div className="sticky top-16 z-30 mt-12 border-y border-white/10 bg-ink/90 backdrop-blur-md sm:top-20">
         <nav
           aria-label="Event views"
-          className="mx-auto flex max-w-7xl overflow-x-auto px-1 [scrollbar-width:none] sm:px-4 [&::-webkit-scrollbar]:hidden"
+          className="flex w-full overflow-x-auto px-1 [scrollbar-width:none] sm:px-6 2xl:px-12 [&::-webkit-scrollbar]:hidden"
         >
           {tabs.map((t) => {
             const active = view === t.key;
@@ -697,7 +697,7 @@ export default async function EventsPage({
         </nav>
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="relative w-full px-5 sm:px-10 2xl:px-16">
         {/* Filters (they don't apply to the map, so it's hidden there) */}
         {!isMap && (
           <form

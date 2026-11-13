@@ -47,6 +47,7 @@ const TRANSIENT_CODES = new Set([
   "P1002", // database server reachable but timed out
   "P1017", // server closed the connection (idle pooler drop)
   "P2024", // timed out fetching a connection from the pool
+  "P2028", // transaction couldn't start in time (cold-start wake)
 ]);
 
 function transientCode(err: unknown): string | null {

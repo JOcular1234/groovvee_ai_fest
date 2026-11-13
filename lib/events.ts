@@ -319,6 +319,8 @@ export type PublicEventFilters = {
   q?: string;
   region?: string;
   country?: string;
+  city?: string;
+  isOnline?: boolean;
   source?: "GROOVVEE" | "EXTERNAL";
   locationId?: string;
 };
@@ -332,6 +334,10 @@ function publicWhere(filters: PublicEventFilters = {}): Prisma.EventWhereInput {
       { venueName: { contains: filters.q, mode: "insensitive" } },
     ];
   }
+  if (filters.city) {
+    where.city = { contains: filters.city, mode: "insensitive" };
+  }
+  if (typeof filters.isOnline === "boolean") where.isOnline = filters.isOnline;
   if (filters.region) where.region = filters.region;
   if (filters.country) where.country = filters.country;
   if (filters.source) where.source = filters.source;
