@@ -149,7 +149,10 @@ export async function listEventsForAdmin(
       orderBy,
       skip: (page - 1) * ADMIN_EVENTS_PAGE_SIZE,
       take: ADMIN_EVENTS_PAGE_SIZE,
-      include: { community: { select: { name: true } } },
+      include: {
+        community: { select: { name: true } },
+        _count: { select: { registrations: true } },
+      },
     }),
   ]);
 
