@@ -8,6 +8,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
 import { getEventProgramme } from "@/lib/public/agenda";
 import { getEventBySlug, getRelatedEvents } from "@/lib/public/events";
+import { isRegistrationOpen } from "@/lib/registrations";
 import { SESSION_TYPE_LABELS } from "@/lib/validation/agenda";
 
 export async function generateMetadata({
@@ -147,14 +148,22 @@ export default async function EventPage({
               </>
             )}
 
+            {isRegistrationOpen(event) && (
+              <Link
+                href={`/events/${event.slug}/register`}
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 bg-volt px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+              >
+                Register for this event
+              </Link>
+            )}
             {event.url && (
               <a
                 href={event.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 bg-volt px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                className={`${isRegistrationOpen(event) ? "mt-3 border border-white/25 text-white hover:border-volt hover:text-volt" : "mt-8 bg-volt text-ink hover:opacity-90"} inline-flex w-full items-center justify-center gap-2 px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors`}
               >
-                Event link
+                {event.source === "EXTERNAL" ? "Register on organiser's site" : "Event link"}
                 <ArrowUpRight className="size-4" aria-hidden />
               </a>
             )}

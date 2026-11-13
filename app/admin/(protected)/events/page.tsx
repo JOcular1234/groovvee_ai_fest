@@ -248,6 +248,12 @@ export default async function AdminEventsPage({
                   >
                     Edit
                   </Link>
+                  <Link
+                    href={`/admin/events/${e.id}/registrations`}
+                    className={adminLinkClass}
+                  >
+                    RSVPs
+                  </Link>
                   <EventRowActions
                     id={e.id}
                     title={e.title}

@@ -340,6 +340,7 @@ model Event {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   competitions  Competition[]
+  registrations EventRegistration[]
   agendaItems   AgendaItem[]
   duplicateDiscoveries DiscoveredEvent[] @relation("DiscoveryDuplicates")
   approvedDiscoveries  DiscoveredEvent[] @relation("ApprovedDiscoveries")
@@ -349,6 +350,26 @@ model Event {
   @@index([locationId])
   @@index([region, published])
   @@map("events")
+}
+
+// A visitor RSVP for a GrooVVee-run event. External/community-discovered
+// events never take registrations here — they keep their organiser's link.
+// The @@unique on (eventId, email) is the real dedupe: it catches double
+// clicks and concurrent submits that a pre-check would miss.
+model EventRegistration {
+  id           String   @id @default(cuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String
+  // Stored normalized (lowercase) so the unique constraint dedupes
+  // case-variant emails.
+  email        String
+  organization String?
+  createdAt    DateTime @default(now())
+
+  @@unique([eventId, email])
+  @@index([eventId, createdAt])
+  @@map("event_registrations")
 }
 
 // A single admin-triggered AI discovery run: what was searched, which
