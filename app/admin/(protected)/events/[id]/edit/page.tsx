@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { EventForm } from "@/components/admin/EventForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { utcToZonedLocalInput } from "@/lib/datetime";
 import { db, withDbRetry } from "@/lib/db";
 import { getEventById, listCommunitiesForSelect } from "@/lib/events";
@@ -20,6 +21,7 @@ export default async function EditEventPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("events", "manage");
   await connection();
   const { id } = await params;
   const [event, communities, locations] = await withDbRetry(() =>

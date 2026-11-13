@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { TopicForm } from "@/components/admin/TopicForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { getTopicById } from "@/lib/topics";
 
@@ -18,6 +19,7 @@ export default async function EditTopicPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("topics", "manage");
   await connection();
   const { id } = await params;
   const topic = await withDbRetry(() => getTopicById(db, id));

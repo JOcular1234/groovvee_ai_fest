@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentAdmin } from "@/lib/auth/server";
+import {
+  hasSectionAccess,
+  ADMIN_SECTIONS,
+  type AdminSection,
+} from "@/lib/auth/permissions";
 import { LogoutButton } from "@/components/admin/LogoutButton";
 
 export const metadata: Metadata = {
@@ -82,8 +88,41 @@ const SECTIONS: {
   },
 ];
 
+const SUPER_ONLY_SECTIONS: typeof SECTIONS = [
+  {
+    group: "Team",
+    cards: [
+      {
+        href: "/admin/admins",
+        title: "Admins",
+        description: "Accounts, section access and deactivation.",
+      },
+    ],
+  },
+];
+
+// Card hrefs map 1:1 onto section keys — anything not listed grants nothing.
+const hrefToSection = new Map<string, AdminSection>(
+  ADMIN_SECTIONS.map((s) => [s.href, s.key])
+);
+
 export default async function AdminPage() {
   const admin = await getCurrentAdmin();
+  if (!admin) redirect("/admin/login");
+
+  const isSuper = admin.role === "SUPER_ADMIN";
+  const sectionCount = ADMIN_SECTIONS.filter((s) =>
+    hasSectionAccess(admin, s.key, "view")
+  ).length;
+
+  const groups = SECTIONS.map((group) => ({
+    ...group,
+    cards: group.cards.filter((card) => {
+      const section = hrefToSection.get(card.href);
+      return section ? hasSectionAccess(admin, section, "view") : true;
+    }),
+  })).filter((group) => group.cards.length > 0);
+  if (isSuper) groups.push(...SUPER_ONLY_SECTIONS);
 
   return (
     <section className="relative overflow-hidden px-5 py-10 sm:px-8">
@@ -96,7 +135,7 @@ export default async function AdminPage() {
           Control <span className="text-volt">room.</span>
         </h1>
         <div className="mt-10 border border-white/10 bg-panel p-8">
-          <dl className="grid gap-6 sm:grid-cols-3">
+          <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
                 Signed in as
@@ -114,13 +153,23 @@ export default async function AdminPage() {
                 Role
               </dt>
               <dd className="mt-1 font-mono text-sm font-bold text-volt">
-                {admin?.role}
+                {admin.role}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
+                Access
+              </dt>
+              <dd className="mt-1 font-semibold">
+                {isSuper
+                  ? "Full access"
+                  : `${sectionCount} of ${ADMIN_SECTIONS.length} sections`}
               </dd>
             </div>
           </dl>
         </div>
 
-        {SECTIONS.map((group) => (
+        {groups.map((group) => (
           <div key={group.group} className="mt-10">
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
               {group.group}

@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { EVENTS_CACHE_TAG } from "@/lib/public/events";
 import {
@@ -38,7 +38,7 @@ export async function saveEventAction(
   _prev: EventFormState,
   formData: FormData
 ): Promise<EventFormState> {
-  await requireAdmin();
+  await requireSectionAccess("events", "manage");
 
   const parsed = eventFormSchema.safeParse({
     title: formData.get("title"),
@@ -114,7 +114,7 @@ export async function saveEventAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<EventActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("events", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Event not found." };

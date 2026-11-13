@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
         name: admin.name,
         email: admin.email,
         role: admin.role,
+        permissions: admin.permissions,
+        mustChangePassword: admin.mustChangePassword,
       },
     },
     { headers }

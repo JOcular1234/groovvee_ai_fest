@@ -27,7 +27,7 @@ export async function createSession(db: PrismaClient, adminId: string) {
 
 export type SessionAdmin = Pick<
   AdminModel,
-  "id" | "name" | "email" | "role" | "isActive"
+  "id" | "name" | "email" | "role" | "isActive" | "permissions" | "mustChangePassword"
 >;
 
 export async function getAdminByToken(
@@ -44,6 +44,8 @@ export async function getAdminByToken(
           email: true,
           role: true,
           isActive: true,
+          permissions: true,
+          mustChangePassword: true,
         },
       },
     },
@@ -85,6 +87,18 @@ export async function revokeAllSessions(
   adminId: string
 ): Promise<void> {
   await db.session.deleteMany({ where: { adminId } });
+}
+
+// Used after a self-service password change: every other device/browser is
+// signed out while the session that just proved the old password survives.
+export async function revokeOtherSessions(
+  db: PrismaClient,
+  adminId: string,
+  exceptToken: string
+): Promise<void> {
+  await db.session.deleteMany({
+    where: { adminId, tokenHash: { not: hashSessionToken(exceptToken) } },
+  });
 }
 
 export async function cleanupExpiredSessions(

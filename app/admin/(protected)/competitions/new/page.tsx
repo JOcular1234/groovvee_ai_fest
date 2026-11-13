@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { CompetitionForm } from "@/components/admin/CompetitionForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { listEventsForSelect } from "@/lib/events";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function NewCompetitionPage() {
+  await requireSectionAccess("competitions", "manage");
   await connection();
   const events = await withDbRetry(() => listEventsForSelect(db));
 

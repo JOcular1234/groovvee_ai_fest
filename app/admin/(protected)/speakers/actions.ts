@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { AGENDA_CACHE_TAG } from "@/lib/public/agenda";
 import { SPEAKERS_CACHE_TAG } from "@/lib/public/speakers";
@@ -21,7 +21,7 @@ import {
 } from "@/lib/validation/speaker";
 
 // Server actions automatically verify Origin/Host — CSRF is handled by the
-// framework; requireAdmin() checks the live DB session on every call.
+// framework; requireSectionAccess() checks the live DB session + grant on every call.
 
 export type SpeakerFormState = {
   ok: boolean;
@@ -44,7 +44,7 @@ export async function saveSpeakerAction(
   _prev: SpeakerFormState,
   formData: FormData
 ): Promise<SpeakerFormState> {
-  await requireAdmin();
+  await requireSectionAccess("speakers", "manage");
 
   const socials = SOCIAL_PLATFORMS.map((label) => ({
     label,
@@ -86,7 +86,7 @@ export async function saveSpeakerAction(
 }
 
 async function runMutation(fn: () => Promise<unknown>): Promise<SpeakerActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("speakers", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Speaker not found." };

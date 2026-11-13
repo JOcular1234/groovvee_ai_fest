@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { CommunityForm } from "@/components/admin/CommunityForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { getCommunityById } from "@/lib/communities";
 
@@ -18,6 +19,7 @@ export default async function EditCommunityPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("communities", "manage");
   await connection();
   const { id } = await params;
   const community = await withDbRetry(() => getCommunityById(db, id));

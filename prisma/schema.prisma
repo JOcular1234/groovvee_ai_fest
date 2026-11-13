@@ -131,11 +131,20 @@ model Admin {
   email                String               @unique
   passwordHash         String
   role                 AdminRole            @default(ADMIN)
+  // Section-level grants like "events:view" / "events:manage". SUPER_ADMIN
+  // ignores this list — it always has full access. Manage implies view.
+  permissions          String[]             @default([])
+  // Set when a super admin assigns or resets the password — the account is
+  // locked out of every admin screen until it chooses a new password.
+  mustChangePassword   Boolean              @default(false)
   isActive             Boolean              @default(true)
+  deactivatedAt        DateTime?
   lastLoginAt          DateTime?
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
   sessions             Session[]
+  auditLogsActor       AdminAuditLog[]          @relation("AuditActor")
+  auditLogsTarget      AdminAuditLog[]          @relation("AuditTarget")
   reviewedApplications SpeakerApplication[]     @relation("ApplicationReviewer")
   reviewedMessages     ContactMessage[]         @relation("MessageReviewer")
   reviewedCompetitions CompetitionApplication[] @relation("CompetitionApplicationReviewer")
@@ -144,6 +153,24 @@ model Admin {
   reviewedDiscoveries  DiscoveredEvent[]
 
   @@map("admins")
+}
+
+// Super-admin actions on admin accounts: creation, permission changes,
+// activation toggles and password resets. Actor/target are SetNull so the
+// trail survives account removal; their emails are snapshot into details.
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     Admin?   @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  targetId  String?
+  target    Admin?   @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([targetId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("admin_audit_logs")
 }
 
 model Session {

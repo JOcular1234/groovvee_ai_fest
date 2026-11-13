@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { NEWS_CACHE_TAG } from "@/lib/public/news";
 import {
@@ -35,7 +35,7 @@ export async function saveNewsPostAction(
   _prev: NewsPostFormState,
   formData: FormData
 ): Promise<NewsPostFormState> {
-  await requireAdmin();
+  await requireSectionAccess("news", "manage");
 
   const parsed = newsPostFormSchema.safeParse({
     title: formData.get("title"),
@@ -80,7 +80,7 @@ export async function saveNewsPostAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<NewsPostActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("news", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Post not found." };

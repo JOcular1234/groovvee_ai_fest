@@ -9,6 +9,7 @@ import {
   Mic,
   Newspaper,
   Radar,
+  ShieldCheck,
   Swords,
   Tags,
   Trophy,
@@ -49,6 +50,12 @@ const GROUPS: {
       { href: "/admin/discoveries", label: "Discoveries", icon: Radar },
     ],
   },
+  {
+    label: "Team",
+    links: [
+      { href: "/admin/admins", label: "Admins", icon: ShieldCheck },
+    ],
+  },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -57,8 +64,28 @@ function isActive(pathname: string, href: string) {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AdminNav() {
+export function AdminNav({
+  visibleHrefs,
+  isSuperAdmin,
+}: {
+  // Hrefs the signed-in admin may view — computed server-side from the live
+  // session. Hiding here is convenience; enforcement lives in the section
+  // layouts and server actions.
+  visibleHrefs: string[];
+  isSuperAdmin: boolean;
+}) {
   const pathname = usePathname();
+  const visible = new Set(visibleHrefs);
+
+  const groups = GROUPS.map((group) => ({
+    ...group,
+    links: group.links.filter(
+      (link) =>
+        link.href === "/admin" ||
+        visible.has(link.href) ||
+        (link.href === "/admin/admins" && isSuperAdmin)
+    ),
+  })).filter((group) => group.links.length > 0);
 
   return (
     <nav
@@ -70,7 +97,7 @@ export function AdminNav() {
       </p>
 
       <div className="flex gap-6 lg:flex-col lg:gap-5">
-        {GROUPS.map((group, gi) => (
+        {groups.map((group, gi) => (
           <div key={gi} className="flex gap-1 lg:flex-col">
             {group.label && (
               <p className="mb-1.5 hidden font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted/60 lg:block">

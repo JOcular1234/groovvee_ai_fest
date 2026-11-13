@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { AdminNav } from "@/components/admin/AdminNav";
+import { visibleSections } from "@/lib/auth/permissions";
 import { requireAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
@@ -16,13 +17,16 @@ export default async function ProtectedAdminLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   return (
     // The public navbar is hidden on /admin via NavbarVisibility — the
     // sidebar owns the full viewport height.
     <div className="flex flex-col lg:min-h-dvh lg:flex-row">
       <aside className="border-b border-white/10 bg-panel/60 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:self-start lg:border-b-0 lg:border-r lg:overflow-y-auto">
-        <AdminNav />
+        <AdminNav
+          visibleHrefs={visibleSections(admin).map((s) => s.href)}
+          isSuperAdmin={admin.role === "SUPER_ADMIN"}
+        />
       </aside>
       <main className="min-w-0 flex-1">{children}</main>
     </div>

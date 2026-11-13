@@ -11,6 +11,7 @@
     "db:check": "tsx scripts/db-check.ts",
     "provision:admin": "tsx scripts/provision-admin.ts",
     "test:auth": "tsx scripts/test-auth.ts",
+    "test:access-control": "tsx scripts/test-access-control.ts",
     "test:speakers": "tsx scripts/test-speakers.ts",
     "test:topics": "tsx scripts/test-topics.ts",
     "test:communities": "tsx scripts/test-communities.ts",

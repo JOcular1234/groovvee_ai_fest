@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import {
   INVALID_TRANSITION,
@@ -27,7 +27,7 @@ export async function setHackWarsStatusAction(
   id: string,
   status: string
 ): Promise<HackWarsActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("hack-wars", "manage");
   const parsed = reviewStatusSchema.safeParse(status);
   if (!parsed.success) return { ok: false, message: "Invalid status." };
   try {
@@ -49,7 +49,7 @@ export async function updateHackWarsNotesAction(
   id: string,
   notes: string
 ): Promise<HackWarsActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("hack-wars", "manage");
   const parsed = reviewNotesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, message: "Notes are too long." };
   const result = await withDbRetry(() =>

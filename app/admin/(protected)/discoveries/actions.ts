@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import {
   approveCandidate,
@@ -41,7 +41,7 @@ export async function runDiscoveryAction(
   _prev: DiscoveryFormState,
   formData: FormData
 ): Promise<DiscoveryFormState> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("discoveries", "manage");
 
   const parsed = discoveryRunFormSchema.safeParse({
     region: formData.get("region") ?? "",
@@ -84,7 +84,9 @@ export async function approveCandidateAction(
   _prev: DiscoveryFormState,
   formData: FormData
 ): Promise<DiscoveryFormState> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("discoveries", "manage");
+  // Approval creates a public-facing Event row — requires both grants.
+  await requireSectionAccess("events", "manage");
 
   const parsed = eventFormSchema.safeParse({
     title: formData.get("title"),
@@ -153,7 +155,7 @@ export async function rejectCandidateAction(
   candidateId: string,
   formData: FormData
 ): Promise<void> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("discoveries", "manage");
   try {
     await withDbRetry(() =>
       rejectCandidate(
@@ -174,7 +176,7 @@ export async function markDuplicateAction(
   candidateId: string,
   formData: FormData
 ): Promise<void> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("discoveries", "manage");
   const eventId = String(formData.get("duplicateOfEventId") ?? "") || null;
   try {
     await withDbRetry(() =>

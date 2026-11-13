@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { TOPICS_CACHE_TAG } from "@/lib/public/topics";
 import {
@@ -35,7 +35,7 @@ export async function saveTopicAction(
   _prev: TopicFormState,
   formData: FormData
 ): Promise<TopicFormState> {
-  await requireAdmin();
+  await requireSectionAccess("topics", "manage");
 
   const parsed = topicFormSchema.safeParse({
     title: formData.get("title"),
@@ -77,7 +77,7 @@ export async function saveTopicAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<TopicActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("topics", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Topic not found." };

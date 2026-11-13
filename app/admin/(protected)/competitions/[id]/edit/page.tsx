@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { CompetitionForm } from "@/components/admin/CompetitionForm";
 import { RoundsEditor } from "@/components/admin/RoundsEditor";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { getCompetitionById } from "@/lib/competitions";
 import { utcToZonedLocalInput } from "@/lib/datetime";
 import { db, withDbRetry } from "@/lib/db";
@@ -21,6 +22,7 @@ export default async function EditCompetitionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("competitions", "manage");
   await connection();
   const { id } = await params;
   const [competition, events] = await withDbRetry(() =>

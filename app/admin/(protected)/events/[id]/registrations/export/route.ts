@@ -1,11 +1,12 @@
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { getEventById } from "@/lib/events";
 import { listAllRegistrationsForAdmin } from "@/lib/registrations";
 
-// Route handlers don't run the (protected) layout — the session check must
-// happen here. requireAdmin redirects unauthenticated requests to login, so
-// attendee data can only leave through an authenticated admin session.
+// Route handlers don't run layouts — the check must happen here.
+// requireSectionAccess redirects unauthenticated requests to login and
+// admins without events:view to the overview, so attendee data can only
+// leave through a session holding the events grant.
 function csvCell(value: string | null): string {
   const v = value ?? "";
   return `"${v.replace(/"/g, '""')}"`;
@@ -15,7 +16,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  await requireAdmin();
+  await requireSectionAccess("events", "view");
   const { id } = await params;
 
   const [event, registrations] = await withDbRetry(() =>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CommunityForm } from "@/components/admin/CommunityForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "New Community · Admin",
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 
 export const instant = false;
 
-export default function NewCommunityPage() {
+export default async function NewCommunityPage() {
+  await requireSectionAccess("communities", "manage");
   return (
     <section className="relative overflow-hidden px-5 py-10 sm:px-8">
       <div className="bg-grid absolute inset-0" aria-hidden />

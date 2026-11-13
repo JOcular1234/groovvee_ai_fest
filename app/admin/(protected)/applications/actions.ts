@@ -10,7 +10,7 @@ import {
   setApplicationStatus,
   updateApplicationNotes,
 } from "@/lib/applications";
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { SPEAKERS_CACHE_TAG } from "@/lib/public/speakers";
 import {
@@ -31,7 +31,7 @@ export async function setApplicationStatusAction(
   id: string,
   status: string
 ): Promise<ApplicationActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("applications", "manage");
   const parsed = reviewStatusSchema.safeParse(status);
   if (!parsed.success) return { ok: false, message: "Invalid status." };
   try {
@@ -53,7 +53,7 @@ export async function updateApplicationNotesAction(
   id: string,
   notes: string
 ): Promise<ApplicationActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("applications", "manage");
   const parsed = reviewNotesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, message: "Notes are too long." };
   const result = await withDbRetry(() =>
@@ -65,8 +65,10 @@ export async function updateApplicationNotesAction(
 }
 
 // Redirects are intentionally not caught — success navigates to the speaker.
+// Promotion also creates a Speaker row, so it requires both grants.
 export async function promoteApplicationAction(id: string): Promise<never> {
-  await requireAdmin();
+  await requireSectionAccess("applications", "manage");
+  await requireSectionAccess("speakers", "manage");
   let speakerId: string;
   try {
     speakerId = await withDbRetry(() => promoteApplicationToSpeaker(db, id));

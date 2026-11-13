@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { EventForm } from "@/components/admin/EventForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { listCommunitiesForSelect } from "@/lib/events";
 import { listLocationsForSelect } from "@/lib/locations";
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function NewEventPage() {
+  await requireSectionAccess("events", "manage");
   await connection();
   const [communities, locations] = await withDbRetry(() =>
     Promise.all([listCommunitiesForSelect(db), listLocationsForSelect(db)])

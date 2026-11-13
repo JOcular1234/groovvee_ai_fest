@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { COMMUNITIES_CACHE_TAG } from "@/lib/public/communities";
 import {
@@ -38,7 +38,7 @@ export async function saveCommunityAction(
   _prev: CommunityFormState,
   formData: FormData
 ): Promise<CommunityFormState> {
-  await requireAdmin();
+  await requireSectionAccess("communities", "manage");
 
   const parsed = communityFormSchema.safeParse({
     name: formData.get("name"),
@@ -87,7 +87,7 @@ export async function saveCommunityAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<CommunityActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("communities", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Community not found." };

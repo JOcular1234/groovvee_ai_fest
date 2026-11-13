@@ -12,7 +12,7 @@ import {
   setAgendaPublished,
   updateAgendaItem,
 } from "@/lib/agenda";
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { AGENDA_CACHE_TAG } from "@/lib/public/agenda";
 import { agendaInputSchema } from "@/lib/validation/agenda";
@@ -37,7 +37,7 @@ export async function saveAgendaItemAction(
   _prev: AgendaFormState,
   formData: FormData
 ): Promise<AgendaFormState> {
-  await requireAdmin();
+  await requireSectionAccess("agenda", "manage");
 
   const parsed = agendaInputSchema.safeParse({
     title: formData.get("title"),
@@ -93,7 +93,7 @@ export async function saveAgendaItemAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<AgendaActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("agenda", "manage");
   try {
     const result = await withDbRetry(fn);
     if (!result) return { ok: false, message: "Agenda item not found." };

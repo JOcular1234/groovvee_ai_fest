@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { setMessageStatus, updateMessageNotes } from "@/lib/messages";
 import {
@@ -23,7 +23,7 @@ export async function setMessageStatusAction(
   id: string,
   status: string
 ): Promise<MessageActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("messages", "manage");
   const parsed = messageStatusSchema.safeParse(status);
   if (!parsed.success) return { ok: false, message: "Invalid status." };
   try {
@@ -42,7 +42,7 @@ export async function updateMessageNotesAction(
   id: string,
   notes: string
 ): Promise<MessageActionResult> {
-  const admin = await requireAdmin();
+  const admin = await requireSectionAccess("messages", "manage");
   const parsed = messageNotesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, message: "Notes are too long." };
   const result = await withDbRetry(() =>

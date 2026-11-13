@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { AgendaForm } from "@/components/admin/AgendaForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { utcToZonedLocalInput } from "@/lib/datetime";
 import { db, withDbRetry } from "@/lib/db";
 import {
@@ -23,6 +24,7 @@ export default async function EditAgendaItemPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("agenda", "manage");
   await connection();
   const { id } = await params;
   const [item, speakers] = await withDbRetry(() =>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { TopicForm } from "@/components/admin/TopicForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "New Topic · Admin",
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 
 export const instant = false;
 
-export default function NewTopicPage() {
+export default async function NewTopicPage() {
+  await requireSectionAccess("topics", "manage");
   return (
     <section className="relative overflow-hidden px-5 py-10 sm:px-8">
       <div className="bg-grid absolute inset-0" aria-hidden />

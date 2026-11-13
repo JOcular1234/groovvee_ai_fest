@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { SpeakerForm } from "@/components/admin/SpeakerForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { getSpeakerById } from "@/lib/speakers";
 import { socialLinkSchema } from "@/lib/validation/speaker";
@@ -22,6 +23,7 @@ export default async function EditSpeakerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("speakers", "manage");
   await connection();
   const { id } = await params;
   const speaker = await withDbRetry(() => getSpeakerById(db, id));

@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { NewsPostForm } from "@/components/admin/NewsPostForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { getNewsPostById } from "@/lib/news";
 
@@ -18,6 +19,7 @@ export default async function EditNewsPostPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireSectionAccess("news", "manage");
   await connection();
   const { id } = await params;
   const post = await withDbRetry(() => getNewsPostById(db, id));

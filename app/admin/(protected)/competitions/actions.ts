@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireAdmin } from "@/lib/auth/server";
+import { requireSectionAccess } from "@/lib/auth/server";
 import {
   createCompetition,
   createCompetitionRound,
@@ -46,7 +46,7 @@ export async function saveCompetitionAction(
   _prev: CompetitionFormState,
   formData: FormData
 ): Promise<CompetitionFormState> {
-  await requireAdmin();
+  await requireSectionAccess("competitions", "manage");
 
   const parsed = competitionFormSchema.safeParse({
     title: formData.get("title"),
@@ -111,7 +111,7 @@ export async function saveRoundAction(
   _prev: CompetitionFormState,
   formData: FormData
 ): Promise<CompetitionFormState> {
-  await requireAdmin();
+  await requireSectionAccess("competitions", "manage");
 
   const competitionId = String(formData.get("competitionId") ?? "");
   const roundId = String(formData.get("roundId") ?? "");
@@ -162,7 +162,7 @@ export async function saveRoundAction(
 async function runMutation(
   fn: () => Promise<unknown>
 ): Promise<CompetitionActionResult> {
-  await requireAdmin();
+  await requireSectionAccess("competitions", "manage");
   try {
     const result = await withDbRetry(fn);
     if (result === "has_entries") {

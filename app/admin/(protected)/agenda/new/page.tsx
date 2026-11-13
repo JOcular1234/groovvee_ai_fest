@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { AgendaForm } from "@/components/admin/AgendaForm";
+import { requireSectionAccess } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 import { listEventsForAgendaSelect, listSpeakersForSelect } from "@/lib/agenda";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function NewAgendaItemPage() {
+  await requireSectionAccess("agenda", "manage");
   await connection();
   const [events, speakers] = await withDbRetry(() =>
     Promise.all([listEventsForAgendaSelect(db), listSpeakersForSelect(db)])
