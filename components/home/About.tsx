@@ -16,6 +16,7 @@ export function About() {
             </>
           }
         />
+        
 
         <Reveal delay={0.1}>
           <p className="mt-12 max-w-3xl text-2xl font-medium leading-snug text-white/90 sm:text-3xl">
