@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 
 import { NewsPostRowActions } from "@/components/admin/NewsPostRowActions";

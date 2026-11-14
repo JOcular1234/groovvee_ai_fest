@@ -13,10 +13,14 @@ import {
   AdminPagination,
   AdminSearchBar,
   AdminTable,
+  StatusBadge,
 } from "@/components/admin/ui";
 import { db, withDbRetry } from "@/lib/db";
 import { getEventById } from "@/lib/events";
-import { listRegistrationsForAdmin } from "@/lib/registrations";
+import {
+  countConfirmedRegistrations,
+  listRegistrationsForAdmin,
+} from "@/lib/registrations";
 
 export const metadata: Metadata = {
   title: "Registrations · Admin",
@@ -37,7 +41,7 @@ export default async function EventRegistrationsPage({
   const sp = await searchParams;
   const query = (sp.q ?? "").trim().slice(0, 120);
 
-  const [event, { registrations, total, page: current, pages }] =
+  const [event, { registrations, total, page: current, pages }, confirmed] =
     await withDbRetry(async () =>
       Promise.all([
         getEventById(db, id),
@@ -45,6 +49,7 @@ export default async function EventRegistrationsPage({
           q: query || undefined,
           page: Number(sp.page) || 1,
         }),
+        countConfirmedRegistrations(db, id),
       ])
     );
   if (!event) notFound();
@@ -69,7 +74,8 @@ export default async function EventRegistrationsPage({
       />
 
       <p className="mb-6 font-mono text-xs uppercase tracking-[0.2em] text-muted">
-        {total} registered ·{" "}
+        {confirmed} confirmed
+        {!query && total > confirmed ? ` · ${total - confirmed} awaiting email confirmation` : ""} ·{" "}
         <Link href={`/admin/events/${id}/edit`} className={adminLinkClass}>
           Edit event
         </Link>{" "}
@@ -98,6 +104,7 @@ export default async function EventRegistrationsPage({
             { label: "Name" },
             { label: "Email" },
             { label: "Organization" },
+            { label: "Status" },
             { label: "Registered" },
           ]}
         >
@@ -111,6 +118,11 @@ export default async function EventRegistrationsPage({
               </td>
               <td className={`${adminTdClass} text-xs text-muted`}>
                 {r.organization ?? "—"}
+              </td>
+              <td className={adminTdClass}>
+                <StatusBadge tone={r.confirmedAt ? "success" : "amber"}>
+                  {r.confirmedAt ? "Confirmed" : "Pending"}
+                </StatusBadge>
               </td>
               <td className={`${adminTdClass} font-mono text-xs text-muted`}>
                 {new Intl.DateTimeFormat("en-GB", {

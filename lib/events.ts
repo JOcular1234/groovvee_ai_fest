@@ -151,7 +151,10 @@ export async function listEventsForAdmin(
       take: ADMIN_EVENTS_PAGE_SIZE,
       include: {
         community: { select: { name: true } },
-        _count: { select: { registrations: true } },
+        // Confirmed (double opt-in) registrations only.
+        _count: {
+          select: { registrations: { where: { confirmedAt: { not: null } } } },
+        },
       },
     }),
   ]);

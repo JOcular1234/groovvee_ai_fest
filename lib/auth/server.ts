@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { db, withDbRetry } from "@/lib/db";
 import { SESSION_COOKIE } from "@/lib/auth/cookies";
+import { isTwoFactorRequired } from "@/lib/auth/mfa";
 import {
   hasSectionAccess,
   type AccessLevel,
@@ -37,6 +38,11 @@ export async function requireAdmin(): Promise<SessionAdmin> {
   // page lives outside the (protected) group and uses getCurrentAdmin
   // directly, so it can't redirect to itself.
   if (admin.mustChangePassword) redirect("/admin/change-password");
+  // Same lock-out pattern for mandatory 2FA (ADMIN_2FA_REQUIRED): the
+  // enrollment page also lives outside the (protected) group.
+  if (!admin.totpEnabledAt && isTwoFactorRequired(admin)) {
+    redirect("/admin/two-factor");
+  }
   return admin;
 }
 

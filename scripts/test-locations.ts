@@ -1,4 +1,4 @@
-import { closeScriptDb, scriptDb, waitForDb } from "./prisma";
+import { closeScriptDb, scriptDb, waitForDb } from "./test-db";
 import { LAUNCH_LOCATIONS } from "../data/locations";
 import {
   createEvent,

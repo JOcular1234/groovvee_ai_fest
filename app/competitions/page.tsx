@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 
 import { Reveal } from "@/components/ui/Reveal";

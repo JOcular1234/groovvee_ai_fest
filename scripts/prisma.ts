@@ -3,7 +3,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { PrismaClient } from "../lib/generated/prisma/client";
 
-// Shared client for local scripts (provisioning, checks, tests).
+// Shared client for local scripts (provisioning, checks, seeds) against the
+// app database. Tests use scripts/test-db.ts instead.
 // Neon free-tier computes autosuspend — the first connection after idle can
 // take ~10s to wake, so keepalive + a generous connect timeout help.
 export const scriptPool = new Pool({

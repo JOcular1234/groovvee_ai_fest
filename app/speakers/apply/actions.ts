@@ -2,6 +2,9 @@
 
 import { submitApplication } from "@/lib/applications";
 import { db, withDbRetry } from "@/lib/db";
+import { queueAdminAlert, queueEmail, siteUrl } from "@/lib/email";
+import { adminAlertEmail, submissionReceivedEmail } from "@/lib/email/templates";
+import { guardPublicSubmission } from "@/lib/form-guard";
 import { verifyFormToken } from "@/lib/form-token";
 import { socialLinkSchema } from "@/lib/validation/speaker";
 import { applicationSubmitSchema } from "@/lib/validation/application";
@@ -41,7 +44,8 @@ export async function submitApplicationAction(
     return { ok: true, done: true }; // pretend success — waste the bot's time
   }
   // Minimum-fill-time token (process-signed; see lib/form-token.ts).
-  if (!verifyFormToken(String(formData.get("started") ?? ""))) {
+  const token = String(formData.get("started") ?? "");
+  if (!verifyFormToken(token)) {
     return {
       ok: false,
       message: "Something went wrong with the form — please reload and try again.",
@@ -59,9 +63,36 @@ export async function submitApplicationAction(
   if (!parsed.success) {
     return { ok: false, errors: parsed.error.flatten().fieldErrors };
   }
+  if (String(formData.get("consent") ?? "") !== "on") {
+    return {
+      ok: false,
+      errors: { consent: ["Please accept the privacy policy to continue."] },
+    };
+  }
 
   try {
-    await withDbRetry(() => submitApplication(db, parsed.data));
+    const guard = await withDbRetry(() =>
+      guardPublicSubmission(db, "speaker", token)
+    );
+    if (!guard.ok) return { ok: false, message: guard.message };
+
+    const saved = await withDbRetry(() => submitApplication(db, parsed.data));
+    const d = parsed.data;
+    queueEmail({ to: d.email, ...submissionReceivedEmail("speaker") });
+    queueAdminAlert({
+      replyTo: d.email,
+      ...adminAlertEmail(
+        `New speaker application: ${d.talkTitle ?? d.name}`,
+        [
+          ["From", `${d.name} <${d.email}>`],
+          ["Organization", d.organization],
+          ["Talk", d.talkTitle],
+          ["Bio", d.bio],
+          ["Links", d.links.map((l) => `${l.label}: ${l.url}`).join("\n")],
+        ],
+        `${siteUrl()}/admin/applications/${saved.id}`
+      ),
+    });
   } catch {
     return {
       ok: false,

@@ -7,6 +7,7 @@ import {
   submitRegistrationAction,
   type RegisterFormState,
 } from "@/app/events/[slug]/register/actions";
+import { ConsentField } from "@/components/forms/ConsentField";
 
 const initialState: RegisterFormState = { ok: false };
 
@@ -36,12 +37,12 @@ export function RegisterForm({
     return (
       <div className="border border-volt/40 bg-panel p-10 text-center">
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
-          {state.duplicate ? "Already on the list" : "You're registered"}
+          Check your inbox
         </p>
         <p className="mx-auto mt-4 max-w-md text-muted">
-          {state.duplicate
-            ? `This email is already registered for ${eventTitle} — you're all set.`
-            : `Your spot at ${eventTitle} is confirmed. See you there.`}
+          We&apos;ve sent an email about your registration for {eventTitle}.
+          If this is a new registration, click the link in it to confirm your
+          spot — it isn&apos;t reserved until you do.
         </p>
         <Link
           href={`/events/${eventSlug}`}
@@ -112,6 +113,8 @@ export function RegisterForm({
           <FieldError errors={state.errors?.organization} />
         </div>
       </div>
+
+      <ConsentField errors={state.errors?.consent} />
 
       {state.message && (
         <p className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">

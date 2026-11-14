@@ -3,6 +3,9 @@ import type { PrismaClient } from "@/lib/generated/prisma/client";
 import type { AdminModel } from "@/lib/generated/prisma/models";
 
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+// Sessions unused for this long are dead even inside the 7-day lifetime —
+// an abandoned browser stops being a way in.
+export const SESSION_IDLE_MS = 2 * 60 * 60 * 1000; // 2 hours
 const ACTIVITY_TOUCH_MS = 60 * 1000;
 
 export function generateSessionToken(): string {
@@ -22,12 +25,21 @@ export async function createSession(db: PrismaClient, adminId: string) {
       expiresAt: new Date(Date.now() + SESSION_TTL_MS),
     },
   });
+  // Housekeeping on each sign-in — keeps the table small without a cron.
+  void cleanupExpiredSessions(db).catch(() => {});
   return { token, session };
 }
 
 export type SessionAdmin = Pick<
   AdminModel,
-  "id" | "name" | "email" | "role" | "isActive" | "permissions" | "mustChangePassword"
+  | "id"
+  | "name"
+  | "email"
+  | "role"
+  | "isActive"
+  | "permissions"
+  | "mustChangePassword"
+  | "totpEnabledAt"
 >;
 
 export async function getAdminByToken(
@@ -46,6 +58,7 @@ export async function getAdminByToken(
           isActive: true,
           permissions: true,
           mustChangePassword: true,
+          totpEnabledAt: true,
         },
       },
     },
@@ -53,7 +66,10 @@ export async function getAdminByToken(
 
   if (!session) return null;
 
-  if (session.expiresAt <= new Date()) {
+  if (
+    session.expiresAt <= new Date() ||
+    Date.now() - session.lastActivityAt.getTime() > SESSION_IDLE_MS
+  ) {
     await db.session.delete({ where: { id: session.id } }).catch(() => {});
     return null;
   }
@@ -105,7 +121,12 @@ export async function cleanupExpiredSessions(
   db: PrismaClient
 ): Promise<number> {
   const { count } = await db.session.deleteMany({
-    where: { expiresAt: { lt: new Date() } },
+    where: {
+      OR: [
+        { expiresAt: { lt: new Date() } },
+        { lastActivityAt: { lt: new Date(Date.now() - SESSION_IDLE_MS) } },
+      ],
+    },
   });
   return count;
 }

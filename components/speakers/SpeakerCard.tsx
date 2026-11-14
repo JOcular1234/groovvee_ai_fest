@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 
 import { socialLinkSchema } from "@/lib/validation/speaker";
 import { z } from "zod";

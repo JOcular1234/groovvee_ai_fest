@@ -7,6 +7,7 @@ import {
   submitHackWarsApplicationAction,
   type HackWarsFormState,
 } from "@/app/hack-wars/apply/actions";
+import { ConsentField } from "@/components/forms/ConsentField";
 
 const initialState: HackWarsFormState = { ok: false };
 
@@ -302,6 +303,11 @@ export function HackWarsApplyForm({ token }: { token: string }) {
           <FieldError errors={state.errors?.members} />
         </fieldset>
       )}
+
+      <ConsentField
+        errors={state.errors?.consent}
+        extra="I confirm that I am 16 or older, and "
+      />
 
       {state.message && (
         <p className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">

@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   FileText,
+  KeyRound,
   LayoutDashboard,
   ListOrdered,
   Mail,
@@ -54,9 +55,13 @@ const GROUPS: {
     label: "Team",
     links: [
       { href: "/admin/admins", label: "Admins", icon: ShieldCheck },
+      { href: "/admin/two-factor", label: "Security", icon: KeyRound },
     ],
   },
 ];
+
+// Links every signed-in admin gets, regardless of section grants.
+const ALWAYS_VISIBLE = new Set(["/admin", "/admin/two-factor"]);
 
 function isActive(pathname: string, href: string) {
   return href === "/admin"
@@ -81,7 +86,7 @@ export function AdminNav({
     ...group,
     links: group.links.filter(
       (link) =>
-        link.href === "/admin" ||
+        ALWAYS_VISIBLE.has(link.href) ||
         visible.has(link.href) ||
         (link.href === "/admin/admins" && isSuperAdmin)
     ),

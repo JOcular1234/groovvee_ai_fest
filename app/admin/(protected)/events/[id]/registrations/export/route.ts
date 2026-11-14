@@ -7,8 +7,11 @@ import { listAllRegistrationsForAdmin } from "@/lib/registrations";
 // requireSectionAccess redirects unauthenticated requests to login and
 // admins without events:view to the overview, so attendee data can only
 // leave through a session holding the events grant.
+// Values are visitor-supplied: a leading = + - @ (or tab/CR) would run as a
+// formula in Excel/Sheets (CSV injection), so such cells get a ' prefix.
 function csvCell(value: string | null): string {
-  const v = value ?? "";
+  let v = value ?? "";
+  if (/^[=+\-@\t\r]/.test(v)) v = `'${v}`;
   return `"${v.replace(/"/g, '""')}"`;
 }
 
@@ -32,10 +35,15 @@ export async function GET(
       csvCell(r.name),
       csvCell(r.email),
       csvCell(r.organization),
+      csvCell(r.confirmedAt ? "confirmed" : "pending"),
       csvCell(r.createdAt.toISOString()),
+      csvCell(r.confirmedAt?.toISOString() ?? null),
     ].join(",")
   );
-  const csv = ["name,email,organization,registered_at", ...rows].join("\r\n");
+  const csv = [
+    "name,email,organization,status,registered_at,confirmed_at",
+    ...rows,
+  ].join("\r\n");
 
   return new Response(csv, {
     headers: {

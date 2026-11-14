@@ -4,6 +4,7 @@ import { RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 
+import { classifyChatLink } from "@/components/chat/links";
 import {
   SUGGESTIONS,
   WELCOME_MESSAGE,
@@ -25,23 +26,27 @@ function renderRich(text: string): ReactNode[] {
   let m: RegExpExecArray | null;
   let k = 0;
   LINK_RE.lastIndex = 0;
+  const ownHost = typeof window === "undefined" ? "" : window.location.host;
   while ((m = LINK_RE.exec(text))) {
     if (m.index > last) parts.push(text.slice(last, m.index));
     const [raw, label, href] = m;
+    const link = classifyChatLink(href, ownHost);
     parts.push(
-      href.startsWith("/") ? (
-        <Link key={k++} href={href} className={linkCls}>
+      !link ? (
+        label
+      ) : link.kind === "internal" ? (
+        <Link key={k++} href={link.href} className={linkCls}>
           {label}
         </Link>
       ) : (
         <a
           key={k++}
-          href={href}
+          href={link.href}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer nofollow"
           className={linkCls}
         >
-          {label}
+          {label} <span className="text-muted">({link.host} ↗)</span>
         </a>
       )
     );

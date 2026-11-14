@@ -10,14 +10,16 @@ import {
   revokeSessionByToken,
 } from "../lib/auth/session";
 import { normalizeEmail, passwordIssues } from "../lib/auth/password";
-import { closeScriptDb, scriptDb as db, waitForDb } from "./prisma";
+import { throttleKey } from "../lib/auth/rate-limit";
+import { closeScriptDb, scriptDb as db, waitForDb } from "./test-db";
 
-// Runs against the DEV database. All created rows are removed on exit.
+// Runs against TEST_DATABASE_URL only (see scripts/test-db.ts). All created rows are removed on exit.
 const RUN = Date.now().toString(36);
 const EMAIL = `auth-test-${RUN}@example.com`;
 const EMAIL2 = `auth-test2-${RUN}@example.com`;
 const PASSWORD = "Correct-Horse-999";
 const IP = "10.9.8.7";
+const THROTTLE_IP = "10.7.7.7";
 
 let passed = 0;
 let failed = 0;
@@ -35,7 +37,15 @@ async function cleanup() {
   await db.admin.deleteMany({
     where: { email: { in: [normalizeEmail(EMAIL), normalizeEmail(EMAIL2)] } },
   });
-  await db.loginThrottle.deleteMany({});
+  // Only this run's throttle rows — never other lockouts or chat limits.
+  const emails = [EMAIL, EMAIL2, `nobody-${RUN}@example.com`].map(normalizeEmail);
+  await db.loginThrottle.deleteMany({
+    where: {
+      key: {
+        in: emails.flatMap((e) => [IP, THROTTLE_IP].map((ip) => throttleKey(e, ip))),
+      },
+    },
+  });
 }
 
 async function main() {
@@ -176,7 +186,7 @@ async function main() {
   );
 
   // --- Rate limiting ---
-  const throttleIp = "10.7.7.7";
+  const throttleIp = THROTTLE_IP;
   let lastResult = null as Awaited<ReturnType<typeof loginAdmin>> | null;
   for (let i = 0; i < 6; i++) {
     lastResult = await loginAdmin(db, {

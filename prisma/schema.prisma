@@ -137,6 +137,14 @@ model Admin {
   // Set when a super admin assigns or resets the password — the account is
   // locked out of every admin screen until it chooses a new password.
   mustChangePassword   Boolean              @default(false)
+  // TOTP two-factor auth. The secret is AES-256-GCM encrypted with
+  // TOTP_ENCRYPTION_KEY; it exists but is inactive until totpEnabledAt is
+  // set by a confirmed code. totpLastStep blocks code replay. Recovery
+  // codes are stored as SHA-256 hashes and removed when used.
+  totpSecretEnc        String?
+  totpEnabledAt        DateTime?
+  totpLastStep         Int?
+  recoveryCodeHashes   String[]             @default([])
   isActive             Boolean              @default(true)
   deactivatedAt        DateTime?
   lastLoginAt          DateTime?
@@ -392,6 +400,11 @@ model EventRegistration {
   // case-variant emails.
   email        String
   organization String?
+  // Double opt-in: a registration only counts once the emailed link is
+  // confirmed. Only the SHA-256 of the confirmation token is stored.
+  confirmedAt      DateTime?
+  confirmTokenHash String?   @unique
+  confirmSentAt    DateTime?
   createdAt    DateTime @default(now())
 
   @@unique([eventId, email])

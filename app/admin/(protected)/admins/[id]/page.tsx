@@ -14,6 +14,7 @@ import {
   StatusBadge,
 } from "@/components/admin/ui";
 import { getAdminById, listAuditLogsForAdmin } from "@/lib/admins";
+import { getCurrentAdmin } from "@/lib/auth/server";
 import { db, withDbRetry } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -29,6 +30,12 @@ const ACTION_LABELS: Record<string, string> = {
   "admin.deactivated": "Deactivated",
   "admin.reactivated": "Reactivated",
   "admin.password_reset": "Reset password",
+  "admin.role_changed": "Changed role",
+  "admin.deleted": "Deleted account",
+  "admin.2fa_enabled": "Turned on two-factor auth",
+  "admin.2fa_disabled": "Turned off two-factor auth",
+  "admin.2fa_reset": "Reset two-factor auth",
+  "admin.2fa_recovery_regenerated": "Regenerated recovery codes",
 };
 
 export default async function ManageAdminPage({
@@ -38,6 +45,7 @@ export default async function ManageAdminPage({
 }) {
   await connection();
   const { id } = await params;
+  const actor = await getCurrentAdmin();
   const admin = await withDbRetry(() => getAdminById(db, id));
   if (!admin) notFound();
 
@@ -60,6 +68,9 @@ export default async function ManageAdminPage({
         {admin.mustChangePassword && (
           <StatusBadge tone="amber">Password change pending</StatusBadge>
         )}
+        <StatusBadge tone={admin.totpEnabledAt ? "success" : "muted"}>
+          {admin.totpEnabledAt ? "2FA on" : "2FA off"}
+        </StatusBadge>
         <Link
           href="/admin/admins"
           className="ml-auto font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-muted transition-colors hover:text-volt"
@@ -69,12 +80,21 @@ export default async function ManageAdminPage({
       </div>
 
       {admin.role === "SUPER_ADMIN" ? (
-        <div className="mt-10 border border-white/10 bg-panel p-8">
-          <p className="text-sm text-muted">
-            The Super Admin account is provisioned through the CLI and cannot
-            be modified here. It always has full access to every section.
-          </p>
-        </div>
+        <>
+          <div className="mt-10 border border-white/10 bg-panel p-8">
+            <p className="text-sm text-muted">
+              Super admins have full access to every section. To edit,
+              deactivate or reset this account, demote it to Admin first.
+            </p>
+          </div>
+          <AdminDangerZone
+            adminId={admin.id}
+            isActive={admin.isActive}
+            role={admin.role}
+            isSelf={actor?.id === admin.id}
+            twoFactorEnabled={!!admin.totpEnabledAt}
+          />
+        </>
       ) : (
         <>
           <AdminAccountForm
@@ -84,7 +104,13 @@ export default async function ManageAdminPage({
               permissions: admin.permissions,
             }}
           />
-          <AdminDangerZone adminId={admin.id} isActive={admin.isActive} />
+          <AdminDangerZone
+            adminId={admin.id}
+            isActive={admin.isActive}
+            role={admin.role}
+            isSelf={actor?.id === admin.id}
+            twoFactorEnabled={!!admin.totpEnabledAt}
+          />
         </>
       )}
 

@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
   if (!throttle.allowed) {
     return fail(
       429,
-      "You're sending messages too quickly — give it a moment.",
+      throttle.scope === "daily"
+        ? "The assistant has reached its daily limit — please try again tomorrow, or browse /events and /contact."
+        : "You're sending messages too quickly — give it a moment.",
       { "Retry-After": String(throttle.retryAfterSec) }
     );
   }

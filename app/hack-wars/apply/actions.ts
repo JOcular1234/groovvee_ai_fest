@@ -7,6 +7,9 @@ import {
   submitHackWarsApplication,
 } from "@/lib/hack-wars";
 import { db, withDbRetry } from "@/lib/db";
+import { queueAdminAlert, queueEmail, siteUrl } from "@/lib/email";
+import { adminAlertEmail, submissionReceivedEmail } from "@/lib/email/templates";
+import { guardPublicSubmission } from "@/lib/form-guard";
 import { verifyFormToken } from "@/lib/form-token";
 import { hackWarsApplySchema } from "@/lib/validation/hack-wars";
 
@@ -43,7 +46,8 @@ export async function submitHackWarsApplicationAction(
     console.warn("[hack-wars] honeypot triggered — fake success returned");
     return { ok: true, done: true };
   }
-  if (!verifyFormToken(String(formData.get("started") ?? ""))) {
+  const token = String(formData.get("started") ?? "");
+  if (!verifyFormToken(token)) {
     return {
       ok: false,
       message: "Something went wrong with the form — please reload and try again.",
@@ -65,6 +69,12 @@ export async function submitHackWarsApplicationAction(
   });
   if (!parsed.success) {
     return { ok: false, errors: parsed.error.flatten().fieldErrors };
+  }
+  if (String(formData.get("consent") ?? "") !== "on") {
+    return {
+      ok: false,
+      errors: { consent: ["Please accept the privacy policy to continue."] },
+    };
   }
 
   // Server-side eligibility: only a live REGISTRATION_OPEN Hack Wars
@@ -88,16 +98,38 @@ export async function submitHackWarsApplicationAction(
     };
   }
 
+  const d = parsed.data;
   try {
-    await withDbRetry(() =>
-      submitHackWarsApplication(db, competitionId, parsed.data)
+    const guard = await withDbRetry(() =>
+      guardPublicSubmission(db, "hack-wars", token)
     );
+    if (!guard.ok) return { ok: false, message: guard.message };
+
+    const saved = await withDbRetry(() =>
+      submitHackWarsApplication(db, competitionId, d)
+    );
+    queueEmail({ to: d.email, ...submissionReceivedEmail("hack-wars") });
+    queueAdminAlert({
+      replyTo: d.email,
+      ...adminAlertEmail(
+        `New Hack Wars application: ${d.teamName ?? d.name}`,
+        [
+          ["Contact", `${d.name} <${d.email}>`],
+          ["Phone", d.phone],
+          ["School", d.school],
+          ["Participation", d.isTeam ? `Team "${d.teamName}"` : "Individual"],
+          ["Members", d.members.map((m) => `${m.name} <${m.email}>${m.school ? ` — ${m.school}` : ""}`).join("\n")],
+          ["Intro", d.intro],
+        ],
+        `${siteUrl()}/admin/hack-wars/${saved.id}`
+      ),
+    });
   } catch (err) {
+    // Same on-screen answer as a new application — whether an email has
+    // applied is only told to that inbox.
     if (err instanceof Error && err.message === DUPLICATE_APPLICATION) {
-      return {
-        ok: false,
-        message: "An application with this email already exists for this competition.",
-      };
+      queueEmail({ to: d.email, ...submissionReceivedEmail("hack-wars", true) });
+      return { ok: true, done: true };
     }
     if (err instanceof Error && err.message === REGISTRATION_CLOSED) {
       return {

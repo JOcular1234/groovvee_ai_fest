@@ -6,6 +6,7 @@ import { isAllowedOrigin } from "@/lib/auth/csrf";
 import { clientIp } from "@/lib/auth/ip";
 import { loginAdmin } from "@/lib/auth/login";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth/cookies";
+import { MFA_COOKIE } from "@/lib/auth/mfa";
 
 const bodySchema = z.object({
   email: z.email().max(254),
@@ -42,6 +43,17 @@ export async function POST(req: NextRequest) {
   );
 
   if (!result.ok) {
+    if (result.mfaRequired) {
+      const res = NextResponse.json(
+        { mfaRequired: true },
+        { headers: NO_STORE }
+      );
+      res.cookies.set(MFA_COOKIE, result.challenge, {
+        ...sessionCookieOptions(result.challengeExpiresAt),
+        path: "/api/admin/auth",
+      });
+      return res;
+    }
     if (result.throttled) {
       return NextResponse.json(
         { error: "Too many attempts. Please try again later." },

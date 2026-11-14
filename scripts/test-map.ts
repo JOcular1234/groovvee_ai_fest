@@ -1,4 +1,4 @@
-import { closeScriptDb, scriptDb, waitForDb } from "./prisma";
+import { closeScriptDb, scriptDb, waitForDb } from "./test-db";
 import {
   alpha2FromNumeric,
   MAP_REGIONS,

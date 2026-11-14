@@ -6,8 +6,11 @@ import { redirect } from "next/navigation";
 import {
   AdminAccountError,
   createAdmin,
+  deleteAdmin,
   resetAdminPassword,
+  resetAdminTwoFactor,
   setAdminActive,
+  setAdminRole,
   updateAdmin,
 } from "@/lib/admins";
 import { permissionsFromForm } from "@/lib/auth/permissions";
@@ -46,6 +49,7 @@ export async function createAdminAction(
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),
+        role: String(formData.get("role") ?? "ADMIN"),
         permissions: permissionsFromForm(formData),
       })
     );
@@ -109,6 +113,44 @@ export async function setAdminActiveAction(
   return { ok: true };
 }
 
+export async function setAdminRoleAction(
+  id: string,
+  role: string
+): Promise<AdminActionResult> {
+  const actor = await requireSuperAdmin();
+
+  try {
+    await withDbRetry(() => setAdminRole(db, actor.id, id, role));
+  } catch (err) {
+    if (err instanceof AdminAccountError) {
+      return { ok: false, message: err.message };
+    }
+    return { ok: false, message: "Could not change the role. Try again." };
+  }
+
+  revalidatePath("/admin/admins");
+  revalidatePath(`/admin/admins/${id}`);
+  return { ok: true };
+}
+
+export async function deleteAdminAction(
+  id: string
+): Promise<AdminActionResult> {
+  const actor = await requireSuperAdmin();
+
+  try {
+    await withDbRetry(() => deleteAdmin(db, actor.id, id));
+  } catch (err) {
+    if (err instanceof AdminAccountError) {
+      return { ok: false, message: err.message };
+    }
+    return { ok: false, message: "Could not delete the admin. Try again." };
+  }
+
+  revalidatePath("/admin/admins");
+  return { ok: true };
+}
+
 export async function resetAdminPasswordAction(
   _prev: AdminFormState,
   formData: FormData
@@ -141,4 +183,18 @@ export async function resetAdminPasswordAction(
     message:
       "Password reset. The admin must set a new password on next sign-in — all existing sessions were revoked.",
   };
+}
+
+export async function resetAdminTwoFactorAction(
+  id: string
+): Promise<AdminActionResult> {
+  const actor = await requireSuperAdmin();
+  try {
+    await withDbRetry(() => resetAdminTwoFactor(db, actor.id, id));
+  } catch (err) {
+    if (err instanceof AdminAccountError) return { ok: false, message: err.message };
+    return { ok: false, message: "Could not reset two-factor auth. Try again." };
+  }
+  revalidatePath(`/admin/admins/${id}`);
+  return { ok: true };
 }

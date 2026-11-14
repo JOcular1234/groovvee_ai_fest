@@ -11,6 +11,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mfaStep, setMfaStep] = useState(false);
+  const [code, setCode] = useState("");
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,9 +24,14 @@ export function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as { error?: string; mfaRequired?: boolean };
       if (!res.ok) {
         setError(data.error ?? "Invalid email or password");
+        return;
+      }
+      if (data.mfaRequired) {
+        setPassword("");
+        setMfaStep(true);
         return;
       }
       router.push("/admin");
@@ -34,6 +41,95 @@ export function LoginForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function onSubmitCode(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/auth/mfa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        restart?: boolean;
+        usedRecoveryCode?: boolean;
+      };
+      if (!res.ok) {
+        if (data.restart) {
+          setMfaStep(false);
+          setCode("");
+        }
+        setError(data.error ?? "Invalid code");
+        return;
+      }
+      router.push(data.usedRecoveryCode ? "/admin/two-factor?recovery=1" : "/admin");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (mfaStep) {
+    return (
+      <form onSubmit={onSubmitCode} className="mt-8 space-y-5" noValidate>
+        <div>
+          <label
+            htmlFor="code"
+            className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt"
+          >
+            Authentication code
+          </label>
+          <input
+            id="code"
+            inputMode="text"
+            autoComplete="one-time-code"
+            autoFocus
+            required
+            maxLength={20}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="mt-2 w-full border border-white/15 bg-panel px-4 py-3.5 font-mono tracking-[0.3em] text-white outline-none transition-colors placeholder:text-muted/50 focus:border-volt"
+            placeholder="123456"
+          />
+          <p className="mt-2 text-xs text-muted">
+            Enter the 6-digit code from your authenticator app, or one of your
+            recovery codes.
+          </p>
+        </div>
+
+        {error && (
+          <p role="alert" className="border border-volt/40 bg-volt/10 px-4 py-3 text-sm text-volt">
+            {error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-2 bg-volt px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+          {loading ? "Verifying…" : "Verify"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMfaStep(false);
+            setCode("");
+            setError(null);
+          }}
+          className="w-full font-mono text-[11px] uppercase tracking-[0.2em] text-muted transition-colors hover:text-volt"
+        >
+          Use a different account
+        </button>
+      </form>
+    );
   }
 
   return (

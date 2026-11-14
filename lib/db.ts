@@ -43,6 +43,7 @@ const TRANSIENT_CODES = new Set([
   "ECONNREFUSED",
   "EPIPE",
   "ENETUNREACH",
+  "EAI_AGAIN", // DNS lookup failed — network blip, worth retrying
   "P1001", // can't reach the database server
   "P1002", // database server reachable but timed out
   "P1017", // server closed the connection (idle pooler drop)

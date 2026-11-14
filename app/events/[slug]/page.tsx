@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import { EventCard } from "@/components/events/EventCard";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
@@ -39,6 +40,8 @@ export default async function EventPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  // Registration open/closed is time-dependent — render at request time.
+  await connection();
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) notFound();

@@ -4,6 +4,7 @@ import {
   createAdmin,
   resetAdminPassword,
   setAdminActive,
+  setAdminRole,
   updateAdmin,
 } from "../lib/admins";
 import { loginAdmin } from "../lib/auth/login";
@@ -19,11 +20,13 @@ import {
   getAdminByToken,
 } from "../lib/auth/session";
 import { normalizeEmail } from "../lib/auth/password";
-import { closeScriptDb, scriptDb as db, waitForDb } from "./prisma";
+import { throttleKey } from "../lib/auth/rate-limit";
+import { closeScriptDb, scriptDb as db, waitForDb } from "./test-db";
 
-// Runs against the DEV database. All created rows are removed on exit.
+// Runs against TEST_DATABASE_URL only (see scripts/test-db.ts). All created rows are removed on exit.
 const RUN = Date.now().toString(36);
 const EMAIL = `acl-test-${RUN}@example.com`;
+const EMAIL2 = `acl-super-${RUN}@example.com`;
 const PASSWORD = "Temp-Horse-999";
 const NEW_PASSWORD = "Fresh-Password-123";
 const IP = "10.8.8.8";
@@ -47,9 +50,12 @@ async function cleanup() {
     where: { targetId: { in: createdAdminIds } },
   });
   await db.admin.deleteMany({
-    where: { email: normalizeEmail(EMAIL) },
+    where: { email: { in: [normalizeEmail(EMAIL), EMAIL2] } },
   });
-  await db.loginThrottle.deleteMany({});
+  // Only this run's throttle row — never other lockouts or chat limits.
+  await db.loginThrottle.deleteMany({
+    where: { key: throttleKey(normalizeEmail(EMAIL), IP) },
+  });
 }
 
 async function main() {
@@ -116,6 +122,7 @@ async function main() {
     name: "ACL Test",
     email: EMAIL,
     password: PASSWORD,
+    role: "ADMIN",
     permissions: ["events:view", "messages:manage", "bogus:manage"],
   });
   createdAdminIds.push(admin.id);
@@ -138,6 +145,7 @@ async function main() {
     name: "Dup",
     email: EMAIL.toUpperCase(),
     password: PASSWORD,
+    role: "ADMIN",
     permissions: [],
   }).catch((e) => e);
   check(
@@ -149,11 +157,57 @@ async function main() {
     name: "Weak",
     email: `weak-${RUN}@example.com`,
     password: "short",
+    role: "ADMIN",
     permissions: [],
   }).catch((e) => e);
   check(
     "weak password rejected",
     weak instanceof AdminAccountError && weak.code === "weak_password"
+  );
+
+  // --- Role management ---
+  const super2 = await createAdmin(db, actorId, {
+    name: "ACL Super",
+    email: EMAIL2,
+    password: PASSWORD,
+    role: "SUPER_ADMIN",
+    permissions: [],
+  });
+  createdAdminIds.push(super2.id);
+  check("createAdmin can create a SUPER_ADMIN", super2.role === "SUPER_ADMIN");
+
+  const promoted = await setAdminRole(db, actorId, admin.id, "SUPER_ADMIN");
+  check("promotion sets SUPER_ADMIN", promoted.role === "SUPER_ADMIN");
+  const demoted = await setAdminRole(db, actorId, admin.id, "ADMIN");
+  check("demotion back to ADMIN", demoted.role === "ADMIN");
+
+  const selfChange = await setAdminRole(db, actorId, actorId, "ADMIN").catch(
+    (e) => e
+  );
+  check(
+    "cannot change own role",
+    selfChange instanceof AdminAccountError &&
+      selfChange.code === "protected_target"
+  );
+  const badRole = await setAdminRole(db, actorId, admin.id, "ROOT").catch(
+    (e) => e
+  );
+  check(
+    "unknown role rejected",
+    badRole instanceof AdminAccountError && badRole.code === "invalid_role"
+  );
+
+  // Demote the second super admin, leaving the actor as the last one —
+  // then any attempt on the actor must be refused (not by self-rule: a
+  // different actor is used).
+  await setAdminRole(db, actorId, super2.id, "ADMIN");
+  const lastSuper = await setAdminRole(db, super2.id, actorId, "ADMIN").catch(
+    (e) => e
+  );
+  check(
+    "last active SUPER_ADMIN cannot be demoted",
+    lastSuper instanceof AdminAccountError &&
+      lastSuper.code === "protected_target"
   );
 
   // --- Session + mustChangePassword visibility ---

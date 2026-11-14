@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 
 import { formatEventDateTime } from "@/lib/datetime";
@@ -20,16 +20,18 @@ export type EventCardData = {
 };
 
 export function EventCard({ event }: { event: EventCardData }) {
-  const location = event.isOnline
+  const place = [event.city, event.stateProvince, event.country]
+    .filter(Boolean)
+    .join(", ");
+  const locationPrimary = event.isOnline
     ? "Online"
-    : [
-        event.venueName,
-        [event.city, event.stateProvince, event.country]
-          .filter(Boolean)
-          .join(", "),
-      ]
-        .filter(Boolean)
-        .join(" · ");
+    : (event.venueName ?? event.city) || "Location TBA";
+  const locationSecondary = event.isOnline
+    ? null
+    : event.venueName
+      ? place || null
+      : [event.stateProvince, event.country].filter(Boolean).join(", ") ||
+        null;
 
   return (
     <Link
@@ -50,29 +52,44 @@ export function EventCard({ event }: { event: EventCardData }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <span
-            aria-hidden
-            className="absolute inset-0 flex items-center justify-center font-display text-6xl text-outline-volt"
-          >
-            {event.title.slice(0, 2).toUpperCase()}
-          </span>
+          <>
+            <span
+              aria-hidden
+              className="absolute inset-0 flex items-center justify-center font-display text-7xl text-outline-volt"
+            >
+              {event.title.slice(0, 2).toUpperCase()}
+            </span>
+            <span
+              aria-hidden
+              className="absolute bottom-3 right-3 z-10 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt/60"
+            >
+              GrooVVee
+            </span>
+          </>
         )}
-        <span className="absolute bottom-3 left-3 z-10 bg-ink/90 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-volt">
+        <span className="absolute bottom-3 left-3 z-10 bg-ink/90 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-volt">
           {formatEventDateTime(event.startsAt, event.timezone)}
         </span>
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
-          {location || "Location TBA"}
-        </p>
-        <h3 className="mt-3 font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt">
+        <div className="min-w-0">
+          <p className="break-words font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-volt">
+            {locationPrimary}
+          </p>
+          {locationSecondary && (
+            <p className="mt-1 break-words font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+              {locationSecondary}
+            </p>
+          )}
+        </div>
+        <h3 className="mt-3 break-words font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt sm:text-[26px]">
           {event.title}
         </h3>
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
+        <p className="mt-3 line-clamp-3 text-[15px] leading-[1.65] text-muted">
           {event.description}
         </p>
         {event.community && (
-          <p className="mt-auto pt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+          <p className="mt-auto pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             Hosted by {event.community.name}
           </p>
         )}

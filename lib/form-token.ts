@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 
 // Signing key for form tokens. FORM_SIGNING_SECRET is required in production
 // so tokens stay valid across instances/restarts; development falls back to a
@@ -36,7 +36,12 @@ export function verifyFormToken(
 ): boolean {
   const [tsRaw, sig] = token.split(".");
   const ts = Number(tsRaw);
-  if (!Number.isFinite(ts) || !sig || sig !== sign(ts)) return false;
+  if (!Number.isFinite(ts) || !sig) return false;
+  const expected = Buffer.from(sign(ts));
+  const given = Buffer.from(sig);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) {
+    return false;
+  }
   const age = Date.now() - ts;
   return age >= minMs && age <= maxAgeMs;
 }

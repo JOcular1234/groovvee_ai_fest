@@ -2,7 +2,11 @@
 
 import { submitMessage } from "@/lib/messages";
 import { db, withDbRetry } from "@/lib/db";
+import { queueAdminAlert, queueEmail, siteUrl } from "@/lib/email";
+import { adminAlertEmail, submissionReceivedEmail } from "@/lib/email/templates";
+import { guardPublicSubmission } from "@/lib/form-guard";
 import { verifyFormToken } from "@/lib/form-token";
+import { INQUIRY_TYPE_LABELS } from "@/lib/inquiry-types";
 import { messageSubmitSchema } from "@/lib/validation/message";
 
 export type ContactFormState = {
@@ -24,7 +28,8 @@ export async function submitMessageAction(
     return { ok: true, done: true }; // pretend success — waste the bot's time
   }
   // Minimum-fill-time token (HMAC-signed; see lib/form-token.ts).
-  if (!verifyFormToken(String(formData.get("started") ?? ""))) {
+  const token = String(formData.get("started") ?? "");
+  if (!verifyFormToken(token)) {
     return {
       ok: false,
       message: "Something went wrong with the form — please reload and try again.",
@@ -41,9 +46,35 @@ export async function submitMessageAction(
   if (!parsed.success) {
     return { ok: false, errors: parsed.error.flatten().fieldErrors };
   }
+  if (String(formData.get("consent") ?? "") !== "on") {
+    return {
+      ok: false,
+      errors: { consent: ["Please accept the privacy policy to continue."] },
+    };
+  }
 
   try {
-    await withDbRetry(() => submitMessage(db, parsed.data));
+    const guard = await withDbRetry(() =>
+      guardPublicSubmission(db, "contact", token)
+    );
+    if (!guard.ok) return { ok: false, message: guard.message };
+
+    const saved = await withDbRetry(() => submitMessage(db, parsed.data));
+    const d = parsed.data;
+    queueEmail({ to: d.email, ...submissionReceivedEmail("contact") });
+    queueAdminAlert({
+      replyTo: d.email,
+      ...adminAlertEmail(
+        `New message: ${INQUIRY_TYPE_LABELS[d.type] ?? d.type}`,
+        [
+          ["From", `${d.name} <${d.email}>`],
+          ["Type", INQUIRY_TYPE_LABELS[d.type] ?? d.type],
+          ["Subject", d.subject],
+          ["Message", d.message],
+        ],
+        `${siteUrl()}/admin/messages/${saved.id}`
+      ),
+    });
   } catch {
     return {
       ok: false,

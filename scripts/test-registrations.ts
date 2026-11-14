@@ -4,6 +4,8 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
 import {
+  confirmRegistration,
+  hashConfirmToken,
   isRegistrationOpen,
   listRegistrationsForAdmin,
   registerForEvent,
@@ -28,6 +30,8 @@ const past = new Date(Date.now() - 86_400_000);
 
 const groovveeEvent = {
   id: "evt-1",
+  title: "My Event",
+  slug: "my-event",
   published: true,
   source: "GROOVVEE" as const,
   startsAt: future,
@@ -39,6 +43,9 @@ type FakeOpts = {
   event?: Record<string, unknown> | null;
   createError?: unknown;
   registrations?: Record<string, unknown>[];
+  // Row returned by eventRegistration.findUnique (dedupe + confirm lookups).
+  existing?: Record<string, unknown> | null;
+  updateCount?: number;
 };
 
 function fakeDb(opts: FakeOpts = {}) {
@@ -46,6 +53,7 @@ function fakeDb(opts: FakeOpts = {}) {
     createData: null as Record<string, unknown> | null,
     findUniqueWhere: null as unknown,
     listWhere: null as unknown,
+    updateManyArgs: null as { where: Record<string, unknown>; data: Record<string, unknown> } | null,
   };
   const db = {
     event: {
@@ -59,6 +67,11 @@ function fakeDb(opts: FakeOpts = {}) {
         calls.createData = data;
         if (opts.createError) throw opts.createError;
         return { id: "reg-1", ...data };
+      },
+      findUnique: async () => opts.existing ?? null,
+      updateMany: async (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+        calls.updateManyArgs = args;
+        return { count: opts.updateCount ?? 1 };
       },
       count: async () => (opts.registrations ?? []).length,
       findMany: async (args: { where: unknown }) => {
@@ -133,7 +146,10 @@ async function main() {
   {
     const { db, calls } = fakeDb();
     const res = await registerForEvent(db, "my-event", input);
-    check("happy path registers", res.ok === true);
+    check(
+      "happy path → pending with a confirmation token",
+      res.ok && res.status === "pending" && !!res.confirmToken
+    );
     check(
       "writes eventId + normalized fields only",
       calls.createData?.eventId === "evt-1" &&
@@ -141,6 +157,14 @@ async function main() {
         calls.createData?.email === "ada@example.com" &&
         calls.createData?.organization === null
     );
+    check(
+      "stores only the token hash, never the token",
+      res.ok &&
+        res.status === "pending" &&
+        calls.createData?.confirmTokenHash === hashConfirmToken(res.confirmToken!) &&
+        !Object.values(calls.createData ?? {}).includes(res.confirmToken)
+    );
+    check("new registration is not confirmed", calls.createData?.confirmedAt === undefined);
   }
   {
     const { db, calls } = fakeDb({ event: null });
@@ -170,12 +194,87 @@ async function main() {
     check("past event → closed", !res.ok && res.reason === "closed");
   }
   {
-    const { db } = fakeDb({ createError: p2002 });
+    const { db, calls } = fakeDb({
+      createError: p2002,
+      existing: { id: "reg-1", confirmedAt: new Date(), confirmSentAt: null },
+    });
     const res = await registerForEvent(db, "my-event", input);
     check(
-      "P2002 → duplicate (DB-level dedupe)",
-      !res.ok && res.reason === "duplicate"
+      "P2002 + confirmed → already_confirmed (ok, no error leak)",
+      res.ok && res.status === "already_confirmed"
     );
+    check("already confirmed → row untouched", calls.updateManyArgs === null);
+  }
+  {
+    const { db, calls } = fakeDb({
+      createError: p2002,
+      existing: { id: "reg-1", confirmedAt: null, confirmSentAt: past },
+    });
+    const res = await registerForEvent(db, "my-event", input);
+    check(
+      "P2002 + pending → fresh token (old link rotated)",
+      res.ok &&
+        res.status === "pending" &&
+        !!res.confirmToken &&
+        calls.updateManyArgs?.data.confirmTokenHash === hashConfirmToken(res.confirmToken)
+    );
+    check(
+      "resend is conditional on still-pending + throttle window",
+      calls.updateManyArgs?.where.confirmedAt === null &&
+        Array.isArray(calls.updateManyArgs?.where.OR)
+    );
+  }
+  {
+    const { db } = fakeDb({
+      createError: p2002,
+      existing: { id: "reg-1", confirmedAt: null, confirmSentAt: new Date() },
+      updateCount: 0,
+    });
+    const res = await registerForEvent(db, "my-event", input);
+    check(
+      "P2002 + link sent moments ago → no new email (token null)",
+      res.ok && res.status === "pending" && res.confirmToken === null
+    );
+  }
+
+  console.log("confirmRegistration");
+  {
+    const { db, calls } = fakeDb({
+      existing: { id: "reg-1", event: { ...groovveeEvent } },
+    });
+    const res = await confirmRegistration(db, "tok");
+    check("valid token confirms", res.ok);
+    check(
+      "confirm clears the token and stamps confirmedAt (single use)",
+      calls.updateManyArgs?.data.confirmTokenHash === null &&
+        calls.updateManyArgs?.data.confirmedAt instanceof Date &&
+        calls.updateManyArgs?.where.confirmTokenHash === hashConfirmToken("tok")
+    );
+  }
+  {
+    const { db } = fakeDb({ existing: null });
+    const res = await confirmRegistration(db, "nope");
+    check("unknown token → invalid", !res.ok && res.reason === "invalid");
+  }
+  {
+    const { db } = fakeDb({
+      existing: { id: "reg-1", event: { ...groovveeEvent, startsAt: past } },
+    });
+    const res = await confirmRegistration(db, "tok");
+    check("started event → closed", !res.ok && res.reason === "closed");
+  }
+  {
+    const { db } = fakeDb({
+      existing: { id: "reg-1", event: { ...groovveeEvent } },
+      updateCount: 0,
+    });
+    const res = await confirmRegistration(db, "tok");
+    check("concurrent/replayed confirm → invalid", !res.ok && res.reason === "invalid");
+  }
+  {
+    const { db } = fakeDb();
+    const res = await confirmRegistration(db, "x".repeat(101));
+    check("oversized token rejected without lookup", !res.ok);
   }
   {
     const { db } = fakeDb({ createError: new Error("boom") });
