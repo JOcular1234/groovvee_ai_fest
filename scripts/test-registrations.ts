@@ -73,6 +73,7 @@ function fakeDb(opts: FakeOpts = {}) {
         calls.updateManyArgs = args;
         return { count: opts.updateCount ?? 1 };
       },
+      deleteMany: async () => ({ count: 0 }),
       count: async () => (opts.registrations ?? []).length,
       findMany: async (args: { where: unknown }) => {
         calls.listWhere = args.where;

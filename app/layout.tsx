@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { NavbarVisibility } from "@/components/layout/NavbarVisibility";
 import { Footer } from "@/components/layout/Footer";
 import { FooterVisibility } from "@/components/layout/FooterVisibility";
+import { CookieNotice } from "@/components/layout/CookieNotice";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const anton = Anton({
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main className="flex-1">{children}</main>
           <FooterVisibility>
             <Footer />
+            <CookieNotice />
           </FooterVisibility>
           <ChatWidget />
         </Providers>

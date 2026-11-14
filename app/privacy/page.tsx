@@ -43,10 +43,7 @@ const SHARING = [
     title: "Google",
     desc: "Gmail API sends our transactional email (confirmations and notifications); Gemini processes chat assistant messages.",
   },
-  {
-    title: "Vercel",
-    desc: "Website hosting and request handling.",
-  },
+  
 ];
 
 const RIGHTS = [
@@ -160,11 +157,11 @@ export default function PrivacyPage() {
                 days.
               </span>{" "}
               If you register but never click the confirmation link, your
-              details don't stay in our system.
+              details don&rsquo;t stay in our system.
             </p>
             <p>
               Confirmed registrations, applications and contact messages are
-              kept while the event cycle they're part of is active, and for up
+              kept while the event cycle they&rsquo;re part of is active, and for up
               to 24 months afterwards for event administration and records. You
               can ask for earlier deletion at any time.
             </p>
@@ -173,7 +170,7 @@ export default function PrivacyPage() {
           <Section id="cookies" title="Cookies">
             <p>
               This site sets no advertising, analytics or tracking cookies. The
-              only cookies are the admin area's sign-in session and short-lived
+              only cookies are the admin area&rsquo;s sign-in session and short-lived
               security tokens used by forms — none of them track visitors.
             </p>
           </Section>

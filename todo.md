@@ -26,6 +26,7 @@ No outgoing email at all. Registrations, applications and contact messages are s
 Tickets is a placeholder page. The TicketType model exists but nothing uses it, and todo.md still asks whether the $700 / $5,000 sponsorships need payment. Decide between display-only pricing and Stripe checkout.
 Event registration is basic: no capacity limit, waitlist, cancellation link, calendar invite (.ics), or check-in.
 Placeholder content: in event.ts, the date, venue and location are "to be announced", and the contact email is a personal blackbumblesolutions.com address. Use a role address like hello@… on your own domain.
+
 SEO basics are missing: no robots.ts, sitemap.ts, metadataBase (so Open Graph URLs won't resolve) or JSON-LD Event markup. That markup is what gets events into Google's event listings.
 No error.tsx or global-error.tsx, so errors show Next's default page.
 No monitoring: no error tracking (e.g. Sentry) or analytics, and logging is just console.*.
