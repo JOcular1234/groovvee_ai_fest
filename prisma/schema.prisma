@@ -641,13 +641,21 @@ model NewsPost {
   body          String    @db.Text
   coverImageUrl String?
   sourceUrl     String?
-  authorName    String?
-  publishedAt   DateTime?
-  published     Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  authorName     String?
+  // Live when published AND publishedAt <= now; a future publishedAt means
+  // the post is scheduled.
+  publishedAt    DateTime?
+  published      Boolean   @default(false)
+  // At most one post is featured (enforced in lib/news.ts).
+  featured       Boolean   @default(false)
+  // Lowercase slug-style tags, e.g. ["generative-ai", "events"].
+  tags           String[]  @default([])
+  readingMinutes Int       @default(1)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([published, publishedAt])
+  @@index([tags], type: Gin)
   @@map("news_posts")
 }
 

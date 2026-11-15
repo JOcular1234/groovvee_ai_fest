@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
+import { fontVariables } from "./fonts";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/Navbar";
 import { NavbarVisibility } from "@/components/layout/NavbarVisibility";
@@ -8,25 +8,11 @@ import { Footer } from "@/components/layout/Footer";
 import { FooterVisibility } from "@/components/layout/FooterVisibility";
 import { CookieNotice } from "@/components/layout/CookieNotice";
 import { ChatWidget } from "@/components/chat/ChatWidget";
-
-const anton = Anton({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-anton",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-});
-
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-space-mono",
-});
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_NAME, absoluteUrl, getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Groovvee AI Fest — Where Creativity Meets Artificial Intelligence",
     template: "%s — Groovvee AI Fest",
@@ -38,8 +24,30 @@ export const metadata: Metadata = {
     description:
       "Where Creativity Meets Artificial Intelligence. Explore the possibilities of AI, connect with innovators and experience the future being built.",
     type: "website",
-    siteName: "Groovvee AI Fest",
+    siteName: SITE_NAME,
+    locale: "en_US",
   },
+  twitter: { card: "summary_large_image" },
+};
+
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": absoluteUrl("/#organization"),
+      name: SITE_NAME,
+      url: absoluteUrl("/"),
+      logo: absoluteUrl("/groovveelogo.png"),
+    },
+    {
+      "@type": "WebSite",
+      "@id": absoluteUrl("/#website"),
+      name: SITE_NAME,
+      url: absoluteUrl("/"),
+      publisher: { "@id": absoluteUrl("/#organization") },
+    },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -47,9 +55,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${anton.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${fontVariables} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ink font-sans text-white">
+        <JsonLd data={siteJsonLd} />
         <Providers>
           <NavbarVisibility>
             <Navbar />

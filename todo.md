@@ -22,6 +22,7 @@ fix-admin-email.ts commits personal email addresses to git. Delete it now that i
 
 There is no privacy policy, consent text or data-retention plan, even though the site collects names, emails, phone numbers and schools. This matters for GDPR/CCPA, especially with student applicants.
 Product and feature gaps
+
 No outgoing email at all. Registrations, applications and contact messages are saved to the database but nobody is notified. Add an email provider (Resend, Postmark, etc.) for visitor confirmations and admin alerts.
 Tickets is a placeholder page. The TicketType model exists but nothing uses it, and todo.md still asks whether the $700 / $5,000 sponsorships need payment. Decide between display-only pricing and Stripe checkout.
 Event registration is basic: no capacity limit, waitlist, cancellation link, calendar invite (.ics), or check-in.
@@ -29,6 +30,7 @@ Placeholder content: in event.ts, the date, venue and location are "to be announ
 
 SEO basics are missing: no robots.ts, sitemap.ts, metadataBase (so Open Graph URLs won't resolve) or JSON-LD Event markup. That markup is what gets events into Google's event listings.
 No error.tsx or global-error.tsx, so errors show Next's default page.
+
 No monitoring: no error tracking (e.g. Sentry) or analytics, and logging is just console.*.
 Admin quality of life: image upload instead of pasting URLs, bulk actions, CSV export for messages and applications, and a dashboard with registration and application counts.
 Code health

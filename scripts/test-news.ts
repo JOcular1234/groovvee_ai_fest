@@ -4,12 +4,15 @@ import {
   deleteNewsPost,
   getNewsPostById,
   listNewsPostsForAdmin,
+  newsPostStatus,
   queryLatestNewsPosts,
   queryNewsPostBySlug,
+  queryNewsTags,
   queryPublishedNewsPosts,
   setNewsPostPublished,
   updateNewsPost,
 } from "../lib/news";
+import { parseBody, plainText } from "../lib/news-body";
 import { SlugConflictError } from "../lib/slug";
 import { newsPostFormSchema } from "../lib/validation/news";
 
@@ -136,7 +139,7 @@ async function main() {
   const p2After = await getNewsPostById(scriptDb, p2.id);
   check("publish stamps publishedAt", p2After?.publishedAt instanceof Date);
 
-  const publicList = await queryPublishedNewsPosts(scriptDb, 1);
+  const publicList = await queryPublishedNewsPosts(scriptDb);
   check(
     "public list only shows published",
     publicList.posts.some((p) => p.id === p1.id) &&
@@ -144,7 +147,7 @@ async function main() {
   );
 
   await setNewsPostPublished(scriptDb, p2.id, false);
-  const afterUnpublish = await queryPublishedNewsPosts(scriptDb, 1);
+  const afterUnpublish = await queryPublishedNewsPosts(scriptDb);
   check(
     "unpublish hides post publicly",
     !afterUnpublish.posts.some((p) => p.id === p2.id)
@@ -172,6 +175,121 @@ async function main() {
   check(
     "latest posts excludes current and drafts",
     !latest.some((p) => p.id === p1.id) && !latest.some((p) => p.id === p2.id)
+  );
+
+  console.log("\n— Scheduling —");
+  const future = new Date(Date.now() + 24 * 3600 * 1000);
+  const sched = await createNewsPost(
+    scriptDb,
+    postInput({
+      title: "TEST_Scheduled",
+      published: true,
+      publishedAt: future.toISOString(),
+    })
+  );
+  check(
+    "explicit future publishedAt is stored",
+    sched.publishedAt?.getTime() === future.getTime()
+  );
+  check("status is scheduled", newsPostStatus(sched) === "scheduled");
+  check(
+    "scheduled post hidden from slug page",
+    (await queryNewsPostBySlug(scriptDb, sched.slug)) === null
+  );
+  check(
+    "scheduled post hidden from list",
+    !(await queryPublishedNewsPosts(scriptDb)).posts.some(
+      (p) => p.id === sched.id
+    )
+  );
+  const later = new Date(future.getTime() + 60_000);
+  check(
+    "scheduled post live once its time passes",
+    (await queryNewsPostBySlug(scriptDb, sched.slug, later))?.id === sched.id
+  );
+  check(
+    "status is published after its time",
+    newsPostStatus(sched, later) === "published"
+  );
+
+  console.log("\n— Tags, featured & reading time —");
+  const parsedTags = newsPostFormSchema.safeParse({
+    ...postInput(),
+    tags: " Generative AI, events,events , ",
+  });
+  check(
+    "tags normalised and de-duplicated",
+    parsedTags.success &&
+      parsedTags.data.tags.join("|") === "generative-ai|events"
+  );
+  check(
+    "rejects more than 8 tags",
+    !newsPostFormSchema.safeParse({
+      ...postInput(),
+      tags: "a,b,c,d,e,f,g,h,i",
+    }).success
+  );
+
+  const longBody = Array.from({ length: 450 }, () => "word").join(" ");
+  const f1 = await createNewsPost(
+    scriptDb,
+    postInput({
+      title: "TEST_Featured One",
+      published: true,
+      featured: true,
+      tags: "test-tag-x",
+      body: longBody,
+    })
+  );
+  check("reading time computed (450 words → 3 min)", f1.readingMinutes === 3);
+  const f2 = await createNewsPost(
+    scriptDb,
+    postInput({ title: "TEST_Featured Two", published: true, featured: true })
+  );
+  const f1After = await getNewsPostById(scriptDb, f1.id);
+  check(
+    "featuring a post un-features the previous one",
+    f2.featured && f1After?.featured === false
+  );
+
+  const listing = await queryPublishedNewsPosts(scriptDb);
+  check(
+    "featured post returned separately and excluded from grid",
+    listing.featured?.id === f2.id &&
+      !listing.posts.some((p) => p.id === f2.id)
+  );
+  const tagged = await queryPublishedNewsPosts(scriptDb, { tag: "test-tag-x" });
+  check(
+    "tag filter returns only tagged posts, no featured hero",
+    tagged.featured === null &&
+      tagged.posts.length === 1 &&
+      tagged.posts[0].id === f1.id
+  );
+  check(
+    "tag list includes the tag",
+    (await queryNewsTags(scriptDb)).some((t) => t.tag === "test-tag-x")
+  );
+
+  console.log("\n— Body formatting —");
+  const blocks = parseBody(
+    "## Heading\n\n- one\n- two\n\nSee [docs](https://example.com) and [bad](javascript:alert(1)) and [rel](//evil.com)."
+  );
+  check(
+    "parses heading and list",
+    blocks[0]?.t === "h2" && blocks[1]?.t === "ul" && blocks[1].items.length === 2
+  );
+  const para = blocks[2];
+  const links =
+    para?.t === "p"
+      ? para.lines[0].filter((n) => n.t === "link").map((n) => n.href)
+      : [];
+  check(
+    "only safe links become links",
+    links.length === 1 && links[0] === "https://example.com"
+  );
+  check(
+    "plainText strips markers",
+    plainText("## Title\n\n**bold** [x](https://a.test)") === "Title\n\nbold x"
   );
 
   console.log("\n— Admin list & delete —");

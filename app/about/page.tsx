@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
@@ -6,12 +5,14 @@ import { getPublishedCommunities } from "@/lib/public/communities";
 import { getPublishedCompetitions } from "@/lib/public/competitions";
 import { getPublishedEvents } from "@/lib/public/events";
 import { getCityIndex } from "@/lib/public/locations";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "About",
   description:
     "GrooVVee AI Fest is a global AI ecosystem — student tribes, campus communities, creative and industry groups connected through events, competitions and shared curiosity.",
-};
+  path: "/about",
+});
 
 const PILLARS = [
   {

@@ -5,9 +5,27 @@ import {
   SlugConflictError,
   uniqueSlug,
 } from "@/lib/slug";
+import { readingMinutes } from "@/lib/news-body";
 import type { NewsPostInput } from "@/lib/validation/news";
 
-export const publishedNewsPostWhere = { published: true } as const;
+// Public visibility: published AND its publish time has arrived. A published
+// post with a future publishedAt is "scheduled" and stays hidden until then.
+export function liveNewsPostWhere(now = new Date()) {
+  return {
+    published: true,
+    OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+  } satisfies Prisma.NewsPostWhereInput;
+}
+
+export type NewsPostStatus = "draft" | "scheduled" | "published";
+
+export function newsPostStatus(
+  post: { published: boolean; publishedAt: Date | null },
+  now = new Date()
+): NewsPostStatus {
+  if (!post.published) return "draft";
+  return post.publishedAt && post.publishedAt > now ? "scheduled" : "published";
+}
 
 const publicListSelect = {
   id: true,
@@ -18,13 +36,20 @@ const publicListSelect = {
   authorName: true,
   publishedAt: true,
   createdAt: true,
+  tags: true,
+  readingMinutes: true,
 } satisfies Prisma.NewsPostSelect;
 
 const publicPostSelect = {
   ...publicListSelect,
   body: true,
   sourceUrl: true,
+  updatedAt: true,
 } satisfies Prisma.NewsPostSelect;
+
+export type PublicNewsPost = Prisma.NewsPostGetPayload<{
+  select: typeof publicPostSelect;
+}>;
 
 const adminOrderBy: Prisma.NewsPostOrderByWithRelationInput[] = [
   { createdAt: "desc" },
@@ -94,8 +119,28 @@ export async function getNewsPostById(db: PrismaClient, id: string) {
 
 type NewsPostWriteInput = Omit<NewsPostInput, "slug"> & { slug: string };
 
-// `input.slug === ""` means auto-generate. Publishing sets publishedAt once —
-// re-publishing keeps the original timestamp.
+// Featuring a post un-features any other first (a partial unique index also
+// guarantees at most one), in the same transaction as the write.
+function writeWithFeatured<T>(
+  db: PrismaClient,
+  featured: boolean,
+  excludeId: string | undefined,
+  write: (tx: Prisma.TransactionClient) => Promise<T>
+): Promise<T> {
+  return db.$transaction(async (tx) => {
+    if (featured) {
+      await tx.newsPost.updateMany({
+        where: { featured: true, ...(excludeId ? { id: { not: excludeId } } : {}) },
+        data: { featured: false },
+      });
+    }
+    return write(tx);
+  });
+}
+
+// `input.slug === ""` means auto-generate. An explicit publishedAt (future =
+// scheduled, past = backdated) wins; otherwise the first publish stamps now
+// and re-publishing keeps the original timestamp.
 export async function createNewsPost(
   db: PrismaClient,
   input: NewsPostWriteInput
@@ -109,13 +154,15 @@ export async function createNewsPost(
       continue;
     }
     try {
-      return await db.newsPost.create({
-        data: {
-          ...input,
-          slug,
-          publishedAt: input.published ? new Date() : null,
-        },
-      });
+      const data = {
+        ...input,
+        slug,
+        readingMinutes: readingMinutes(input.body),
+        publishedAt: input.publishedAt ?? (input.published ? new Date() : null),
+      };
+      return await writeWithFeatured(db, input.featured, undefined, (tx) =>
+        tx.newsPost.create({ data })
+      );
     } catch (err) {
       if (!isUniqueViolation(err)) throw err;
       if (!auto || attempt >= 4) throw new SlugConflictError(slug);
@@ -144,16 +191,19 @@ export async function updateNewsPost(
       continue;
     }
     try {
-      return await db.newsPost.update({
-        where: { id },
-        data: {
-          ...input,
-          slug,
-          publishedAt: input.published
+      const data = {
+        ...input,
+        slug,
+        readingMinutes: readingMinutes(input.body),
+        publishedAt:
+          input.publishedAt ??
+          (input.published
             ? (existing.publishedAt ?? new Date())
-            : existing.publishedAt,
-        },
-      });
+            : existing.publishedAt),
+      };
+      return await writeWithFeatured(db, input.featured, id, (tx) =>
+        tx.newsPost.update({ where: { id }, data })
+      );
     } catch (err) {
       if (!isUniqueViolation(err)) throw err;
       if (!auto || attempt >= 4) throw new SlugConflictError(slug);
@@ -194,17 +244,32 @@ export async function setNewsPostPublished(
   });
 }
 
-// --- Public queries (unpublished posts are never returned) ---
+// --- Public queries (drafts and scheduled posts are never returned) ---
 
+// The unfiltered listing shows the featured post as a hero on page 1 and
+// leaves it out of the grid on every page, so pagination stays consistent.
+// A tag filter is a plain list (the featured post appears in it normally).
 export async function queryPublishedNewsPosts(
   db: PrismaClient,
-  page = 1
+  opts: { page?: number; tag?: string; now?: Date } = {}
 ) {
-  const p = Math.max(1, page);
+  const p = Math.max(1, opts.page ?? 1);
+  const live = liveNewsPostWhere(opts.now);
+  const featured = opts.tag
+    ? null
+    : await db.newsPost.findFirst({
+        where: { ...live, featured: true },
+        select: publicListSelect,
+      });
+  const where: Prisma.NewsPostWhereInput = {
+    ...live,
+    ...(opts.tag ? { tags: { has: opts.tag } } : {}),
+    ...(featured ? { id: { not: featured.id } } : {}),
+  };
   const [total, posts] = await Promise.all([
-    db.newsPost.count({ where: publishedNewsPostWhere }),
+    db.newsPost.count({ where }),
     db.newsPost.findMany({
-      where: publishedNewsPostWhere,
+      where,
       orderBy: publicOrderBy,
       skip: (p - 1) * PUBLIC_NEWS_PAGE_SIZE,
       take: PUBLIC_NEWS_PAGE_SIZE,
@@ -212,6 +277,7 @@ export async function queryPublishedNewsPosts(
     }),
   ]);
   return {
+    featured,
     posts,
     total,
     page: p,
@@ -219,20 +285,48 @@ export async function queryPublishedNewsPosts(
   };
 }
 
-export async function queryNewsPostBySlug(db: PrismaClient, slug: string) {
+// Tags in use on live posts, most-used first.
+export async function queryNewsTags(db: PrismaClient, now?: Date) {
+  const rows = await db.newsPost.findMany({
+    where: liveNewsPostWhere(now),
+    select: { tags: true },
+  });
+  const counts = new Map<string, number>();
+  for (const t of rows.flatMap((r) => r.tags)) {
+    counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
+  return [...counts]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([tag, count]) => ({ tag, count }));
+}
+
+export async function queryNewsPostBySlug(
+  db: PrismaClient,
+  slug: string,
+  now?: Date
+) {
   return db.newsPost.findFirst({
-    where: { ...publishedNewsPostWhere, slug },
+    where: { ...liveNewsPostWhere(now), slug },
     select: publicPostSelect,
+  });
+}
+
+// Admin preview: any status, same shape the public page renders.
+export async function queryNewsPostForPreview(db: PrismaClient, id: string) {
+  return db.newsPost.findUnique({
+    where: { id },
+    select: { ...publicPostSelect, published: true, featured: true },
   });
 }
 
 export async function queryLatestNewsPosts(
   db: PrismaClient,
   excludeId: string,
-  take = 3
+  take = 3,
+  now?: Date
 ) {
   return db.newsPost.findMany({
-    where: { ...publishedNewsPostWhere, id: { not: excludeId } },
+    where: { ...liveNewsPostWhere(now), id: { not: excludeId } },
     orderBy: publicOrderBy,
     take,
     select: publicListSelect,

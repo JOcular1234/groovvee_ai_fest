@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { connection } from "next/server";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import Image from "@/components/ui/AppImage";
@@ -16,12 +15,14 @@ import {
   COMMUNITY_TYPES,
   isCommunityCategory,
 } from "@/lib/validation/community";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Communities",
   description:
     "AI student tribes, campus communities and creative & industry AI groups — find your people in the GrooVVee ecosystem.",
-};
+  path: "/communities",
+});
 
 // Filtered via searchParams; the heatmap's upcoming counts depend on now.
 export const instant = false;

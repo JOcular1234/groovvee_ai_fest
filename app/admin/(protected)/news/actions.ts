@@ -46,6 +46,9 @@ export async function saveNewsPostAction(
     sourceUrl: formData.get("sourceUrl") ?? "",
     authorName: formData.get("authorName") ?? "",
     published: formData.get("published") === "on",
+    publishedAt: formData.get("publishedAt") ?? "",
+    featured: formData.get("featured") === "on",
+    tags: formData.get("tags") ?? "",
   });
 
   if (!parsed.success) {

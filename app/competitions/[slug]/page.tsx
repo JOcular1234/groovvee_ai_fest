@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 
 import { formatEventDateTime } from "@/lib/datetime";
 import { getCompetitionBySlug } from "@/lib/public/competitions";
+import { pageMetadata } from "@/lib/site";
 import {
   COMPETITION_KIND_LABELS,
   COMPETITION_STATUS_LABELS,
@@ -19,10 +20,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const competition = await getCompetitionBySlug(slug);
   if (!competition) return { title: "Competition" };
-  return {
+  return pageMetadata({
     title: competition.title,
     description: competition.description.slice(0, 160),
-  };
+    path: `/competitions/${competition.slug}`,
+    image: competition.imageUrl,
+  });
 }
 
 // Dynamic slug params — renders per request over cached queries.

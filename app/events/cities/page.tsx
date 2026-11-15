@@ -1,19 +1,15 @@
-import type { Metadata } from "next";
 import { ArrowLeft, ArrowUpRight, Search } from "lucide-react";
 import Link from "next/link";
 
 import { getCityIndex } from "@/lib/public/locations";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Event Cities",
   description:
     "Discover AI community events by city — GrooVVee meetups, hackathons and gatherings around the world.",
-  openGraph: {
-    title: "GrooVVee Event Cities",
-    description:
-      "Discover AI community events by city — meetups, hackathons and gatherings around the world.",
-  },
-};
+  path: "/events/cities",
+});
 
 // Uses searchParams filters — renders per request over cached queries.
 export const instant = false;

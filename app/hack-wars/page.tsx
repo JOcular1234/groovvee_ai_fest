@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { getHackWarsCompetition } from "@/lib/public/competitions";
 import { COMPETITION_STATUS_LABELS } from "@/lib/validation/competition";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "AI Hack Wars",
   description:
     "The flagship GrooVVee build competition — solo or teams of three, filmed over 30 days, three rounds, one winner.",
-};
+  path: "/hack-wars",
+});
 
 const STEPS = [
   {

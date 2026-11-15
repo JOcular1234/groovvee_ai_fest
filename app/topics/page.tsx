@@ -1,12 +1,15 @@
-import type { Metadata } from "next";
 import Image from "@/components/ui/AppImage";
 
 import { Reveal } from "@/components/ui/Reveal";
 import { getPublishedTopics } from "@/lib/public/topics";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Topics",
-};
+  description:
+    "The AI topics explored at GrooVVee AI Fest — from generative AI and machine learning to creative technology and the future of work.",
+  path: "/topics",
+});
 
 export default async function TopicsPage() {
   const topics = await getPublishedTopics();

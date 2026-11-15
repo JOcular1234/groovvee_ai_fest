@@ -15,9 +15,26 @@ import {
   AdminSearchBar,
   AdminTable,
   StatusBadge,
+  type BadgeTone,
 } from "@/components/admin/ui";
 import { db, withDbRetry } from "@/lib/db";
-import { listNewsPostsForAdmin } from "@/lib/news";
+import {
+  listNewsPostsForAdmin,
+  newsPostStatus,
+  type NewsPostStatus,
+} from "@/lib/news";
+
+const STATUS_LABEL: Record<NewsPostStatus, string> = {
+  draft: "Draft",
+  scheduled: "Scheduled",
+  published: "Published",
+};
+
+const STATUS_TONE: Record<NewsPostStatus, BadgeTone> = {
+  draft: "muted",
+  scheduled: "info",
+  published: "success",
+};
 
 export const metadata: Metadata = {
   title: "News · Admin",
@@ -38,6 +55,7 @@ export default async function AdminNewsPage({
     listNewsPostsForAdmin(db, { q: query || undefined, page: Number(page) || 1 })
   );
 
+  const now = new Date();
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
@@ -117,12 +135,21 @@ export default async function AdminNewsPage({
                   : "—"}
               </td>
               <td className={adminTdClass}>
-                <StatusBadge tone={p.published ? "volt" : "muted"}>
-                  {p.published ? "Published" : "Draft"}
-                </StatusBadge>
+                <div className="flex flex-wrap gap-1.5">
+                  <StatusBadge tone={STATUS_TONE[newsPostStatus(p, now)]}>
+                    {STATUS_LABEL[newsPostStatus(p, now)]}
+                  </StatusBadge>
+                  {p.featured && <StatusBadge tone="volt">Featured</StatusBadge>}
+                </div>
               </td>
               <td className={adminTdClass}>
                 <div className="flex items-center justify-end gap-3">
+                  <Link
+                    href={`/admin/news/${p.id}/preview`}
+                    className={adminLinkClass}
+                  >
+                    Preview
+                  </Link>
                   <Link
                     href={`/admin/news/${p.id}/edit`}
                     className={adminLinkClass}

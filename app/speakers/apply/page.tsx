@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { ApplyForm } from "@/components/applications/ApplyForm";
 import { issueFormToken } from "@/lib/form-token";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Apply to Speak",
   description:
     "Apply to speak at GrooVVee AI Fest — share what you're building, questioning or reimagining in AI.",
-};
+  path: "/speakers/apply",
+});
 
 // Issues a fresh signed form token per render.
 export const instant = false;

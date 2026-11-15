@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Partnerships & Sponsorships",
   description:
     "Partner with GrooVVee AI Fest — monthly community event sponsorships, semi-annual festival partnerships and studio participation packages.",
-};
+  path: "/partnerships",
+});
 
 const CATEGORIES = [
   {

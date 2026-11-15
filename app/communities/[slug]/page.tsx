@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getCommunityBySlug } from "@/lib/public/communities";
+import { pageMetadata } from "@/lib/site";
 import {
   COMMUNITY_CATEGORY_LABELS,
   COMMUNITY_TYPE_LABELS,
@@ -18,10 +19,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const community = await getCommunityBySlug(slug);
   if (!community) return { title: "Community" };
-  return {
+  return pageMetadata({
     title: community.name,
     description: community.description.slice(0, 160),
-  };
+    path: `/communities/${community.slug}`,
+    image: community.imageUrl,
+  });
 }
 
 // Dynamic slug params — renders per request over cached queries.

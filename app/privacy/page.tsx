@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 
 import { event } from "@/data/event";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Privacy policy",
   description:
     "What GrooVVee AI Fest collects, why, how long it's kept, and how to access or delete your data.",
-};
+  path: "/privacy",
+});
 
 const EFFECTIVE_DATE = "November 2026";
 

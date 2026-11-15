@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import Image from "@/components/ui/AppImage";
 import Link from "next/link";
@@ -9,12 +8,14 @@ import {
   COMPETITION_KIND_LABELS,
   COMPETITION_STATUS_LABELS,
 } from "@/lib/validation/competition";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Competitions",
   description:
     "AI Hack Wars, open AI contests and community-vs-community showdowns — prove it on the GrooVVee stage.",
-};
+  path: "/competitions",
+});
 
 type PublicCompetition = Awaited<
   ReturnType<typeof getPublishedCompetitions>

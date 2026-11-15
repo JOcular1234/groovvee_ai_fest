@@ -1,16 +1,17 @@
-import type { Metadata } from "next";
 import { connection } from "next/server";
 import { ArrowUpRight, Mail } from "lucide-react";
 
 import { ContactForm } from "@/components/contact/ContactForm";
 import { issueFormToken } from "@/lib/form-token";
 import { event } from "@/data/event";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Contact",
   description:
     "Get in touch with the GrooVVee AI Fest team — partnerships, press, events, communities and speaking enquiries.",
-};
+  path: "/contact",
+});
 
 // Issues a fresh signed form token per render.
 export const instant = false;

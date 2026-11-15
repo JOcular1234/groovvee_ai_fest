@@ -1,14 +1,17 @@
-import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { SpeakerCard } from "@/components/speakers/SpeakerCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { getPublishedSpeakers } from "@/lib/public/speakers";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Speakers",
-};
+  description:
+    "Meet the builders, researchers and creatives speaking at GrooVVee AI Fest.",
+  path: "/speakers",
+});
 
 export default async function SpeakersPage() {
   const speakers = await getPublishedSpeakers();

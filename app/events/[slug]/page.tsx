@@ -6,10 +6,12 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { EventCard } from "@/components/events/EventCard";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
 import { getEventProgramme } from "@/lib/public/agenda";
 import { getEventBySlug, getRelatedEvents } from "@/lib/public/events";
 import { isRegistrationOpen } from "@/lib/registrations";
+import { eventJsonLd } from "@/lib/seo/event-json-ld";
 import { SESSION_TYPE_LABELS } from "@/lib/validation/agenda";
 
 export async function generateMetadata({
@@ -24,9 +26,11 @@ export async function generateMetadata({
   return {
     title: event.title,
     description,
+    alternates: { canonical: `/events/${event.slug}` },
     openGraph: {
       title: event.title,
       description,
+      url: `/events/${event.slug}`,
       ...(event.imageUrl ? { images: [{ url: event.imageUrl }] } : {}),
     },
   };
@@ -67,6 +71,9 @@ export default async function EventPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
+      <JsonLd
+        data={eventJsonLd(event, { registrationOpen: isRegistrationOpen(event) })}
+      />
       <div className="bg-grid absolute inset-0" aria-hidden />
       <div className="relative mx-auto max-w-5xl">
         <Link

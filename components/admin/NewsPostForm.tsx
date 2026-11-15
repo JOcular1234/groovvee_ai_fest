@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import {
+  useActionState,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import {
   saveNewsPostAction,
   type NewsPostFormState,
 } from "@/app/admin/(protected)/news/actions";
 import { slugify } from "@/lib/slug";
+import { MAX_NEWS_TAGS } from "@/lib/validation/news";
 
 export type NewsPostFormValues = {
   id?: string;
@@ -19,9 +25,78 @@ export type NewsPostFormValues = {
   sourceUrl: string;
   authorName: string;
   published: boolean;
+  // ISO instant or "" (unset).
+  publishedAt: string;
+  featured: boolean;
+  tags: string;
 };
 
 const initialState: NewsPostFormState = { ok: false };
+
+// datetime-local works in the admin's own timezone, which the server can't
+// know — so the field only renders after hydration, and a hidden input sends
+// the exact instant as ISO.
+const noopSubscribe = () => () => {};
+const useIsClient = () =>
+  useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
+  );
+
+function isoToLocalInput(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function PublishDateField({
+  initialIso,
+  error,
+}: {
+  initialIso: string;
+  error?: string[];
+}) {
+  const isClient = useIsClient();
+  const [local, setLocal] = useState(() =>
+    typeof window === "undefined" ? "" : isoToLocalInput(initialIso)
+  );
+  const iso = local ? new Date(local).toISOString() : "";
+  const scheduled = !!local && new Date(local) > new Date();
+  const zone = isClient
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "";
+
+  return (
+    <div>
+      <label htmlFor="publishedAtLocal" className={labelClass}>
+        Publish date
+      </label>
+      {isClient ? (
+        <>
+          <input type="hidden" name="publishedAt" value={iso} />
+          <input
+            id="publishedAtLocal"
+            type="datetime-local"
+            value={local}
+            onChange={(e) => setLocal(e.target.value)}
+            className={`${inputClass} [color-scheme:dark]`}
+          />
+        </>
+      ) : (
+        <div className={`${inputClass} h-[46px]`} aria-hidden />
+      )}
+      <p className="mt-1 text-xs text-muted/70">
+        {scheduled
+          ? "Future date: the post goes live automatically at this time (if Published is ticked)."
+          : "Leave blank to publish immediately. A future date schedules the post."}
+        {zone && ` Times are in ${zone}.`}
+      </p>
+      <FieldError errors={error} />
+    </div>
+  );
+}
 
 const inputClass =
   "w-full border border-white/15 bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/50 outline-none transition-colors focus:border-volt";
@@ -139,6 +214,11 @@ export function NewsPostForm({ post }: { post?: NewsPostFormValues }) {
           className={inputClass}
           placeholder="The full story. Blank lines separate paragraphs."
         />
+        <p className="mt-1 font-mono text-[11px] leading-relaxed text-muted/70">
+          Formatting: ## Heading · ### Subheading · - bullet · 1. numbered ·
+          &gt; quote · **bold** · *italic* · [link text](https://…). Bare
+          https:// links become clickable.
+        </p>
         <FieldError errors={state.errors?.body} />
       </div>
 
@@ -192,17 +272,55 @@ export function NewsPostForm({ post }: { post?: NewsPostFormValues }) {
         <FieldError errors={state.errors?.sourceUrl} />
       </div>
 
-      <label className="mt-6 flex items-center gap-3">
-        <input
-          type="checkbox"
-          name="published"
-          defaultChecked={post?.published}
-          className="size-4 accent-volt"
+      <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div>
+          <label htmlFor="tags" className={labelClass}>
+            Tags
+          </label>
+          <input
+            id="tags"
+            name="tags"
+            defaultValue={post?.tags}
+            maxLength={400}
+            className={inputClass}
+            placeholder="generative ai, events, hack wars"
+          />
+          <p className="mt-1 text-xs text-muted/70">
+            Comma-separated, up to {MAX_NEWS_TAGS}. Readers can filter /news
+            by tag.
+          </p>
+          <FieldError errors={state.errors?.tags} />
+        </div>
+        <PublishDateField
+          initialIso={post?.publishedAt ?? ""}
+          error={state.errors?.publishedAt}
         />
-        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
-          Published
-        </span>
-      </label>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+        <label className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            name="published"
+            defaultChecked={post?.published}
+            className="size-4 accent-volt"
+          />
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
+            Published
+          </span>
+        </label>
+        <label className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            name="featured"
+            defaultChecked={post?.featured}
+            className="size-4 accent-volt"
+          />
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
+            Featured (pinned to the top of /news; replaces the current one)
+          </span>
+        </label>
+      </div>
 
       {state.message && (
         <p className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">

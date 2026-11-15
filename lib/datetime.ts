@@ -69,6 +69,23 @@ export function formatEventDateTime(date: Date, tz: string): string {
   return `${d} · ${t}`;
 }
 
+// UTC instant → "YYYY-MM-DDTHH:mm:ss±HH:MM" in `tz`, for JSON-LD startDate/
+// endDate which want a local time with explicit offset.
+export function toZonedIso(date: Date, tz: string): string {
+  if (!isValidTimeZone(tz)) return date.toISOString();
+  const off = offsetMs(tz, date.getTime());
+  const local = new Date(date.getTime() + off);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const sign = off < 0 ? "-" : "+";
+  const absMin = Math.abs(off) / 60000;
+  return (
+    `${local.getUTCFullYear()}-${pad(local.getUTCMonth() + 1)}-` +
+    `${pad(local.getUTCDate())}T${pad(local.getUTCHours())}:` +
+    `${pad(local.getUTCMinutes())}:${pad(local.getUTCSeconds())}` +
+    `${sign}${pad(Math.floor(absMin / 60))}:${pad(absMin % 60)}`
+  );
+}
+
 // Human-friendly timezone name, e.g. "West Africa Time (GMT+1)".
 export function timeZoneLabel(date: Date, tz: string): string {
   const name =

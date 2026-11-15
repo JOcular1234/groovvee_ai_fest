@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 
 import { NewsPostForm } from "@/components/admin/NewsPostForm";
 import { requireSectionAccess } from "@/lib/auth/server";
@@ -32,9 +34,18 @@ export default async function EditNewsPostPage({
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
           News
         </p>
-        <h1 className="mt-4 font-display text-4xl uppercase leading-none sm:text-5xl">
-          Edit post<span className="text-volt">.</span>
-        </h1>
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">
+            Edit post<span className="text-volt">.</span>
+          </h1>
+          <Link
+            href={`/admin/news/${post.id}/preview`}
+            className="inline-flex items-center gap-2 border border-white/25 px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+          >
+            <Eye className="size-4" aria-hidden />
+            Preview saved version
+          </Link>
+        </div>
         <div className="mt-10">
           <NewsPostForm
             post={{
@@ -47,6 +58,9 @@ export default async function EditNewsPostPage({
               sourceUrl: post.sourceUrl ?? "",
               authorName: post.authorName ?? "",
               published: post.published,
+              publishedAt: post.publishedAt?.toISOString() ?? "",
+              featured: post.featured,
+              tags: post.tags.join(", "),
             }}
           />
         </div>

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { EventCard } from "@/components/events/EventCard";
 import { getPublicEvents } from "@/lib/public/events";
 import { getCityBySlug, getCityIndex } from "@/lib/public/locations";
+import { pageMetadata } from "@/lib/site";
 
 function geoLine(city: {
   stateProvince: string;
@@ -32,11 +33,11 @@ export async function generateMetadata({
     entry && entry.publishedCount > 0
       ? `${entry.publishedCount} published AI event${entry.publishedCount === 1 ? "" : "s"} in ${city.name}, ${where} — meetups, hackathons and community gatherings.`
       : `GrooVVee community events in ${city.name}, ${where} — listings appear here as they are announced.`;
-  return {
+  return pageMetadata({
     title: `Events in ${city.name}`,
     description,
-    openGraph: { title: `Events in ${city.name} — GrooVVee`, description },
-  };
+    path: `/events/cities/${city.slug}`,
+  });
 }
 
 // Dynamic slug params — renders per request over cached queries.

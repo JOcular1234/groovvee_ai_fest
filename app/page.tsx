@@ -11,6 +11,11 @@ import { TicketPromotion } from "@/components/home/TicketPromotion";
 import { Sponsors } from "@/components/home/Sponsors";
 import { Faq } from "@/components/home/Faq";
 import { getFeaturedOrNextEvent } from "@/lib/public/events";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const nextEvent = await getFeaturedOrNextEvent();

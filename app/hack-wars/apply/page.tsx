@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 
@@ -6,12 +5,14 @@ import { HackWarsApplyForm } from "@/components/hack-wars/ApplyForm";
 import { db, withDbRetry } from "@/lib/db";
 import { findOpenHackWarsCompetition } from "@/lib/hack-wars";
 import { issueFormToken } from "@/lib/form-token";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Apply — AI Hack Wars",
   description:
     "Enter AI Hack Wars at GrooVVee AI Fest — compete solo or bring a team of up to three builders.",
-};
+  path: "/hack-wars/apply",
+});
 
 // Issues a fresh signed form token per render.
 export const instant = false;

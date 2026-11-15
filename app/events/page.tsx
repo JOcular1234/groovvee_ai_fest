@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { connection } from "next/server";
 import {
   ArrowUpRight,
@@ -34,18 +33,15 @@ import {
   getPublicEventsInRange,
 } from "@/lib/public/events";
 import { getCityIndex, getEventsMapData } from "@/lib/public/locations";
+import { pageMetadata } from "@/lib/site";
 import { EVENT_SOURCES } from "@/lib/validation/event";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Events",
   description:
     "Discover GrooVVee events worldwide — campus meetups, community gatherings, hackathons and AI festivals, across cities and timezones.",
-  openGraph: {
-    title: "GrooVVee Events",
-    description:
-      "A global calendar of AI community events — meetups, hackathons and festivals.",
-  },
-};
+  path: "/events",
+});
 
 // Uses searchParams filters — renders per request over cached queries.
 export const instant = false;
