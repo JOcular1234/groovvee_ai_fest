@@ -62,6 +62,7 @@ export async function submitHackWarsApplicationAction(
     school: formData.get("school") ?? "",
     major: formData.get("major") ?? "",
     gradYear: formData.get("gradYear") ?? "",
+    sector: formData.get("sector") ?? "",
     intro: formData.get("intro") ?? "",
     previousExperience: formData.get("previousExperience") ?? "",
     teamName: formData.get("teamName") ?? "",

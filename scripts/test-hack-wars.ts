@@ -37,6 +37,7 @@ function rawInput(overrides: Record<string, unknown> = {}) {
     school: "TEST University",
     major: "",
     gradYear: "",
+    sector: "",
     intro:
       "I build AI tools for students, care about applied ML, and want to test myself against the best builders in the ecosystem.",
     previousExperience: "",
@@ -125,6 +126,15 @@ async function main() {
     !hackWarsApplySchema.safeParse(rawInput({ intro: "hi" })).success
   );
   check(
+    "rejects unknown sector",
+    !hackWarsApplySchema.safeParse(rawInput({ sector: "NOT_A_SECTOR" }))
+      .success
+  );
+  check(
+    "blank sector parses to null",
+    hackWarsApplySchema.parse(rawInput()).sector === null
+  );
+  check(
     "team without teamName rejected",
     !hackWarsApplySchema.safeParse(
       rawInput({
@@ -170,6 +180,7 @@ async function main() {
       teamName: "TEST_Pacers",
       gradYear: "2027",
       major: "Computer Science",
+      sector: "GAMING",
       members: [
         { name: "Member One", email: "M1@Test.dev", school: "TEST Uni" },
         { name: "Member Two", email: "m2@test.dev", school: "" },
@@ -179,6 +190,7 @@ async function main() {
   check("email normalized", parsed.email === "test_leader@example.com");
   check("member emails normalized", parsed.members[0].email === "m1@test.dev");
   check("gradYear parsed to int", parsed.gradYear === 2027);
+  check("sector validated", parsed.sector === "GAMING");
   check("individual strips team fields", (() => {
     const i = hackWarsApplySchema.parse(
       rawInput({ teamName: "TEST_Ignored", members: [{ name: "Ignored Member", email: "x@x.dev", school: "" }] })
@@ -200,10 +212,11 @@ async function main() {
   const solo = await submitHackWarsApplication(
     scriptDb,
     openComp.id,
-    applyInput()
+    applyInput({ sector: "HEALTHCARE" })
   );
   check("individual created as PENDING", solo.status === "PENDING");
   check("individual has no team", solo.teamId === null);
+  check("sector persisted", solo.sector === "HEALTHCARE");
   check("email stored normalized", solo.email === "test_leader@example.com");
   check("no reviewer on submission", solo.reviewerId === null);
 
@@ -299,6 +312,20 @@ async function main() {
     "individual filter",
     soloOnly.applications.length === 1 && soloOnly.applications[0].id === solo.id
   );
+  const bySector = await listHackWarsApplicationsForAdmin(scriptDb, {
+    q: "TEST_",
+    sector: "HEALTHCARE",
+  });
+  check(
+    "sector filter",
+    bySector.applications.length === 1 &&
+      bySector.applications[0].id === solo.id
+  );
+  const wrongSector = await listHackWarsApplicationsForAdmin(scriptDb, {
+    q: "TEST_",
+    sector: "FINANCE",
+  });
+  check("sector filter excludes others", wrongSector.applications.length === 0);
 
   console.log("\n— Review workflow —");
   const reviewer = await scriptDb.admin.findFirst({

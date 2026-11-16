@@ -8,6 +8,7 @@ import { HackWarsReviewPanel } from "@/components/admin/HackWarsReviewPanel";
 import { db, withDbRetry } from "@/lib/db";
 import { getHackWarsApplicationById } from "@/lib/hack-wars";
 import { APPLICATION_STATUS_LABELS } from "@/lib/validation/application";
+import { COMMUNITY_CATEGORY_LABELS } from "@/lib/validation/community";
 
 export const metadata: Metadata = {
   title: "Hack Wars Entry · Admin",
@@ -99,6 +100,13 @@ export default async function AdminHackWarsEntryPage({
                   <dt className={field}>Expected graduation</dt>
                   <dd className="mt-1.5 text-sm text-white">
                     {app.gradYear ?? "—"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={field}>Sector</dt>
+                  <dd className="mt-1.5 text-sm text-white">
+                    {(app.sector && COMMUNITY_CATEGORY_LABELS[app.sector]) ||
+                      "—"}
                   </dd>
                 </div>
                 <div className="sm:col-span-2">

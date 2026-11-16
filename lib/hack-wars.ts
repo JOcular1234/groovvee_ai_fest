@@ -1,5 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { PrismaClient } from "@/lib/generated/prisma/client";
+import type { CommunityCategoryValue } from "@/lib/validation/community";
 import type {
   HackWarsApplyInput,
   ReviewStatus,
@@ -81,6 +82,7 @@ export async function submitHackWarsApplication(
           school: input.school,
           major: input.major,
           gradYear: input.gradYear,
+          sector: input.sector,
           intro: input.intro,
           previousExperience: input.previousExperience,
         },
@@ -103,6 +105,7 @@ export type AdminHackWarsFilters = {
   page?: number;
   status?: ReviewStatus | "PENDING";
   participation?: "individual" | "team";
+  sector?: CommunityCategoryValue;
 };
 
 export async function listHackWarsApplicationsForAdmin(
@@ -122,6 +125,7 @@ export async function listHackWarsApplicationsForAdmin(
   if (opts.status) where.status = opts.status;
   if (opts.participation === "team") where.teamId = { not: null };
   if (opts.participation === "individual") where.teamId = null;
+  if (opts.sector) where.sector = opts.sector;
 
   const [total, applications] = await Promise.all([
     db.competitionApplication.count({ where }),

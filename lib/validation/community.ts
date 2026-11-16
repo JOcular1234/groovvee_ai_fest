@@ -32,38 +32,51 @@ export const COMMUNITY_TYPE_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 // Named creative/industry verticals — mirrors the CommunityCategory enum.
+// Alphabetical by label so dropdowns (communities filter, Hack Wars apply)
+// stay easy to scan.
 export const COMMUNITY_CATEGORIES = [
-  { value: "FILM", label: "AI Filmmakers" },
-  { value: "MUSIC", label: "AI Music" },
-  { value: "FASHION", label: "AI Fashion" },
   { value: "ADVERTISING", label: "AI Advertising" },
-  { value: "REAL_ESTATE", label: "AI Real Estate" },
-  { value: "LEGAL", label: "AI Legal" },
-  { value: "FINANCE", label: "AI Finance" },
+  { value: "AGRICULTURE", label: "AI Agriculture" },
   { value: "ARCHITECTURE", label: "AI Architecture" },
   { value: "CONSTRUCTION", label: "AI Construction" },
-  { value: "HEALTHCARE", label: "AI Healthcare" },
-  { value: "TELECOM", label: "AI Telecom" },
-  { value: "EDUCATION", label: "AI Education" },
-  { value: "SUSTAINABILITY", label: "AI Sustainability" },
-  { value: "MOBILITY", label: "AI Mobility" },
   { value: "CONSUMER_PRODUCTS", label: "AI Consumer Products" },
+  { value: "EDUCATION", label: "AI Education" },
+  { value: "ENERGY", label: "AI Energy" },
+  { value: "FASHION", label: "AI Fashion" },
+  { value: "FILM", label: "AI Filmmakers" },
+  { value: "FINANCE", label: "AI Finance" },
+  { value: "GAMING", label: "AI Gaming" },
+  { value: "GOVERNMENT", label: "AI Government" },
+  { value: "HEALTHCARE", label: "AI Healthcare" },
+  { value: "LEGAL", label: "AI Legal" },
+  { value: "MANUFACTURING", label: "AI Manufacturing" },
+  { value: "MEDIA", label: "AI Media" },
+  { value: "MOBILITY", label: "AI Mobility" },
+  { value: "MUSIC", label: "AI Music" },
+  { value: "REAL_ESTATE", label: "AI Real Estate" },
+  { value: "SUSTAINABILITY", label: "AI Sustainability" },
+  { value: "TELECOM", label: "AI Telecom" },
+  { value: "TRAVEL", label: "AI Travel & Hospitality" },
 ] as const;
-
-export const COMMUNITY_CATEGORY_VALUES = COMMUNITY_CATEGORIES.map(
-  (c) => c.value
-) as [string, ...string[]];
-
-export const COMMUNITY_CATEGORY_LABELS: Record<string, string> =
-  Object.fromEntries(COMMUNITY_CATEGORIES.map((c) => [c.value, c.label]));
 
 export type CommunityCategoryValue =
   (typeof COMMUNITY_CATEGORIES)[number]["value"];
 
+export const COMMUNITY_CATEGORY_VALUES = COMMUNITY_CATEGORIES.map(
+  (c) => c.value
+) as [CommunityCategoryValue, ...CommunityCategoryValue[]];
+
+export const COMMUNITY_CATEGORY_LABELS: Record<string, string> =
+  Object.fromEntries(COMMUNITY_CATEGORIES.map((c) => [c.value, c.label]));
+
+// Shared zod enum — reused anywhere a category needs validating
+// (community forms, Hack Wars applications).
+export const communityCategorySchema = z.enum(COMMUNITY_CATEGORY_VALUES);
+
 export function isCommunityCategory(
   v: string | undefined | null
 ): v is CommunityCategoryValue {
-  return COMMUNITY_CATEGORY_VALUES.includes(v ?? "");
+  return (COMMUNITY_CATEGORY_VALUES as readonly string[]).includes(v ?? "");
 }
 
 // Section headings need plurals ("Campus Communities", not "Campus Communitys").
@@ -91,26 +104,7 @@ export const communityInputSchema = z.object({
   type: z.enum(["STUDENT_TRIBE", "CAMPUS", "CREATIVE", "INDUSTRY"]),
   // Optional creative/industry vertical — null for student tribes, campus
   // groups and uncategorized communities.
-  category: z
-    .enum([
-      "FILM",
-      "MUSIC",
-      "FASHION",
-      "ADVERTISING",
-      "REAL_ESTATE",
-      "LEGAL",
-      "FINANCE",
-      "ARCHITECTURE",
-      "CONSTRUCTION",
-      "HEALTHCARE",
-      "TELECOM",
-      "EDUCATION",
-      "SUSTAINABILITY",
-      "MOBILITY",
-      "CONSUMER_PRODUCTS",
-    ])
-    .nullable()
-    .default(null),
+  category: communityCategorySchema.nullable().default(null),
   description: z
     .string()
     .trim()

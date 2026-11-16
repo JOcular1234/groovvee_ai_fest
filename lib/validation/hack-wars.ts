@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeEmail } from "@/lib/auth/password";
+import { communityCategorySchema } from "@/lib/validation/community";
 
 const emailField = z
   .string()
@@ -64,6 +65,13 @@ export const hackWarsApplySchema = z
       .max(160, "School name is too long"),
     major: optionalText(160),
     gradYear: gradYearField,
+    // Industry/sector the applicant intends to compete in — optional, drawn
+    // from the shared community-category taxonomy.
+    sector: z
+      .string()
+      .trim()
+      .transform((u) => (u === "" ? null : u))
+      .pipe(communityCategorySchema.nullable()),
     intro: z
       .string()
       .trim()

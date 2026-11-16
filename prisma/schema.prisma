@@ -60,6 +60,13 @@ enum CommunityCategory {
   SUSTAINABILITY
   MOBILITY
   CONSUMER_PRODUCTS
+  AGRICULTURE
+  ENERGY
+  MANUFACTURING
+  GAMING
+  MEDIA
+  TRAVEL
+  GOVERNMENT
 }
 
 enum EventSource {
@@ -582,6 +589,9 @@ model CompetitionApplication {
   school             String
   major              String?
   gradYear           Int?
+  // The industry/sector the applicant intends to compete in — reuses the
+  // community vertical taxonomy so entries and groups share one vocabulary.
+  sector             CommunityCategory?
   intro              String            @db.Text
   previousExperience String?           @db.Text
   notes              String?           @db.Text
@@ -595,6 +605,7 @@ model CompetitionApplication {
 
   @@unique([competitionId, email])
   @@index([competitionId, status])
+  @@index([sector])
   @@index([teamId])
   @@map("competition_applications")
 }

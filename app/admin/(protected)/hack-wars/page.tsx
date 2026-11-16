@@ -25,6 +25,11 @@ import {
   APPLICATION_STATUSES,
   APPLICATION_STATUS_LABELS,
 } from "@/lib/validation/application";
+import {
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_CATEGORY_LABELS,
+  isCommunityCategory,
+} from "@/lib/validation/community";
 
 export const metadata: Metadata = {
   title: "Hack Wars · Admin",
@@ -48,6 +53,7 @@ export default async function AdminHackWarsPage({
     page?: string;
     status?: string;
     participation?: string;
+    sector?: string;
   }>;
 }) {
   await connection();
@@ -61,6 +67,7 @@ export default async function AdminHackWarsPage({
     sp.participation === "team" || sp.participation === "individual"
       ? sp.participation
       : undefined;
+  const sector = isCommunityCategory(sp.sector) ? sp.sector : undefined;
 
   const {
     applications,
@@ -72,6 +79,7 @@ export default async function AdminHackWarsPage({
       q: query || undefined,
       status,
       participation,
+      sector,
       page: Number(sp.page) || 1,
     })
   );
@@ -81,6 +89,7 @@ export default async function AdminHackWarsPage({
     if (query) params.set("q", query);
     if (status) params.set("status", status);
     if (participation) params.set("participation", participation);
+    if (sector) params.set("sector", sector);
     if (p > 1) params.set("page", String(p));
     const s = params.toString();
     return `/admin/hack-wars${s ? `?${s}` : ""}`;
@@ -116,11 +125,23 @@ export default async function AdminHackWarsPage({
           <option value="individual">Individual</option>
           <option value="team">Team</option>
         </select>
+        <select
+          name="sector"
+          defaultValue={sector ?? ""}
+          className={adminSelectClass}
+        >
+          <option value="">All sectors</option>
+          {COMMUNITY_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </AdminSearchBar>
 
       {applications.length === 0 ? (
         <AdminEmptyState>
-          {query || status || participation
+          {query || status || participation || sector
             ? "No entries match these filters."
             : "No Hack Wars applications have been submitted yet."}
         </AdminEmptyState>
@@ -153,6 +174,11 @@ export default async function AdminHackWarsPage({
                   <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
                     Individual
                   </span>
+                )}
+                {a.sector && (
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted">
+                    {COMMUNITY_CATEGORY_LABELS[a.sector] ?? a.sector}
+                  </div>
                 )}
               </td>
               <td
