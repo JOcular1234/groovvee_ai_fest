@@ -8,6 +8,7 @@ import {
   type RegisterFormState,
 } from "@/app/events/[slug]/register/actions";
 import { ConsentField } from "@/components/forms/ConsentField";
+import { PhoneField } from "@/components/forms/PhoneField";
 
 const initialState: RegisterFormState = { ok: false };
 
@@ -98,6 +99,59 @@ export function RegisterForm({
             className={inputClass}
           />
           <FieldError errors={state.errors?.email} />
+        </div>
+        <div>
+          <label htmlFor="reg-phone" className={labelClass}>
+            Phone number *
+          </label>
+          <PhoneField
+            id="reg-phone"
+            name="phone"
+            required
+            invalid={!!state.errors?.phone?.length}
+          />
+          <FieldError errors={state.errors?.phone} />
+        </div>
+        <div>
+          <label htmlFor="reg-school" className={labelClass}>
+            School or institution *
+          </label>
+          <input
+            id="reg-school"
+            name="school"
+            required
+            maxLength={160}
+            className={inputClass}
+          />
+          <FieldError errors={state.errors?.school} />
+        </div>
+        <div>
+          <label htmlFor="reg-city" className={labelClass}>
+            City *
+          </label>
+          <input
+            id="reg-city"
+            name="city"
+            required
+            maxLength={120}
+            autoComplete="address-level2"
+            className={inputClass}
+          />
+          <FieldError errors={state.errors?.city} />
+        </div>
+        <div>
+          <label htmlFor="reg-country" className={labelClass}>
+            Country *
+          </label>
+          <input
+            id="reg-country"
+            name="country"
+            required
+            maxLength={120}
+            autoComplete="country-name"
+            className={inputClass}
+          />
+          <FieldError errors={state.errors?.country} />
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="reg-organization" className={labelClass}>

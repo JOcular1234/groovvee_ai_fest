@@ -1,11 +1,24 @@
+import Image from "next/image";
 import { highlights } from "@/data/event";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 export function About() {
   return (
-    <section id="about" className="bg-ink py-24 sm:py-32">
-      <div className="w-full px-5 sm:px-10 2xl:px-16">
+    <section id="about" className="relative overflow-hidden bg-ink py-24 sm:py-32">
+      <Image
+        src="/groovvee-background.jpeg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/80 to-ink/95"
+        aria-hidden
+      />
+      <div className="relative w-full px-5 sm:px-10 2xl:px-16">
         <SectionHeading
           eyebrow="About the festival"
           title={

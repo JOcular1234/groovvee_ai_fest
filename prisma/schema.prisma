@@ -407,6 +407,12 @@ model EventRegistration {
   // case-variant emails.
   email        String
   organization String?
+  // Contact/demographics collected at registration — required by the form
+  // for new submissions, nullable because pre-existing rows lack them.
+  school       String?
+  phone        String?
+  city         String?
+  country      String?
   // Double opt-in: a registration only counts once the emailed link is
   // confirmed. Only the SHA-256 of the confirmation token is stored.
   confirmedAt      DateTime?

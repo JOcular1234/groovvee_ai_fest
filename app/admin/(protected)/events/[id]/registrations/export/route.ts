@@ -34,6 +34,10 @@ export async function GET(
     [
       csvCell(r.name),
       csvCell(r.email),
+      csvCell(r.phone),
+      csvCell(r.school),
+      csvCell(r.city),
+      csvCell(r.country),
       csvCell(r.organization),
       csvCell(r.confirmedAt ? "confirmed" : "pending"),
       csvCell(r.createdAt.toISOString()),
@@ -41,7 +45,7 @@ export async function GET(
     ].join(",")
   );
   const csv = [
-    "name,email,organization,status,registered_at,confirmed_at",
+    "name,email,phone,school,city,country,organization,status,registered_at,confirmed_at",
     ...rows,
   ].join("\r\n");
 

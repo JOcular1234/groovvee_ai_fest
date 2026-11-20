@@ -106,6 +106,10 @@ export async function registerForEvent(
         name: input.name,
         email: input.email,
         organization: input.organization,
+        school: input.school,
+        phone: input.phone,
+        city: input.city,
+        country: input.country,
         confirmTokenHash: hashConfirmToken(token),
         confirmSentAt: now,
       },
@@ -135,9 +139,8 @@ export async function registerForEvent(
 
   // Still pending: rotate the token (old links stop working) and resend —
   // unless a link went out moments ago. The conditional update makes the
-  // throttle hold under concurrent submits. Name/organization from the
-  // unconfirmed submission are refreshed: the address owner confirms
-  // whatever details are current.
+  // throttle hold under concurrent submits. The submitted details are
+  // refreshed too: the address owner confirms whatever details are current.
   const { count } = await db.eventRegistration.updateMany({
     where: {
       id: existing.id,
@@ -150,6 +153,10 @@ export async function registerForEvent(
     data: {
       name: input.name,
       organization: input.organization,
+      school: input.school,
+      phone: input.phone,
+      city: input.city,
+      country: input.country,
       confirmTokenHash: hashConfirmToken(token),
       confirmSentAt: now,
     },
@@ -220,6 +227,9 @@ export async function listRegistrationsForAdmin(
       { name: { contains: opts.q, mode: "insensitive" } },
       { email: { contains: opts.q, mode: "insensitive" } },
       { organization: { contains: opts.q, mode: "insensitive" } },
+      { school: { contains: opts.q, mode: "insensitive" } },
+      { city: { contains: opts.q, mode: "insensitive" } },
+      { country: { contains: opts.q, mode: "insensitive" } },
     ];
   }
 
@@ -252,7 +262,11 @@ export async function listAllRegistrationsForAdmin(
     select: {
       name: true,
       email: true,
+      phone: true,
       organization: true,
+      school: true,
+      city: true,
+      country: true,
       confirmedAt: true,
       createdAt: true,
     },

@@ -83,3 +83,48 @@ body {
     animation: none;
   }
 }
+
+/* react-phone-number-input — dark theme to match .phone-field forms */
+.phone-field {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  background: var(--color-ink);
+  padding: 0.75rem 1rem;
+  transition: border-color 150ms;
+}
+.phone-field:focus-within {
+  border-color: var(--color-volt);
+}
+.phone-field .PhoneInputCountry {
+  margin-right: 0;
+}
+.phone-field .PhoneInputCountrySelectArrow {
+  color: var(--color-muted);
+}
+.phone-field .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  color: #fff;
+}
+.phone-field .PhoneInputInput::placeholder {
+  color: rgb(163 163 163 / 0.5);
+}
+
+/* The country select is invisible over the flag, but its native dropdown
+   popup is browser-styled — force the dark scheme and paint the options so
+   the list isn't white-on-white. */
+.phone-field .PhoneInputCountrySelect {
+  color-scheme: dark;
+}
+.phone-field .PhoneInputCountrySelect option {
+  background: var(--color-panel);
+  color: #fff;
+}

@@ -59,7 +59,7 @@ export default async function EventRegisterPage({
               eventTitle={event.title}
               token={issueFormToken()}
             />
-          </div>
+          </div> 
         ) : (
           <div className="mt-10 border border-white/10 bg-panel p-8 sm:p-10">
             <p className="text-muted">

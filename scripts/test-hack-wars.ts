@@ -33,7 +33,7 @@ function rawInput(overrides: Record<string, unknown> = {}) {
     participation: "individual",
     name: "TEST_Leader",
     email: "TEST_Leader@Example.COM",
-    phone: "+234 801 234 5678",
+    phone: "+1 650 253 0000",
     school: "TEST University",
     major: "",
     gradYear: "",

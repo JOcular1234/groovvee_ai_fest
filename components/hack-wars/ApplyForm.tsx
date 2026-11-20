@@ -9,6 +9,7 @@ import {
   type HackWarsFormState,
 } from "@/app/hack-wars/apply/actions";
 import { ConsentField } from "@/components/forms/ConsentField";
+import { PhoneField } from "@/components/forms/PhoneField";
 import { COMMUNITY_CATEGORIES } from "@/lib/validation/community";
 
 const initialState: HackWarsFormState = { ok: false };
@@ -328,20 +329,24 @@ export function HackWarsApplyForm({ token }: { token: string }) {
             onChange={setEmail}
             errors={state.errors?.email}
           />
-          <TextField
-            id="phone"
-            name="phone"
-            label="Phone number"
-            type="tel"
-            required
-            maxLength={30}
-            placeholder="+234 …"
-            autoComplete="tel"
-            inputMode="tel"
-            value={phone}
-            onChange={setPhone}
-            errors={state.errors?.phone}
-          />
+          <div>
+            <label htmlFor="phone" className={labelClass}>
+              Phone number
+              <span className="text-volt" aria-hidden>
+                *
+              </span>
+            </label>
+            <PhoneField
+              id="phone"
+              name="phone"
+              required
+              value={phone}
+              onChange={setPhone}
+              invalid={!!state.errors?.phone?.length}
+              errorId={state.errors?.phone?.length ? "phone-error" : undefined}
+            />
+            <FieldError id="phone-error" errors={state.errors?.phone} />
+          </div>
           <TextField
             id="school"
             name="school"

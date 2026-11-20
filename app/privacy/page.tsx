@@ -15,7 +15,7 @@ const EFFECTIVE_DATE = "November 2026";
 const COLLECTED = [
   {
     title: "Event registration",
-    desc: "Name, email address and optional organization — used to confirm and manage your registration and send event information.",
+    desc: "Name, email address, phone number, school, city, country and optional organization — used to confirm and manage your registration and send event information.",
   },
   {
     title: "AI Hack Wars applications",

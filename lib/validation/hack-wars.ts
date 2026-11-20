@@ -1,3 +1,4 @@
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { z } from "zod";
 import { normalizeEmail } from "@/lib/auth/password";
 import { communityCategorySchema } from "@/lib/validation/community";
@@ -56,8 +57,8 @@ export const hackWarsApplySchema = z
     phone: z
       .string()
       .trim()
-      .regex(/^[+\d][\d\s()./-]{4,24}$/, "Enter a valid phone number")
-      .transform((p) => p.replace(/\s+/g, " ").trim()),
+      .max(40)
+      .refine(isValidPhoneNumber, "Enter a valid phone number"),
     school: z
       .string()
       .trim()

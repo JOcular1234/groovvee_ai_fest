@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { event, sponsorSlots } from "@/data/event";
 import { Reveal } from "@/components/ui/Reveal";
@@ -5,8 +6,20 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 
 export function Sponsors() {
   return (
-    <section className="bg-ink py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+    <section className="relative overflow-hidden bg-ink py-24 sm:py-32">
+      <Image
+        src="/groovvee-background.jpeg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/80 to-ink/95"
+        aria-hidden
+      />
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           eyebrow="Partners"
           title={

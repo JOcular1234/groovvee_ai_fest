@@ -87,7 +87,7 @@ export default async function EventRegistrationsPage({
 
       <AdminSearchBar
         action={`/admin/events/${id}/registrations`}
-        placeholder="Search name, email or organization…"
+        placeholder="Search name, email, school, city or country…"
         query={query}
       />
 
@@ -99,11 +99,12 @@ export default async function EventRegistrationsPage({
         </AdminEmptyState>
       ) : (
         <AdminTable
-          minW="min-w-150"
+          minW="min-w-200"
           headers={[
             { label: "Name" },
-            { label: "Email" },
-            { label: "Organization" },
+            { label: "Contact" },
+            { label: "Organization / school" },
+            { label: "Location" },
             { label: "Status" },
             { label: "Registered" },
           ]}
@@ -115,9 +116,20 @@ export default async function EventRegistrationsPage({
               </td>
               <td className={`${adminTdClass} text-xs text-muted`}>
                 {r.email}
+                {r.phone && (
+                  <div className="mt-0.5 font-mono">{r.phone}</div>
+                )}
               </td>
               <td className={`${adminTdClass} text-xs text-muted`}>
                 {r.organization ?? "—"}
+                {r.school && (
+                  <div className="mt-0.5">{r.school}</div>
+                )}
+              </td>
+              <td className={`${adminTdClass} text-xs text-muted`}>
+                {r.city || r.country
+                  ? [r.city, r.country].filter(Boolean).join(", ")
+                  : "—"}
               </td>
               <td className={adminTdClass}>
                 <StatusBadge tone={r.confirmedAt ? "success" : "amber"}>

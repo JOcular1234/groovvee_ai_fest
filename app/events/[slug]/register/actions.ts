@@ -41,6 +41,10 @@ export async function submitRegistrationAction(
   const parsed = registrationSubmitSchema.safeParse({
     name: formData.get("name") ?? "",
     email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    school: formData.get("school") ?? "",
+    city: formData.get("city") ?? "",
+    country: formData.get("country") ?? "",
     organization: formData.get("organization") ?? "",
   });
   if (!parsed.success) {

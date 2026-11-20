@@ -37,7 +37,25 @@ const groovveeEvent = {
   startsAt: future,
 };
 
-const input = { name: "Ada Lovelace", email: "ada@example.com", organization: null };
+const input = {
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  phone: "+1 650 253 0000",
+  school: "Analytical Engines Academy",
+  city: "London",
+  country: "United Kingdom",
+  organization: null,
+};
+
+// Required-field base so fixtures fail for the reason being tested.
+const requiredFields = {
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  phone: "+1 650 253 0000",
+  school: "Analytical Engines Academy",
+  city: "London",
+  country: "United Kingdom",
+};
 
 type FakeOpts = {
   event?: Record<string, unknown> | null;
@@ -94,12 +112,13 @@ async function main() {
   check(
     "valid input parses",
     registrationSubmitSchema.safeParse({
-      name: "Ada Lovelace",
+      ...requiredFields,
       email: "ADA@Example.COM ",
       organization: "  Analytical Engines Ltd ",
     }).success
   );
   const parsed = registrationSubmitSchema.parse({
+    ...requiredFields,
     name: "Ada",
     email: "ADA@Example.COM",
     organization: "",
@@ -109,18 +128,40 @@ async function main() {
     parsed.email === "ada@example.com" && parsed.organization === null
   );
   check(
+    "contact fields pass through",
+    parsed.phone === "+1 650 253 0000" &&
+      parsed.school === "Analytical Engines Academy" &&
+      parsed.city === "London" &&
+      parsed.country === "United Kingdom"
+  );
+  check(
     "invalid email rejected",
-    !registrationSubmitSchema.safeParse({ name: "Ada", email: "nope", organization: "" }).success
+    !registrationSubmitSchema.safeParse({ ...requiredFields, email: "nope", organization: "" }).success
   );
   check(
     "short name rejected",
-    !registrationSubmitSchema.safeParse({ name: "A", email: "a@b.co", organization: "" }).success
+    !registrationSubmitSchema.safeParse({ ...requiredFields, name: "A", organization: "" }).success
+  );
+  check(
+    "invalid phone rejected",
+    !registrationSubmitSchema.safeParse({ ...requiredFields, phone: "abc" }).success
+  );
+  check(
+    "missing school rejected",
+    !registrationSubmitSchema.safeParse({ ...requiredFields, school: "" }).success
+  );
+  check(
+    "missing city rejected",
+    !registrationSubmitSchema.safeParse({ ...requiredFields, city: "" }).success
+  );
+  check(
+    "missing country rejected",
+    !registrationSubmitSchema.safeParse({ ...requiredFields, country: "" }).success
   );
   check(
     "oversized org rejected",
     !registrationSubmitSchema.safeParse({
-      name: "Ada",
-      email: "a@b.co",
+      ...requiredFields,
       organization: "x".repeat(161),
     }).success
   );
@@ -156,7 +197,11 @@ async function main() {
       calls.createData?.eventId === "evt-1" &&
         calls.createData?.name === "Ada Lovelace" &&
         calls.createData?.email === "ada@example.com" &&
-        calls.createData?.organization === null
+        calls.createData?.organization === null &&
+        calls.createData?.phone === "+1 650 253 0000" &&
+        calls.createData?.school === "Analytical Engines Academy" &&
+        calls.createData?.city === "London" &&
+        calls.createData?.country === "United Kingdom"
     );
     check(
       "stores only the token hash, never the token",
