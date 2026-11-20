@@ -13,7 +13,6 @@ async function main() {
   let updated = 0;
   for (const [i, raw] of LAUNCH_COMMUNITIES.entries()) {
     const seed = communityInputSchema.parse({
-      imageUrl: "",
       city: "",
       country: "",
       joinUrl: "",
