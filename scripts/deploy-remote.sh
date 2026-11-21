@@ -72,11 +72,13 @@ rollback_first() {
   fi
 
   local live_path=""
-  live_path="$(APP_NAME="$APP_NAME" node -e '
-    const list = JSON.parse(require("fs").readFileSync(0, "utf8"));
-    const a = list.find(p => p.name === process.env.APP_NAME);
-    if (a) console.log(a.pm2_env.pm_exec_path || "");
-  ' < <(pm2 jlist 2>/dev/null) 2>/dev/null || true)"
+  live_path="$(APP_NAME="$APP_NAME" python3 -c '
+import json, os, sys
+procs = json.load(sys.stdin)
+a = next((p for p in procs if p.get("name") == os.environ["APP_NAME"]), None)
+if a:
+    print((a.get("pm2_env") or {}).get("pm_exec_path") or "")
+' < <(pm2 jlist 2>/dev/null) 2>/dev/null || true)"
 
   if [ "$live_path" = "$APP_DIR/current/server.js" ] || \
      [ "$live_path" = "$RELEASE/server.js" ]; then
@@ -142,11 +144,18 @@ fi
 # Structured result: line 1 = "exists"/"absent", line 2 = script path.
 # A process that exists but reports no script path fails closed — it is
 # NEVER misread as a first deployment.
-if ! APP_STATE="$(APP_NAME="$APP_NAME" PM2_JLIST="$PM2_JLIST" node -e '
-  const a = JSON.parse(process.env.PM2_JLIST)
-    .find(p => p.name === process.env.APP_NAME);
-  console.log(a ? "exists" : "absent");
-  console.log(a ? (a.pm2_env.pm_exec_path || "") : "");
+# python3 is used (always present on Ubuntu 24.04): `node` may not be on
+# the SSH PATH even when PM2 is installed and working.
+command -v python3 >/dev/null 2>&1 || {
+  echo "ERROR: python3 not found — cannot parse 'pm2 jlist' output." >&2
+  exit 1
+}
+if ! APP_STATE="$(APP_NAME="$APP_NAME" PM2_JLIST="$PM2_JLIST" python3 -c '
+import json, os
+procs = json.loads(os.environ["PM2_JLIST"])
+a = next((p for p in procs if p.get("name") == os.environ["APP_NAME"]), None)
+print("exists" if a else "absent")
+print(((a.get("pm2_env") or {}).get("pm_exec_path") or "") if a else "")
 ' 2>/dev/null)"; then
   echo "ERROR: could not parse 'pm2 jlist' output — refusing to guess deployment state." >&2
   exit 1
