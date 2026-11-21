@@ -71,14 +71,12 @@ rollback_first() {
     return
   fi
 
+  local state=""
+  state="$(pm2 jlist 2>/dev/null | pm2_app_state 2>/dev/null || true)"
   local live_path=""
-  live_path="$(APP_NAME="$APP_NAME" python3 -c '
-import json, os, sys
-procs = json.load(sys.stdin)
-a = next((p for p in procs if p.get("name") == os.environ["APP_NAME"]), None)
-if a:
-    print((a.get("pm2_env") or {}).get("pm_exec_path") or "")
-' < <(pm2 jlist 2>/dev/null) 2>/dev/null || true)"
+  if [ "${state%%$'\n'*}" = "exists" ]; then
+    live_path="${state#*$'\n'}"
+  fi
 
   if [ "$live_path" = "$APP_DIR/current/server.js" ] || \
      [ "$live_path" = "$RELEASE/server.js" ]; then
@@ -98,6 +96,35 @@ rollback() {
     rollback_existing
   else
     rollback_first
+  fi
+}
+
+# Parse `pm2 jlist` JSON from stdin and print two lines:
+#   line 1: "exists" or "absent"  — whether $APP_NAME is registered
+#   line 2: its pm2_env.pm_exec_path, or an empty string
+# Reads stdin (no giant env var), verifies the payload is a JSON array,
+# and exits non-zero on any parse/shape failure so callers fail closed.
+pm2_app_state() {
+  if command -v node >/dev/null 2>&1; then
+    APP_NAME="$APP_NAME" node -e '
+      const list = JSON.parse(require("fs").readFileSync(0, "utf8"));
+      if (!Array.isArray(list)) process.exit(1);
+      const a = list.find(p => p.name === process.env.APP_NAME);
+      console.log(a ? "exists" : "absent");
+      console.log(a ? ((a.pm2_env || {}).pm_exec_path || "") : "");
+    '
+  elif command -v python3 >/dev/null 2>&1; then
+    APP_NAME="$APP_NAME" python3 -c '
+import json, os, sys
+list_ = json.load(sys.stdin)
+if not isinstance(list_, list):
+    sys.exit(1)
+a = next((p for p in list_ if p.get("name") == os.environ["APP_NAME"]), None)
+print("exists" if a else "absent")
+print(((a.get("pm2_env") or {}).get("pm_exec_path") or "") if a else "")
+'
+  else
+    return 1
   fi
 }
 
@@ -134,29 +161,11 @@ if ! pm2 ping >/dev/null 2>&1; then
   exit 1
 fi
 
-# `pm2 jlist` must succeed AND parse as JSON — a broken inspection fails
-# the deploy, never masquerades as a "first deployment".
-if ! PM2_JLIST="$(pm2 jlist 2>/dev/null)"; then
-  echo "ERROR: 'pm2 jlist' failed — daemon unreachable or unreadable." >&2
-  exit 1
-fi
-
-# Structured result: line 1 = "exists"/"absent", line 2 = script path.
-# A process that exists but reports no script path fails closed — it is
-# NEVER misread as a first deployment.
-# python3 is used (always present on Ubuntu 24.04): `node` may not be on
-# the SSH PATH even when PM2 is installed and working.
-command -v python3 >/dev/null 2>&1 || {
-  echo "ERROR: python3 not found — cannot parse 'pm2 jlist' output." >&2
-  exit 1
-}
-if ! APP_STATE="$(APP_NAME="$APP_NAME" PM2_JLIST="$PM2_JLIST" python3 -c '
-import json, os
-procs = json.loads(os.environ["PM2_JLIST"])
-a = next((p for p in procs if p.get("name") == os.environ["APP_NAME"]), None)
-print("exists" if a else "absent")
-print(((a.get("pm2_env") or {}).get("pm_exec_path") or "") if a else "")
-' 2>/dev/null)"; then
+# `pm2 jlist` output is piped straight into the parser — never stored in
+# a variable passed through the environment. If jlist fails, stdin is
+# empty and the parse fails; a broken inspection always fails the deploy,
+# never masquerades as a "first deployment".
+if ! APP_STATE="$(pm2 jlist 2>/dev/null | pm2_app_state 2>/dev/null)"; then
   echo "ERROR: could not parse 'pm2 jlist' output — refusing to guess deployment state." >&2
   exit 1
 fi
