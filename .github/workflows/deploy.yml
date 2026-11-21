@@ -1,0 +1,114 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Serialize production deploys — two pushes must never race the release
+# symlink or PM2 restart.
+concurrency:
+  group: groovveeaifest-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      # Throwaway CI-only database. The build prerenders pages that query the
+      # DB, so *something* reachable must exist — this empty service DB gets
+      # the schema via `prisma migrate deploy` and is destroyed with the job.
+      # Production Neon is never touched by the build.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: groovvee_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Always the disposable service DB — production Neon is never touched
+      # by CI and migrations can only ever run against this throwaway DB.
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/groovvee_ci?sslmode=disable
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/groovvee_ci?sslmode=disable
+      SITE_URL: https://groovveeaifest.com
+      # Placeholders so modules that read secrets at import time don't throw
+      # during prerender. They are not real credentials.
+      FORM_SIGNING_SECRET: ci-placeholder-not-secret
+      TOTP_ENCRYPTION_KEY: ci-placeholder-not-secret
+      GEMINI_API_KEY: ci-placeholder-not-secret
+      GMAIL_CLIENT_ID: ci-placeholder-not-secret
+      GMAIL_CLIENT_SECRET: ci-placeholder-not-secret
+      GMAIL_REFRESH_TOKEN: ci-placeholder-not-secret
+      GMAIL_SENDER: ci@example.invalid
+      ADMIN_ALERT_EMAILS: ci@example.invalid
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies (runs prisma generate via postinstall)
+        run: npm ci
+
+      - name: Apply schema to CI database
+        run: npx prisma migrate deploy
+
+      - name: Build Next.js (standalone)
+        run: npm run build
+
+      - name: Assemble release artifact
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          [ -d public ] && cp -r public .next/standalone/public
+          # Generated Prisma client + engine assets aren't always traced into
+          # the standalone bundle — copy explicitly.
+          mkdir -p .next/standalone/lib
+          [ -d lib/generated ] && cp -r lib/generated .next/standalone/lib/generated
+          [ -d node_modules/.prisma ] && cp -r node_modules/.prisma .next/standalone/node_modules/.prisma
+          [ -d prisma ] && mkdir -p .next/standalone/prisma && cp -r prisma .next/standalone/prisma
+          tar -czf groovvee-release.tar.gz -C .next/standalone .
+          du -sh groovvee-release.tar.gz
+
+      - name: Install SSH credentials
+        env:
+          DO_SSH_PRIVATE_KEY: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          DO_KNOWN_HOSTS: ${{ secrets.DO_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DO_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DO_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          DO_USER: ${{ secrets.DO_USER }}
+          DO_HOST: ${{ secrets.DO_HOST }}
+        run: >-
+          scp -i ~/.ssh/deploy_key
+          groovvee-release.tar.gz
+          "$DO_USER@$DO_HOST:/tmp/groovvee-${GITHUB_SHA}.tar.gz"
+
+      - name: Deploy on VPS
+        env:
+          DO_USER: ${{ secrets.DO_USER }}
+          DO_HOST: ${{ secrets.DO_HOST }}
+        run: >-
+          ssh -i ~/.ssh/deploy_key
+          "$DO_USER@$DO_HOST"
+          "bash -s -- /tmp/groovvee-${GITHUB_SHA}.tar.gz"
+          < scripts/deploy-remote.sh

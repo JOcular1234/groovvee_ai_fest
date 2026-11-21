@@ -49,6 +49,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Self-contained .next/standalone artifact for the VPS deploy workflow
+  // (server.js + traced deps; .next/static and public are copied alongside).
+  output: "standalone",
   images: {
     // No remotePatterns on purpose: /_next/image only optimizes local
     // /public images, so it can't be used as an open image proxy. Remote
