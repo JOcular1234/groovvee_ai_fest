@@ -12,22 +12,33 @@ import type { CommunityInput } from "@/lib/validation/community";
 
 export const COMMUNITIES_CACHE_TAG = "communities";
 
-export async function getPublishedCommunities(
-  opts: { category?: CommunityInput["category"] } = {}
+async function cachedPublishedCommunities(
+  opts: { category?: CommunityInput["category"] }
 ) {
   "use cache";
   cacheTag(COMMUNITIES_CACHE_TAG);
-  return withDbRetry(() => queryPublishedCommunities(db, opts));
+  return queryPublishedCommunities(db, opts);
+}
+export async function getPublishedCommunities(
+  opts: { category?: CommunityInput["category"] } = {}
+) {
+  return withDbRetry(() => cachedPublishedCommunities(opts));
 }
 
+async function cachedCommunityBySlug(slug: string) {
+  "use cache";
+  cacheTag(COMMUNITIES_CACHE_TAG);
+  return queryCommunityBySlug(db, slug);
+}
 export async function getCommunityBySlug(slug: string) {
-  "use cache";
-  cacheTag(COMMUNITIES_CACHE_TAG);
-  return withDbRetry(() => queryCommunityBySlug(db, slug));
+  return withDbRetry(() => cachedCommunityBySlug(slug));
 }
 
-export async function getFeaturedCommunities() {
+async function cachedFeaturedCommunities() {
   "use cache";
   cacheTag(COMMUNITIES_CACHE_TAG);
-  return withDbRetry(() => queryFeaturedCommunities(db));
+  return queryFeaturedCommunities(db);
+}
+export async function getFeaturedCommunities() {
+  return withDbRetry(cachedFeaturedCommunities);
 }

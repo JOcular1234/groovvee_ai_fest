@@ -1,13 +1,16 @@
 import { ArrowRight, Check } from "lucide-react";
 import { ticketTiers } from "@/data/event";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 export function TicketPromotion() {
   return (
-    <section className="bg-volt py-24 text-ink sm:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+    <section className="relative overflow-hidden py-24 text-ink sm:py-32">
+      <CollageBackground />
+      <div className="absolute inset-0 bg-volt/85" aria-hidden />
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           dark
           eyebrow="Tickets"

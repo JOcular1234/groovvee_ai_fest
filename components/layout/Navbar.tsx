@@ -16,19 +16,10 @@ const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname.startsWith(href);
 
 export function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
   const toggleRef = useRef<HTMLButtonElement>(null);
-
-  // Header background after scrolling
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // Close the menu when the route changes
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -71,12 +62,8 @@ export function Navbar() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${
-          open
-            ? "border-white/10 bg-ink"
-            : scrolled
-              ? "border-white/10 bg-ink/90 backdrop-blur-md"
-              : "border-transparent bg-transparent"
+        className={`fixed inset-x-0 top-0 z-50 border-b border-white/10 transition-colors duration-300 ${
+          open ? "bg-ink" : "bg-ink/95 backdrop-blur-md"
         }`}
       >
         <nav
@@ -111,7 +98,7 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       aria-current={active ? "page" : undefined}
-                      className={`block py-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition-colors hover:text-volt ${focusRing} ${
+                      className={`block py-2 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors hover:text-volt ${focusRing} ${
                         active ? "text-volt" : "text-white/80"
                       }`}
                     >
@@ -135,7 +122,7 @@ export function Navbar() {
 
             <Link
               href="/events"
-              className={`inline-flex items-center gap-1.5 bg-volt px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white ${focusRing}`}
+              className={`inline-flex items-center gap-1.5 bg-volt px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white ${focusRing}`}
             >
               Explore Events
               <ArrowUpRight className="size-4" aria-hidden />

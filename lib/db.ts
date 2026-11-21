@@ -1,9 +1,15 @@
 import "server-only";
 
+import dns from "node:dns";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 import { PrismaClient } from "@/lib/generated/prisma/client";
+
+// This host has no working IPv6 route (AAAA lookups return addresses that
+// fail ENETUNREACH/ETIMEDOUT), so prefer IPv4 for every outbound connection.
+dns.setDefaultResultOrder("ipv4first");
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -72,10 +78,10 @@ export async function withDbRetry<T>(
       return await fn();
     } catch (err) {
       if (!transientCode(err) || attempt >= retries - 1) throw err;
-      // Neon autosuspend can take ~10s to wake — budget ~15s of backoff.
-      await new Promise((r) =>
-        setTimeout(r, Math.min(250 * 2 ** attempt, 5000))
-      );
+      // No timer backoff: during prerendering, awaiting a setTimeout is
+      // "uncached data" outside "use cache" and a deadlocked promise inside
+      // it. Each attempt already blocks up to connectionTimeoutMillis while
+      // Neon wakes, which supplies the real wait budget.
     }
   }
 }

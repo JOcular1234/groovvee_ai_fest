@@ -7,14 +7,20 @@ import { queryHomepageTopics, queryPublishedTopics } from "@/lib/topics";
 
 export const TOPICS_CACHE_TAG = "topics";
 
-export async function getPublishedTopics() {
+async function cachedPublishedTopics() {
   "use cache";
   cacheTag(TOPICS_CACHE_TAG);
-  return withDbRetry(() => queryPublishedTopics(db));
+  return queryPublishedTopics(db);
+}
+export async function getPublishedTopics() {
+  return withDbRetry(cachedPublishedTopics);
 }
 
-export async function getHomepageTopics() {
+async function cachedHomepageTopics() {
   "use cache";
   cacheTag(TOPICS_CACHE_TAG);
-  return withDbRetry(() => queryHomepageTopics(db));
+  return queryHomepageTopics(db);
+}
+export async function getHomepageTopics() {
+  return withDbRetry(cachedHomepageTopics);
 }

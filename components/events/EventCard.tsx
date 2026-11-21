@@ -19,7 +19,14 @@ export type EventCardData = {
   community: { name: string; slug: string } | null;
 };
 
-export function EventCard({ event }: { event: EventCardData }) {
+export function EventCard({
+  event,
+  theme = "dark",
+}: {
+  event: EventCardData;
+  theme?: "dark" | "light";
+}) {
+  const light = theme === "light";
   const place = [event.city, event.stateProvince, event.country]
     .filter(Boolean)
     .join(", ");
@@ -36,7 +43,11 @@ export function EventCard({ event }: { event: EventCardData }) {
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group flex h-full flex-col border border-white/10 bg-panel transition-colors hover:border-volt/60"
+      className={`group flex h-full flex-col border backdrop-blur-sm transition-colors ${
+        light
+          ? "border-ink/15 bg-white/95 hover:border-ink/40"
+          : "border-white/10 bg-panel hover:border-volt/60"
+      }`}
     >
       <div className="relative aspect-video overflow-hidden bg-ink">
         <div
@@ -73,23 +84,45 @@ export function EventCard({ event }: { event: EventCardData }) {
       </div>
       <div className="flex flex-1 flex-col p-6">
         <div className="min-w-0">
-          <p className="break-words font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-volt">
+          <p
+            className={`break-words font-mono text-[11px] font-bold uppercase tracking-[0.12em] ${
+              light ? "text-ink" : "text-volt"
+            }`}
+          >
             {locationPrimary}
           </p>
           {locationSecondary && (
-            <p className="mt-1 break-words font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+            <p
+              className={`mt-1 break-words font-mono text-[11px] uppercase tracking-[0.12em] ${
+                light ? "text-ink/60" : "text-muted"
+              }`}
+            >
               {locationSecondary}
             </p>
           )}
         </div>
-        <h3 className="mt-3 break-words font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt sm:text-[26px]">
+        <h3
+          className={`mt-3 break-words font-display text-2xl uppercase leading-tight transition-colors sm:text-[26px] ${
+            light
+              ? "text-ink group-hover:underline group-hover:decoration-volt group-hover:decoration-[0.08em] group-hover:underline-offset-4"
+              : "group-hover:text-volt"
+          }`}
+        >
           {event.title}
         </h3>
-        <p className="mt-3 line-clamp-3 text-[15px] leading-[1.65] text-muted">
+        <p
+          className={`mt-3 line-clamp-3 text-[15px] leading-[1.65] ${
+            light ? "text-ink/60" : "text-muted"
+          }`}
+        >
           {event.description}
         </p>
         {event.community && (
-          <p className="mt-auto pt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+          <p
+            className={`mt-auto pt-4 font-mono text-[11px] uppercase tracking-[0.12em] ${
+              light ? "text-ink/60" : "text-muted"
+            }`}
+          >
             Hosted by {event.community.name}
           </p>
         )}

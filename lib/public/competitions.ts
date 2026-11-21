@@ -11,20 +11,29 @@ import {
 
 export const COMPETITIONS_CACHE_TAG = "competitions";
 
+async function cachedPublishedCompetitions() {
+  "use cache";
+  cacheTag(COMPETITIONS_CACHE_TAG);
+  return queryPublishedCompetitions(db);
+}
 export async function getPublishedCompetitions() {
-  "use cache";
-  cacheTag(COMPETITIONS_CACHE_TAG);
-  return withDbRetry(() => queryPublishedCompetitions(db));
+  return withDbRetry(cachedPublishedCompetitions);
 }
 
+async function cachedCompetitionBySlug(slug: string) {
+  "use cache";
+  cacheTag(COMPETITIONS_CACHE_TAG);
+  return queryCompetitionBySlug(db, slug);
+}
 export async function getCompetitionBySlug(slug: string) {
-  "use cache";
-  cacheTag(COMPETITIONS_CACHE_TAG);
-  return withDbRetry(() => queryCompetitionBySlug(db, slug));
+  return withDbRetry(() => cachedCompetitionBySlug(slug));
 }
 
-export async function getHackWarsCompetition() {
+async function cachedHackWarsCompetition() {
   "use cache";
   cacheTag(COMPETITIONS_CACHE_TAG);
-  return withDbRetry(() => queryHackWarsCompetition(db));
+  return queryHackWarsCompetition(db);
+}
+export async function getHackWarsCompetition() {
+  return withDbRetry(cachedHackWarsCompetition);
 }

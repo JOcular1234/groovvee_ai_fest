@@ -12,26 +12,39 @@ export const LOCATIONS_CACHE_TAG = "locations";
 // The city index reads both locations and published-event counts, so it is
 // tagged with both: event mutations revalidate "events" (existing
 // convention), location seeds/changes revalidate "locations".
-export async function getCityIndex(
-  filters: { q?: string; region?: string; country?: string } = {}
-) {
+async function cachedCityIndex(filters: {
+  q?: string;
+  region?: string;
+  country?: string;
+}) {
   "use cache";
   cacheTag(EVENTS_CACHE_TAG);
   cacheTag(LOCATIONS_CACHE_TAG);
-  return withDbRetry(() => queryCityIndex(db, filters));
+  return queryCityIndex(db, filters);
+}
+export async function getCityIndex(
+  filters: { q?: string; region?: string; country?: string } = {}
+) {
+  return withDbRetry(() => cachedCityIndex(filters));
 }
 
-export async function getCityBySlug(slug: string) {
+async function cachedCityBySlug(slug: string) {
   "use cache";
   cacheTag(LOCATIONS_CACHE_TAG);
-  return withDbRetry(() => queryCityBySlug(db, slug));
+  return queryCityBySlug(db, slug);
+}
+export async function getCityBySlug(slug: string) {
+  return withDbRetry(() => cachedCityBySlug(slug));
 }
 
 // Map aggregates combine locations and published events — both tags, same
 // convention as the city index.
-export async function getEventsMapData() {
+async function cachedEventsMapData() {
   "use cache";
   cacheTag(EVENTS_CACHE_TAG);
   cacheTag(LOCATIONS_CACHE_TAG);
-  return withDbRetry(() => queryEventsMapData(db));
+  return queryEventsMapData(db);
+}
+export async function getEventsMapData() {
+  return withDbRetry(cachedEventsMapData);
 }

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 type ButtonLinkProps = {
   href: string;
   children: ReactNode;
-  variant?: "primary" | "outline" | "dark";
+  variant?: "primary" | "outline" | "dark" | "outlineDark";
   className?: string;
 };
 
@@ -13,6 +13,8 @@ const variants = {
   outline:
     "border border-white/25 text-white hover:border-volt hover:text-volt",
   dark: "bg-ink text-volt hover:bg-panel",
+  outlineDark:
+    "border border-ink/30 text-ink hover:border-ink hover:bg-ink hover:text-volt",
 };
 
 export function ButtonLink({

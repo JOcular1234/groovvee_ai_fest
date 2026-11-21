@@ -17,7 +17,7 @@ const entry = { slug: true, updatedAt: true } as const;
 
 // Slugs + last-modified for every published detail page. Tagged with each
 // content tag so existing revalidateTag calls keep the sitemap fresh.
-export async function getSitemapEntries() {
+async function cachedSitemapEntries() {
   "use cache";
   cacheTag(EVENTS_CACHE_TAG);
   cacheTag(COMMUNITIES_CACHE_TAG);
@@ -26,17 +26,18 @@ export async function getSitemapEntries() {
   cacheTag(LOCATIONS_CACHE_TAG);
   // Scheduled news posts must appear once their publish time passes.
   cacheLife("hours");
-  return withDbRetry(async () => {
-    const [events, communities, competitions, news, cities] = await Promise.all([
-      db.event.findMany({ where: publishedEventWhere, select: entry }),
-      db.community.findMany({ where: publishedCommunityWhere, select: entry }),
-      db.competition.findMany({ where: publishedCompetitionWhere, select: entry }),
-      db.newsPost.findMany({ where: liveNewsPostWhere(), select: entry }),
-      db.location.findMany({
-        where: { type: "CITY", events: { some: publishedEventWhere } },
-        select: entry,
-      }),
-    ]);
-    return { events, communities, competitions, news, cities };
-  });
+  const [events, communities, competitions, news, cities] = await Promise.all([
+    db.event.findMany({ where: publishedEventWhere, select: entry }),
+    db.community.findMany({ where: publishedCommunityWhere, select: entry }),
+    db.competition.findMany({ where: publishedCompetitionWhere, select: entry }),
+    db.newsPost.findMany({ where: liveNewsPostWhere(), select: entry }),
+    db.location.findMany({
+      where: { type: "CITY", events: { some: publishedEventWhere } },
+      select: entry,
+    }),
+  ]);
+  return { events, communities, competitions, news, cities };
+}
+export async function getSitemapEntries() {
+  return withDbRetry(cachedSitemapEntries);
 }

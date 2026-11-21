@@ -8,11 +8,11 @@ import {
   CalendarDays,
   MapPin,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { event } from "@/data/event";
 import { formatEventDateTime } from "@/lib/datetime";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 
 export type HeroEvent = {
   title: string;
@@ -58,22 +58,10 @@ export function Hero({ nextEvent }: { nextEvent: HeroEvent | null }) {
       };
 
   return (
-    <section className="relative flex min-h-svh flex-col overflow-hidden bg-ink">
-      <Image
-        src="/groovvee-background.jpeg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-        aria-hidden
-      />
+    <section className="relative flex min-h-svh flex-col overflow-hidden">
+      <CollageBackground mute="bg-white/40" />
       <div
-        className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/70 to-ink/95"
-        aria-hidden
-      />
-      <div
-        className="bg-grid mask-[radial-gradient(ellipse_80%_70%_at_50%_35%,black,transparent)] absolute inset-0 opacity-60"
+        className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-volt/60"
         aria-hidden
       />
 
@@ -85,9 +73,9 @@ export function Hero({ nextEvent }: { nextEvent: HeroEvent | null }) {
       >
         <motion.p
           variants={item}
-          className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt"
+          className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink"
         >
-          <span className="inline-block size-2 bg-volt" aria-hidden />
+          <span className="inline-block size-2 bg-ink" aria-hidden />
           The future is here. Be part of it.
         </motion.p>
 
@@ -98,11 +86,11 @@ export function Hero({ nextEvent }: { nextEvent: HeroEvent | null }) {
           <span className="block overflow-hidden">
             <motion.span
               variants={lineReveal}
-              className="block text-[clamp(3.75rem,13.5vw,11.5rem)]"
+              className="block text-[clamp(3.5rem,11vw,9.5rem)] text-ink"
             >
               Groovvee
               <Asterisk
-                className="ml-2 inline-block size-[0.4em] align-top text-volt"
+                className="ml-2 inline-block size-[0.4em] align-top"
                 strokeWidth={2.5}
                 aria-hidden
               />
@@ -111,63 +99,70 @@ export function Hero({ nextEvent }: { nextEvent: HeroEvent | null }) {
           <span className="block overflow-hidden">
             <motion.span
               variants={lineReveal}
-              className="block text-[clamp(3.75rem,13.5vw,11.5rem)]"
+              className="block text-[clamp(3.5rem,11vw,9.5rem)] text-ink"
             >
-              <span className="text-volt">AI</span> Fest.
+              AI Fest.
             </motion.span>
           </span>
         </motion.h1>
 
         <div className="mt-auto flex flex-col gap-10 pt-14 lg:flex-row lg:items-end lg:justify-between">
-          <motion.div variants={item} className="max-w-xl">
-            <h2 className="text-2xl font-semibold leading-snug sm:text-3xl">
+          <motion.div
+            variants={item}
+            className="max-w-2xl border border-ink/15 bg-white/95 p-8 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.4)] backdrop-blur-sm"
+          >
+            <h2 className="text-2xl font-semibold leading-snug text-ink sm:text-3xl">
               {event.tagline}
             </h2>
-            <p className="mt-4 leading-relaxed text-muted">
+            <p className="mt-4 leading-relaxed text-ink/60">
               {event.description}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <ButtonLink href="/tickets">
+              <ButtonLink href="/tickets" variant="dark">
                 Get Your Ticket
                 <ArrowRight className="size-4" aria-hidden />
               </ButtonLink>
-              <ButtonLink href="/#about" variant="outline">
+              <ButtonLink href="/#about" variant="outlineDark">
                 Explore the Festival
               </ButtonLink>
             </div>
           </motion.div>
 
-          <motion.div variants={item} className="w-full lg:max-w-sm">
+          <motion.div variants={item} className="w-full lg:max-w-xs">
             <Link
               href={card.href}
-              className="group block border border-white/15 bg-panel transition-colors hover:border-volt"
+              className="group block border border-ink/15 bg-white/95 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-colors hover:border-ink/40"
             >
-              <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-volt">
+              <div className="flex items-center justify-between border-b border-ink/15 px-4 py-2.5">
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   Next up
                 </p>
                 <ArrowUpRight
-                  className="size-4 text-muted transition-colors group-hover:text-volt"
+                  className="size-4 text-ink/40 transition-colors group-hover:text-ink"
                   aria-hidden
                 />
               </div>
-              <div className="space-y-4 px-5 py-5">
-                <p className="font-display text-2xl uppercase leading-tight">
+              <div className="space-y-3 px-4 py-4">
+                <p className="font-display text-xl uppercase leading-tight text-ink">
                   {card.title}
                 </p>
-                <div className="space-y-2.5 font-mono text-[11px] uppercase tracking-[0.15em] text-white/80">
+                <div className="space-y-2 font-mono text-[11px] uppercase tracking-[0.15em] text-ink/70">
                   <p className="flex items-center gap-2.5">
-                    <CalendarDays
-                      className="size-3.5 shrink-0 text-volt"
+                    <span
+                      className="grid size-6 shrink-0 place-items-center bg-volt"
                       aria-hidden
-                    />
+                    >
+                      <CalendarDays className="size-3.5 text-ink" aria-hidden />
+                    </span>
                     {card.date}
                   </p>
                   <p className="flex items-center gap-2.5">
-                    <MapPin
-                      className="size-3.5 shrink-0 text-volt"
+                    <span
+                      className="grid size-6 shrink-0 place-items-center bg-volt"
                       aria-hidden
-                    />
+                    >
+                      <MapPin className="size-3.5 text-ink" aria-hidden />
+                    </span>
                     {card.location}
                   </p>
                 </div>

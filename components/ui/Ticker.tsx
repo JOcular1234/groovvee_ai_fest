@@ -4,7 +4,7 @@ export function Ticker() {
   const items = [...tickerItems, ...tickerItems];
   return (
     <div
-      className="overflow-hidden border-y border-ink/20 bg-volt py-3"
+      className="relative overflow-hidden border-y border-ink/20 bg-volt py-3"
       aria-hidden
     >
       <div className="marquee-track flex w-max items-center gap-10 whitespace-nowrap">

@@ -12,14 +12,20 @@ import {
 // public pages stay fast (cacheComponents) but never serve stale drafts.
 export const SPEAKERS_CACHE_TAG = "speakers";
 
-export async function getPublishedSpeakers() {
+async function cachedPublishedSpeakers() {
   "use cache";
   cacheTag(SPEAKERS_CACHE_TAG);
-  return withDbRetry(() => queryPublishedSpeakers(db));
+  return queryPublishedSpeakers(db);
+}
+export async function getPublishedSpeakers() {
+  return withDbRetry(cachedPublishedSpeakers);
 }
 
-export async function getFeaturedSpeakers() {
+async function cachedFeaturedSpeakers() {
   "use cache";
   cacheTag(SPEAKERS_CACHE_TAG);
-  return withDbRetry(() => queryFeaturedSpeakers(db));
+  return queryFeaturedSpeakers(db);
+}
+export async function getFeaturedSpeakers() {
+  return withDbRetry(cachedFeaturedSpeakers);
 }
