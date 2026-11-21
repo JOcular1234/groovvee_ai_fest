@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 # Runs ON the VPS as the deploy user (invoked via `ssh ... 'bash -s'`
 # from the GitHub Actions deploy workflow). Receives the uploaded release
-# tarball path as $1.
+# tarball path as the single argument.
 #
 # Layout it maintains:
 #   /var/www/groovveeaifest/
 #     .env                  <- production secrets, never touched by deploys
-#     releases/<timestamp>/ <- extracted standalone builds
+#     releases/<stamp>-<pid>/ <- extracted standalone builds
 #     current -> releases/X <- atomic symlink; PM2 runs current/server.js
 #
-# PM2: the existing daemon runs as root and all PM2 apps are managed by
-# root, so deploys authenticate as root (DO_USER=root). The preflight
-# verifies we are talking to an EXISTING daemon for this user — it never
-# spawns a second daemon and never touches other PM2 apps.
+# PM2: the existing daemon runs as root (deploys authenticate as root).
+# The preflight verifies we are talking to an EXISTING daemon for this
+# user — it never spawns a second daemon and never touches other PM2 apps.
 set -euo pipefail
 
 APP_DIR="/var/www/groovveeaifest"
@@ -21,7 +20,7 @@ PORT="3003"
 HOSTNAME="127.0.0.1"
 KEEP_RELEASES=5
 
-# Require exactly one argument: the uploaded release tarball.
+# Exactly one non-empty argument: the uploaded release tarball.
 if [ "$#" -ne 1 ] || [ -z "${1:-}" ]; then
   echo "ERROR: usage: deploy-remote.sh <release-tarball-path>" >&2
   exit 1
@@ -34,13 +33,15 @@ fi
 
 DEPLOY_USER="$(id -un)"
 PM2_HOME="${PM2_HOME:-$HOME/.pm2}"
-RELEASE="$APP_DIR/releases/$(date +%Y%m%d%H%M%S)"
+# $$ makes the dir unique even under overlapping deploys.
+RELEASE="$APP_DIR/releases/$(date +%Y%m%d%H%M%S)-$$"
 PREVIOUS=""
+APP_EXISTS=0
+APP_STARTED_BY_US=0
 
-# Restore the previous release symlink and restart the app on it.
-# The previous release directory is never deleted here — it stays
-# available even if the rollback restart itself fails.
-rollback() {
+# Rollback for an EXISTING deployment: restore the previous symlink and
+# restart on it. The previous release directory is never deleted here.
+rollback_existing() {
   echo ">> ROLLBACK: restoring previous release" >&2
   if [ -n "$PREVIOUS" ] && [ -d "$PREVIOUS" ]; then
     ln -sfn "$PREVIOUS" "$APP_DIR/current.new"
@@ -51,7 +52,50 @@ rollback() {
       echo ">> ERROR: rollback restart failed — app may be DOWN. Manual intervention required." >&2
     fi
   else
-    echo ">> ERROR: no previous release to roll back to — site may be DOWN. Manual intervention required." >&2
+    echo ">> ERROR: no previous release to roll back to — app may be DOWN. Manual intervention required." >&2
+  fi
+}
+
+# Rollback for a FIRST deployment: there is nothing to restore, so undo
+# what this deploy created — the `current` symlink and, only if this
+# deploy actually started it, the PM2 process. Before deleting we
+# re-inspect the live process and require its script path to be exactly
+# the path this deploy registered — an app we didn't start is never
+# deleted, even if it shares the name.
+rollback_first() {
+  echo ">> ROLLBACK: undoing first deployment" >&2
+  rm -f "$APP_DIR/current.new" "$APP_DIR/current"
+
+  if [ "$APP_STARTED_BY_US" != "1" ]; then
+    echo ">> Rollback complete: removed current symlink (no PM2 process was started by this deploy)."
+    return
+  fi
+
+  local live_path=""
+  live_path="$(APP_NAME="$APP_NAME" node -e '
+    const list = JSON.parse(require("fs").readFileSync(0, "utf8"));
+    const a = list.find(p => p.name === process.env.APP_NAME);
+    if (a) console.log(a.pm2_env.pm_exec_path || "");
+  ' < <(pm2 jlist 2>/dev/null) 2>/dev/null || true)"
+
+  if [ "$live_path" = "$APP_DIR/current/server.js" ] || \
+     [ "$live_path" = "$RELEASE/server.js" ]; then
+    if pm2 delete "$APP_NAME" >/dev/null 2>&1; then
+      echo ">> Rollback complete: removed '$APP_NAME' PM2 process and current symlink."
+    else
+      echo ">> ERROR: could not delete '$APP_NAME' — manual intervention required." >&2
+    fi
+  else
+    echo ">> WARNING: '$APP_NAME' script path '$live_path' does not match this deployment" >&2
+    echo "       ($APP_DIR/current/server.js) — NOT deleting it. Inspect manually." >&2
+  fi
+}
+
+rollback() {
+  if [ "$APP_EXISTS" = "1" ]; then
+    rollback_existing
+  else
+    rollback_first
   fi
 }
 
@@ -69,52 +113,77 @@ if [ ! -S "$PM2_HOME/pub.sock" ]; then
   exit 1
 fi
 
-if ! pm2 ping >/dev/null 2>&1; then
-  echo "ERROR: PM2 socket exists at $PM2_HOME/pub.sock but the daemon is unreachable." >&2
+# pm2.pid + kill -0 prove the daemon process is alive WITHOUT invoking
+# `pm2`, which could auto-spawn a second daemon if the first were dead.
+if [ ! -f "$PM2_HOME/pm2.pid" ]; then
+  echo "ERROR: no $PM2_HOME/pm2.pid — cannot confirm a running daemon." >&2
+  exit 1
+fi
+PM2_PID="$(cat "$PM2_HOME/pm2.pid")"
+if ! kill -0 "$PM2_PID" 2>/dev/null; then
+  echo "ERROR: PM2 daemon (pid $PM2_PID) is not running — refusing to let pm2 auto-spawn one." >&2
   exit 1
 fi
 
-# If the app already exists under this daemon, verify it's ours before
-# changing it: correct owner and a script path inside this app directory.
-# `pm2 jlist` must succeed AND parse as JSON — a broken inspection must fail
-# the deploy, never masquerade as a "first deployment".
+# Daemon confirmed alive: ping it for responsiveness (cannot spawn — a
+# live daemon already exists).
+if ! pm2 ping >/dev/null 2>&1; then
+  echo "ERROR: PM2 daemon (pid $PM2_PID) is not responding to 'pm2 ping'." >&2
+  exit 1
+fi
+
+# `pm2 jlist` must succeed AND parse as JSON — a broken inspection fails
+# the deploy, never masquerades as a "first deployment".
 if ! PM2_JLIST="$(pm2 jlist 2>/dev/null)"; then
   echo "ERROR: 'pm2 jlist' failed — daemon unreachable or unreadable." >&2
   exit 1
 fi
 
-if ! APP_INFO="$(APP_NAME="$APP_NAME" PM2_JLIST="$PM2_JLIST" node -e '
+# Structured result: line 1 = "exists"/"absent", line 2 = script path.
+# A process that exists but reports no script path fails closed — it is
+# NEVER misread as a first deployment.
+if ! APP_STATE="$(APP_NAME="$APP_NAME" PM2_JLIST="$PM2_JLIST" node -e '
   const a = JSON.parse(process.env.PM2_JLIST)
     .find(p => p.name === process.env.APP_NAME);
-  if (a) console.log([a.pm2_env.username || "", a.pm2_env.pm_exec_path || ""].join(" "));
+  console.log(a ? "exists" : "absent");
+  console.log(a ? (a.pm2_env.pm_exec_path || "") : "");
 ' 2>/dev/null)"; then
   echo "ERROR: could not parse 'pm2 jlist' output — refusing to guess deployment state." >&2
   exit 1
 fi
 
-# Only here — a valid, parsed process list with no match — is it a first deploy.
-APP_EXISTS=0
-if [ -n "$APP_INFO" ]; then
-  APP_EXISTS=1
-  APP_USER="${APP_INFO%% *}"
-  APP_PATH="${APP_INFO#* }"
-  if [ "$APP_USER" != "$DEPLOY_USER" ]; then
-    echo "ERROR: PM2 app '$APP_NAME' is managed by user '$APP_USER', not '$DEPLOY_USER'." >&2
-    echo "       Refusing to modify another user's application." >&2
-    exit 1
-  fi
-  case "$APP_PATH" in
-    "$APP_DIR"/*) ;;
-    *)
-      echo "ERROR: PM2 app '$APP_NAME' runs '$APP_PATH', which is outside $APP_DIR." >&2
-      echo "       Refusing to modify an application that isn't this deployment." >&2
+APP_STATUS="${APP_STATE%%$'\n'*}"
+APP_PATH="${APP_STATE#*$'\n'}"
+
+# Only a valid, parsed process list determines deployment state.
+# Owner is already proven: the daemon lives in this user's $PM2_HOME and
+# deploys run as that user, so anything in this list is managed by them.
+case "$APP_STATUS" in
+  exists)
+    if [ -z "$APP_PATH" ]; then
+      echo "ERROR: PM2 app '$APP_NAME' exists but reports no script path." >&2
+      echo "       Failing closed — inspect it manually before deploying." >&2
       exit 1
-      ;;
-  esac
-  echo ">> Preflight OK: '$APP_NAME' owned by '$APP_USER', script $APP_PATH"
-else
-  echo ">> Preflight OK: '$APP_NAME' not registered yet — first deploy under the existing daemon."
-fi
+    fi
+    APP_EXISTS=1
+    case "$APP_PATH" in
+      "$APP_DIR"/*) ;;
+      *)
+        echo "ERROR: PM2 app '$APP_NAME' runs '$APP_PATH', which is outside $APP_DIR." >&2
+        echo "       Refusing to modify an application that isn't this deployment." >&2
+        exit 1
+        ;;
+    esac
+    echo ">> Preflight OK: '$APP_NAME' exists, script $APP_PATH"
+    ;;
+  absent)
+    echo ">> Preflight OK: '$APP_NAME' not registered — first deploy under the existing daemon."
+    ;;
+  *)
+    echo "ERROR: unexpected PM2 inspection result '$APP_STATUS' — refusing to guess." >&2
+    exit 1
+    ;;
+esac
 
 # --------------------------------------------------------------------------
 # Extract the new release
@@ -129,6 +198,8 @@ if [ ! -f "$APP_DIR/.env" ]; then
   echo "ERROR: $APP_DIR/.env is missing on the VPS." >&2
   exit 1
 fi
+# An archive must never carry its own .env over production secrets.
+rm -f "$RELEASE/.env"
 ln -sfn "$APP_DIR/.env" "$RELEASE/.env"
 
 PREVIOUS="$(readlink -f "$APP_DIR/current" || true)"
@@ -139,9 +210,9 @@ mv -Tf "$APP_DIR/current.new" "$APP_DIR/current"
 
 export NODE_ENV=production PORT="$PORT" HOSTNAME="$HOSTNAME"
 
-# PM2 points at the *stable* current/server.js path: a restart resolves the
-# symlink fresh and picks up the new release. If PM2 itself fails after the
-# switch, roll the symlink back and restart the previous release.
+# PM2 points at the *stable* current/server.js path with cwd=current: a
+# restart resolves the symlink fresh and picks up the new release. Any
+# failure after the switch rolls back (or undoes) the deployment.
 if [ "$APP_EXISTS" = "1" ]; then
   echo ">> Restarting existing PM2 app '$APP_NAME'"
   if ! pm2 restart "$APP_NAME" --update-env; then
@@ -151,6 +222,9 @@ if [ "$APP_EXISTS" = "1" ]; then
   fi
 else
   echo ">> Starting PM2 app '$APP_NAME' (first deploy)"
+  # Set before the attempt: if pm2 partially registers the process but
+  # returns an error, rollback still inspects (and may delete) it.
+  APP_STARTED_BY_US=1
   if ! pm2 start "$APP_DIR/current/server.js" --name "$APP_NAME" --cwd "$APP_DIR/current"; then
     echo ">> ERROR: pm2 start failed." >&2
     rollback
@@ -175,7 +249,33 @@ fi
 # failed or rolled-back state.
 pm2 save
 
-echo ">> Pruning old releases (keeping $KEEP_RELEASES)"
-ls -1dt "$APP_DIR"/releases/*/ | tail -n "+$((KEEP_RELEASES + 1))" | xargs -r rm -rf --
+# Prune old releases. The active release and the previous known-good one
+# are always preserved — then at most KEEP_RELEASES releases total remain.
+# NUL-delimited find + arrays handle paths safely, and an empty prune
+# list is a normal no-op, never an error under set -euo pipefail.
+echo ">> Pruning old releases (keeping $KEEP_RELEASES total)"
+ACTIVE="$(readlink -f "$APP_DIR/current" || true)"
 
-echo ">> Deploy complete: $(readlink -f "$APP_DIR/current")"
+declare -a CANDIDATES=()
+while IFS= read -r -d '' dir; do
+  dir="${dir%/}"
+  [ "$dir" = "$ACTIVE" ] && continue
+  [ -n "$PREVIOUS" ] && [ "$dir" = "$PREVIOUS" ] && continue
+  CANDIDATES+=("$dir")
+done < <(find "$APP_DIR/releases" -mindepth 1 -maxdepth 1 -type d \
+           -printf '%T@ %p\0' | sort -z -rn | cut -z -d' ' -f2-)
+
+# Protected slots: active always; previous only if distinct.
+PROTECTED=1
+[ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "$ACTIVE" ] && PROTECTED=2
+KEEP_UNPROTECTED=$((KEEP_RELEASES - PROTECTED))
+[ "$KEEP_UNPROTECTED" -lt 0 ] && KEEP_UNPROTECTED=0
+
+if [ "${#CANDIDATES[@]}" -gt "$KEEP_UNPROTECTED" ]; then
+  for old in "${CANDIDATES[@]:KEEP_UNPROTECTED}"; do
+    echo ">>   removing $old"
+    rm -rf -- "$old"
+  done
+fi
+
+echo ">> Deploy complete: $ACTIVE"
