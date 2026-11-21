@@ -42,7 +42,11 @@ export function SpeakerCard({
     : [];
 
   return (
-    <article className="group">
+    <article
+      className={`group ${
+        light ? "border border-ink/15 bg-white/95 backdrop-blur-sm" : ""
+      }`}
+    >
       <div
         className={`relative aspect-3/4 overflow-hidden border bg-ink ${
           light ? "border-ink/15" : "border-white/10"
@@ -80,45 +84,47 @@ export function SpeakerCard({
           )}
         </div>
       </div>
-      {speaker.organization && (
-        <p
-          className={`mt-4 font-mono text-[11px] uppercase tracking-[0.2em] ${
-            light ? "text-ink/60" : "text-muted"
-          }`}
-        >
-          {speaker.organization}
-        </p>
-      )}
-      {showBio && speaker.bio && (
-        <p
-          className={`mt-2 text-sm leading-relaxed ${
-            light ? "text-ink/60" : "text-muted"
-          }`}
-        >
-          {speaker.bio}
-        </p>
-      )}
-      {socials.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-          {socials.map((s) => (
-            <li key={s.label}>
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
-                  light
-                    ? "text-ink/60 hover:bg-volt hover:text-ink"
-                    : "text-muted hover:text-volt"
-                }`}
-              >
-                {s.label}
-                <ArrowUpRight className="size-3" aria-hidden />
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className={light ? "p-4" : ""}>
+        {speaker.organization && (
+          <p
+            className={`${light ? "" : "mt-4 "}font-mono text-[11px] uppercase tracking-[0.2em] ${
+              light ? "text-ink/60" : "text-muted"
+            }`}
+          >
+            {speaker.organization}
+          </p>
+        )}
+        {showBio && speaker.bio && (
+          <p
+            className={`mt-2 text-sm leading-relaxed ${
+              light ? "text-ink/70" : "text-muted"
+            }`}
+          >
+            {speaker.bio}
+          </p>
+        )}
+        {socials.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            {socials.map((s) => (
+              <li key={s.label}>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] transition-colors ${
+                    light
+                      ? "text-ink/60 hover:bg-volt hover:text-ink"
+                      : "text-muted hover:text-volt"
+                  }`}
+                >
+                  {s.label}
+                  <ArrowUpRight className="size-3" aria-hidden />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </article>
   );
 }
