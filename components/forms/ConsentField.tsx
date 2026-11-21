@@ -13,12 +13,12 @@ export function ConsentField({
 }) {
   return (
     <div className="mt-6">
-      <label className="flex cursor-pointer items-start gap-3 text-sm text-muted">
+      <label className="flex cursor-pointer items-start gap-3 text-sm text-ink/70">
         <input
           type="checkbox"
           name="consent"
           required
-          className="mt-0.5 size-4 shrink-0 accent-volt"
+          className="mt-0.5 size-4 shrink-0 accent-ink"
         />
         <span>
           {extra}
@@ -27,7 +27,7 @@ export function ConsentField({
           <Link
             href="/privacy"
             onClick={(e) => e.stopPropagation()}
-            className="text-volt hover:underline"
+            className="font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 hover:bg-volt"
           >
             privacy policy
           </Link>
@@ -35,7 +35,7 @@ export function ConsentField({
         </span>
       </label>
       {errors?.length ? (
-        <p role="alert" className="mt-1.5 text-xs text-red-400">
+        <p role="alert" className="mt-1.5 text-xs text-red-600">
           {errors[0]}
         </p>
       ) : null}

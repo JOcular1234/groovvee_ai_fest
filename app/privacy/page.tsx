@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { event } from "@/data/event";
 import { pageMetadata } from "@/lib/site";
 
@@ -67,11 +68,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="border-t border-white/10 pt-8">
-      <h2 className="font-display text-2xl uppercase leading-none text-white sm:text-3xl">
+    <section id={id} className="border-t border-ink/15 pt-8">
+      <h2 className="font-display text-2xl uppercase leading-none text-ink sm:text-3xl">
         {title}
       </h2>
-      <div className="mt-5 space-y-4 text-sm leading-relaxed text-muted">
+      <div className="mt-5 space-y-4 text-sm leading-relaxed text-ink/70">
         {children}
       </div>
     </section>
@@ -81,16 +82,16 @@ function Section({
 export default function PrivacyPage() {
   return (
     <section className="relative overflow-x-clip px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
-      <div className="relative mx-auto max-w-3xl">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+      <CollageBackground />
+      <div className="relative mx-auto max-w-3xl border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-10">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Your data
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
-          Privacy policy<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
+          <span className="bg-volt px-2 text-ink">Privacy policy.</span>
         </h1>
-        <p className="mt-6 max-w-xl text-muted">
+        <p className="mt-6 max-w-xl text-ink/70">
           Groovvee AI Fest is organized by Black Bumble Solutions. This page
           explains what we collect when you use this site, why, how long we
           keep it, and how to reach us about your data. Effective{" "}
@@ -103,14 +104,14 @@ export default function PrivacyPage() {
               We only collect what you give us through forms on this site —
               there is no analytics or behavioural tracking.
             </p>
-            <ol className="divide-y divide-white/10 border-y border-white/10">
+            <ol className="divide-y divide-ink/10 border-y border-ink/10">
               {COLLECTED.map((c, i) => (
                 <li key={c.title} className="flex gap-4 py-4">
-                  <span className="pt-0.5 font-mono text-xs font-bold text-volt">
+                  <span className="pt-0.5 font-mono text-xs font-bold text-ink">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <p className="font-semibold text-white">{c.title}</p>
+                    <p className="font-semibold text-ink">{c.title}</p>
                     <p className="mt-1">{c.desc}</p>
                   </div>
                 </li>
@@ -136,14 +137,14 @@ export default function PrivacyPage() {
             <p>
               A small number of providers process data on our behalf:
             </p>
-            <ol className="divide-y divide-white/10 border-y border-white/10">
+            <ol className="divide-y divide-ink/10 border-y border-ink/10">
               {SHARING.map((s, i) => (
                 <li key={s.title} className="flex gap-4 py-4">
-                  <span className="pt-0.5 font-mono text-xs font-bold text-volt">
+                  <span className="pt-0.5 font-mono text-xs font-bold text-ink">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <p className="font-semibold text-white">{s.title}</p>
+                    <p className="font-semibold text-ink">{s.title}</p>
                     <p className="mt-1">{s.desc}</p>
                   </div>
                 </li>
@@ -153,7 +154,7 @@ export default function PrivacyPage() {
 
           <Section id="retention" title="How long we keep it">
             <p>
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-ink">
                 Unconfirmed registrations are deleted automatically after 30
                 days.
               </span>{" "}
@@ -204,7 +205,7 @@ export default function PrivacyPage() {
               For any of these, email{" "}
               <a
                 href={`mailto:${event.contactEmail}`}
-                className={`text-volt hover:underline ${focusRing}`}
+                className={`font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 hover:bg-volt ${focusRing}`}
               >
                 {event.contactEmail}
               </a>
@@ -226,7 +227,7 @@ export default function PrivacyPage() {
               page. Questions?{" "}
               <Link
                 href="/contact"
-                className={`text-volt hover:underline ${focusRing}`}
+                className={`font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 hover:bg-volt ${focusRing}`}
               >
                 Contact us
               </Link>

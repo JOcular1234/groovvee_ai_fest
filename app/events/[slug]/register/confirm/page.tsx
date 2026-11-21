@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import { ConfirmRegistrationForm } from "@/components/events/ConfirmRegistrationForm";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { db, withDbRetry } from "@/lib/db";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
 import { findPendingRegistrationByToken } from "@/lib/registrations";
@@ -28,17 +29,17 @@ export default async function ConfirmRegistrationPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-3xl">
         {pending && (
-          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             <span className="inline-block size-2 bg-volt" aria-hidden />
             {formatEventDateTime(pending.event.startsAt, pending.event.timezone)} ·{" "}
             {timeZoneLabel(pending.event.startsAt, pending.event.timezone)}
           </p>
         )}
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
-          Confirm<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
+          <span className="bg-volt px-2 text-ink">Confirm.</span>
         </h1>
 
         <div className="mt-10">
@@ -49,14 +50,14 @@ export default async function ConfirmRegistrationPage({
               eventTitle={pending.event.title}
             />
           ) : (
-            <div className="border border-white/10 bg-panel p-8 sm:p-10">
-              <p className="text-muted">
+            <div className="border border-ink/15 bg-white/95 p-8 backdrop-blur-sm sm:p-10">
+              <p className="text-ink/70">
                 This confirmation link is invalid or was already used. If you
                 registered more than once, use the link in the newest email.
               </p>
               <Link
                 href="/events"
-                className="mt-8 inline-flex items-center border border-white/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+                className="mt-8 inline-flex items-center border border-ink/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
               >
                 Browse events
               </Link>

@@ -16,7 +16,7 @@ const focusRing =
 
 const LINK_RE = /\[([^\]]+)\]\(([^)\s]+)\)/g;
 const linkCls =
-  "text-volt underline underline-offset-2 transition-colors hover:text-white";
+  "font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 transition-colors hover:bg-volt";
 
 // Minimal markdown-lite: the assistant is prompted to answer in plain text
 // with [label](/path) links — render those and preserve paragraphs.
@@ -46,7 +46,7 @@ function renderRich(text: string): ReactNode[] {
           rel="noopener noreferrer nofollow"
           className={linkCls}
         >
-          {label} <span className="text-muted">({link.host} ↗)</span>
+          {label} <span className="text-ink/50">({link.host} ↗)</span>
         </a>
       )
     );
@@ -107,7 +107,7 @@ export function ChatMessages({
     >
       {messages.length === 0 ? (
         <div>
-          <p className="border border-white/10 bg-panel px-4 py-3 text-sm leading-relaxed text-white/90 sm:bg-ink">
+          <p className="border border-ink/15 bg-ink/[0.03] px-4 py-3 text-sm leading-relaxed text-ink/80">
             {WELCOME_MESSAGE}
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
@@ -116,7 +116,7 @@ export function ChatMessages({
                 key={q}
                 type="button"
                 onClick={() => onSuggestion(q)}
-                className={`cursor-pointer border border-white/15 px-3 py-2 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-white/80 transition-colors hover:border-volt hover:text-volt ${focusRing}`}
+                className={`cursor-pointer border border-ink/20 bg-white px-3 py-2 text-left font-mono text-[11px] uppercase tracking-[0.12em] text-ink/70 transition-colors hover:border-ink hover:bg-volt hover:text-ink ${focusRing}`}
               >
                 {q}
               </button>
@@ -137,19 +137,19 @@ export function ChatMessages({
               ) : (
                 <div className="min-w-0 flex-1">
                   {m.failed ? (
-                    <div className="border border-white/10 px-4 py-3">
-                      <p className="text-sm text-muted">{m.content}</p>
+                    <div className="border border-ink/15 px-4 py-3">
+                      <p className="text-sm text-ink/60">{m.content}</p>
                       <button
                         type="button"
                         onClick={onRetry}
-                        className={`mt-3 inline-flex cursor-pointer items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:text-white ${focusRing}`}
+                        className={`mt-3 inline-flex cursor-pointer items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-volt ${focusRing}`}
                       >
                         <RotateCcw className="size-3.5" aria-hidden />
                         Try again
                       </button>
                     </div>
                   ) : m.content ? (
-                    <div className="space-y-3 whitespace-pre-wrap px-1 text-sm leading-relaxed text-white/90">
+                    <div className="space-y-3 whitespace-pre-wrap px-1 text-sm leading-relaxed text-ink/80">
                       {m.content.split(/\n{2,}/).map((para, i) => (
                         <p key={i}>{renderRich(para)}</p>
                       ))}

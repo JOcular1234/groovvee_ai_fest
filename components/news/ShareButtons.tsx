@@ -4,7 +4,7 @@ import { Check, Link2, Share2 } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 const btn =
-  "inline-flex items-center gap-2 border border-white/15 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt";
+  "inline-flex items-center gap-2 border border-ink/25 bg-white/80 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:border-ink hover:bg-volt";
 
 const noopSubscribe = () => () => {};
 
@@ -40,7 +40,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <p className="mr-2 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+      <p className="mr-2 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
         Share
       </p>
       {canNativeShare && (
@@ -55,7 +55,7 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       )}
       <button type="button" className={btn} onClick={copy} aria-live="polite">
         {copied ? (
-          <Check className="size-3.5 text-volt" aria-hidden />
+          <Check className="size-3.5 text-ink" aria-hidden />
         ) : (
           <Link2 className="size-3.5" aria-hidden />
         )}

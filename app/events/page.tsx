@@ -13,6 +13,7 @@ import Link from "next/link";
 
 import { EventCalendar } from "@/components/events/EventCalendar";
 import { EventCard } from "@/components/events/EventCard";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { EventsMapLazy } from "@/components/events/EventsMapLazy";
 import { mapRegionByKey } from "@/data/map-regions";
 import {
@@ -49,11 +50,11 @@ export const instant = false;
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-volt";
 
-const fieldClass = `w-full border border-white/15 bg-ink px-3 py-3 text-sm text-white outline-none transition-colors [color-scheme:dark] focus:border-volt`;
+const fieldClass = `w-full border border-ink/20 bg-white px-3 py-3 text-sm text-ink outline-none transition-colors [color-scheme:light] focus:border-ink`;
 
-const outlineBtn = `inline-flex min-h-11 items-center justify-center gap-2 border border-white/25 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-white transition-colors hover:border-volt hover:text-volt ${focusRing}`;
+const outlineBtn = `inline-flex min-h-11 items-center justify-center gap-2 border border-ink/25 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-ink hover:text-volt ${focusRing}`;
 
-const primaryBtn = `inline-flex min-h-11 items-center justify-center gap-2 bg-volt px-5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-white ${focusRing}`;
+const primaryBtn = `inline-flex min-h-11 items-center justify-center gap-2 border border-ink bg-ink px-5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-volt transition-colors hover:bg-panel ${focusRing}`;
 
 type FilterChip = { key: string; label: string; href: string };
 
@@ -203,24 +204,25 @@ export default async function EventsPage({
   return (
     // overflow-x-clip (not hidden) so the sticky tab bar can still stick
     <section className="relative overflow-x-clip pt-32 pb-24 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
 
       {/* Page header */}
       <header className="relative w-full px-5 sm:px-10 2xl:px-16">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Global calendar
         </p>
-        <h1 className="mt-5 max-w-4xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          Discover what&apos;s happening in AI<span className="text-volt">.</span>
+        <h1 className="mt-5 max-w-4xl font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          Discover what&apos;s{" "}
+          <span className="bg-volt px-2 text-ink">happening in AI.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           Explore AI meetups, campus communities, hackathons and festivals
           happening around the world.
         </p>
         <Link
           href="/events/cities"
-          className={`mt-8 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-white transition-colors hover:text-volt ${focusRing}`}
+          className={`mt-8 inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink underline decoration-volt decoration-2 underline-offset-4 transition-colors hover:bg-volt ${focusRing}`}
         >
           Browse by city
           <ArrowUpRight className="size-4" aria-hidden />
@@ -228,7 +230,7 @@ export default async function EventsPage({
       </header>
 
       {/* View switcher — sticks under the navbar */}
-      <div className="sticky top-16 z-30 mt-12 border-y border-white/10 bg-ink/90 backdrop-blur-md sm:top-20">
+      <div className="sticky top-16 z-30 mt-12 border-y border-ink/15 bg-white/90 backdrop-blur-md sm:top-20">
         <nav
           aria-label="Event views"
           className="flex w-full overflow-x-auto px-1 [scrollbar-width:none] sm:px-6 2xl:px-12 [&::-webkit-scrollbar]:hidden"
@@ -242,7 +244,7 @@ export default async function EventsPage({
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={`relative inline-flex min-h-12 shrink-0 items-center px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] transition-colors ${focusRing} ${
-                  active ? "text-volt" : "text-muted hover:text-white"
+                  active ? "text-ink" : "text-ink/60 hover:text-ink"
                 }`}
               >
                 {t.label}
@@ -264,14 +266,14 @@ export default async function EventsPage({
           <form
             action="/events"
             role="search"
-            className="mt-8 border border-white/10 bg-panel p-4 sm:p-5"
+            className="mt-8 border border-ink/15 bg-white/95 p-4 backdrop-blur-sm sm:p-5"
           >
             <div className="relative">
               <label htmlFor="f-q" className="sr-only">
                 Search events
               </label>
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink/50"
                 aria-hidden
               />
               <input
@@ -286,7 +288,7 @@ export default async function EventsPage({
 
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,1fr)_auto] lg:items-end">
               <div>
-                <label htmlFor="f-region" className="mb-1.5 block text-xs text-muted">
+                <label htmlFor="f-region" className="mb-1.5 block text-xs text-ink/60">
                   Region
                 </label>
                 <select id="f-region" name="region" defaultValue={region ?? ""} className={fieldClass}>
@@ -299,7 +301,7 @@ export default async function EventsPage({
                 </select>
               </div>
               <div>
-                <label htmlFor="f-country" className="mb-1.5 block text-xs text-muted">
+                <label htmlFor="f-country" className="mb-1.5 block text-xs text-ink/60">
                   Country
                 </label>
                 <select id="f-country" name="country" defaultValue={country ?? ""} className={fieldClass}>
@@ -312,7 +314,7 @@ export default async function EventsPage({
                 </select>
               </div>
               <div>
-                <label htmlFor="f-location" className="mb-1.5 block text-xs text-muted">
+                <label htmlFor="f-location" className="mb-1.5 block text-xs text-ink/60">
                   City
                 </label>
                 <select id="f-location" name="location" defaultValue={locationId ?? ""} className={fieldClass}>
@@ -325,7 +327,7 @@ export default async function EventsPage({
                 </select>
               </div>
               <div>
-                <label htmlFor="f-source" className="mb-1.5 block text-xs text-muted">
+                <label htmlFor="f-source" className="mb-1.5 block text-xs text-ink/60">
                   Organizer
                 </label>
                 <select id="f-source" name="source" defaultValue={source ?? ""} className={fieldClass}>
@@ -354,23 +356,23 @@ export default async function EventsPage({
         {/* Active filters */}
         {!isMap && chips.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted">Filtered by</span>
+            <span className="text-xs text-ink/60">Filtered by</span>
             {chips.map((c) => (
               <Link
                 key={c.key}
                 href={c.href}
                 scroll={false}
                 aria-label={`Remove filter: ${c.label}`}
-                className={`inline-flex min-h-9 items-center gap-1.5 border border-volt/40 bg-volt/10 px-3 text-sm text-white transition-colors hover:border-volt ${focusRing}`}
+                className={`inline-flex min-h-9 items-center gap-1.5 border border-ink bg-volt px-3 text-sm font-medium text-ink transition-colors hover:bg-white ${focusRing}`}
               >
                 {c.label}
-                <X className="size-3.5 text-volt" aria-hidden />
+                <X className="size-3.5" aria-hidden />
               </Link>
             ))}
             <Link
               href={clearAllHref}
               scroll={false}
-              className={`px-2 py-2 text-sm text-muted underline-offset-4 transition-colors hover:text-volt hover:underline ${focusRing}`}
+              className={`px-2 py-2 text-sm text-ink/60 underline-offset-4 transition-colors hover:text-ink hover:underline ${focusRing}`}
             >
               Clear all
             </Link>
@@ -381,7 +383,7 @@ export default async function EventsPage({
         {hero && (
           <Link
             href={`/events/${hero.slug}`}
-            className={`group mt-10 grid overflow-hidden border border-volt/40 bg-panel transition-colors hover:border-volt lg:grid-cols-[3fr_2fr] ${focusRing}`}
+            className={`group mt-10 grid overflow-hidden border border-ink/15 bg-white/95 backdrop-blur-sm transition-colors hover:border-ink/40 lg:grid-cols-[3fr_2fr] ${focusRing}`}
           >
             <div className="relative min-h-64 bg-ink lg:min-h-96">
               {hero.imageUrl ? (
@@ -418,30 +420,30 @@ export default async function EventsPage({
               </span>
             </div>
             <div className="flex flex-col justify-center gap-5 p-6 sm:p-10">
-              <h2 className="font-display text-3xl uppercase leading-tight sm:text-4xl">
+              <h2 className="font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
                 {hero.title}
               </h2>
               <ul className="space-y-3 text-sm">
                 <li className="flex gap-3">
-                  <CalendarDays className="mt-0.5 size-4 shrink-0 text-volt" aria-hidden />
+                  <CalendarDays className="mt-0.5 size-4 shrink-0 text-ink" aria-hidden />
                   <span>
-                    <span className="block text-white">
+                    <span className="block font-medium text-ink">
                       {formatEventDateTime(hero.startsAt, hero.timezone)}
                     </span>
-                    <span className="block text-xs text-muted">
+                    <span className="block text-xs text-ink/60">
                       {timeZoneLabel(hero.startsAt, hero.timezone)}
                     </span>
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <MapPin className="mt-0.5 size-4 shrink-0 text-volt" aria-hidden />
-                  <span className="text-white/80">{heroLocation}</span>
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-ink" aria-hidden />
+                  <span className="text-ink/70">{heroLocation}</span>
                 </li>
               </ul>
-              <p className="line-clamp-3 text-[15px] leading-[1.65] text-muted">
+              <p className="line-clamp-3 text-[15px] leading-[1.65] text-ink/70">
                 {hero.description}
               </p>
-              <span className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-volt">
+              <span className="inline-flex w-fit items-center gap-2 bg-volt px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink">
                 View event
                 <ArrowUpRight
                   className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
@@ -466,7 +468,7 @@ export default async function EventsPage({
                 <span className="hidden sm:inline">{monthLabel(prevMonth)}</span>
               </Link>
               <div className="text-center">
-                <p className="font-display text-2xl uppercase text-white sm:text-3xl">
+                <p className="font-display text-2xl uppercase text-ink sm:text-3xl">
                   {monthLabel(month)}
                 </p>
                 {(month.year !== thisMonth.year ||
@@ -474,7 +476,7 @@ export default async function EventsPage({
                   <Link
                     href={href({ month: undefined })}
                     scroll={false}
-                    className={`text-xs text-muted underline-offset-4 transition-colors hover:text-volt hover:underline ${focusRing}`}
+                    className={`text-xs text-ink/60 underline-offset-4 transition-colors hover:text-ink hover:underline ${focusRing}`}
                   >
                     Back to {monthLabel(thisMonth)}
                   </Link>
@@ -505,19 +507,19 @@ export default async function EventsPage({
             <p
               role="status"
               aria-live="polite"
-              className="mt-10 text-sm text-muted"
+              className="mt-10 text-sm text-ink/60"
             >
               {result.total} {view === "past" ? "past" : "upcoming"}{" "}
               {result.total === 1 ? "event" : "events"}
             </p>
 
             {result.events.length === 0 ? (
-              <div className="mt-4 border border-white/10 bg-panel p-8 text-center sm:p-12">
-                <p className="flex items-center justify-center gap-3 font-display text-3xl uppercase">
+              <div className="mt-4 border border-ink/15 bg-white/95 p-8 text-center backdrop-blur-sm sm:p-12">
+                <p className="flex items-center justify-center gap-3 font-display text-3xl uppercase text-ink">
                   <span className="inline-block size-2.5 bg-volt" aria-hidden />
                   {filtered ? "No matches" : "Nothing here yet"}
                 </p>
-                <p className="mx-auto mt-4 max-w-md text-muted">
+                <p className="mx-auto mt-4 max-w-md text-ink/70">
                   {filtered
                     ? "No events match these filters. Try removing one or widening your search."
                     : view === "upcoming"
@@ -544,7 +546,7 @@ export default async function EventsPage({
               <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 {result.events.map((e) => (
                   <li key={e.id}>
-                    <EventCard event={e} />
+                    <EventCard event={e} theme="light" />
                   </li>
                 ))}
               </ul>
@@ -553,12 +555,12 @@ export default async function EventsPage({
             {result.pages > 1 && (
               <nav
                 aria-label="Pagination"
-                className="mt-12 flex items-center justify-between gap-4 border-t border-white/10 pt-6"
+                className="mt-12 flex items-center justify-between gap-4 border-t border-ink/15 pt-6"
               >
                 {result.page <= 1 ? (
                   <span
                     aria-disabled="true"
-                    className="inline-flex min-h-11 items-center gap-2 border border-white/10 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-muted/40"
+                    className="inline-flex min-h-11 items-center gap-2 border border-ink/10 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink/30"
                   >
                     <ChevronLeft className="size-4" aria-hidden />
                     Prev
@@ -576,7 +578,7 @@ export default async function EventsPage({
                   </Link>
                 )}
 
-                <p className="text-center text-sm text-muted">
+                <p className="text-center text-sm text-ink/60">
                   Page {result.page} of {result.pages}
                   <span className="hidden sm:inline"> · {result.total} events</span>
                 </p>
@@ -584,7 +586,7 @@ export default async function EventsPage({
                 {result.page >= result.pages ? (
                   <span
                     aria-disabled="true"
-                    className="inline-flex min-h-11 items-center gap-2 border border-white/10 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-muted/40"
+                    className="inline-flex min-h-11 items-center gap-2 border border-ink/10 px-4 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink/30"
                   >
                     Next
                     <ChevronRight className="size-4" aria-hidden />

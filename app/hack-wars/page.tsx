@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { getHackWarsCompetition } from "@/lib/public/competitions";
 import { COMPETITION_STATUS_LABELS } from "@/lib/validation/competition";
 import { pageMetadata } from "@/lib/site";
@@ -49,32 +50,32 @@ export default async function HackWarsPage() {
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-5xl">
         <Link
           href="/competitions"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           ← All competitions
         </Link>
 
         <div className="mt-8">
-          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             <span className="inline-block size-2 bg-volt" aria-hidden />
             The flagship competition
             {statusLabel && (
-              <span className="text-muted">· {statusLabel}</span>
+              <span className="text-ink/50">· {statusLabel}</span>
             )}
           </p>
-          <h1 className="mt-5 font-display text-6xl uppercase leading-[0.9] sm:text-8xl">
-            AI Hack Wars<span className="text-volt">.</span>
+          <h1 className="mt-5 font-display text-6xl uppercase leading-[0.9] text-ink sm:text-8xl">
+            <span className="bg-volt px-2 text-ink">AI Hack Wars.</span>
           </h1>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-muted">
+          <p className="mt-8 max-w-2xl border border-ink/15 bg-white/95 p-6 text-lg leading-relaxed text-ink/75 backdrop-blur-sm sm:p-8">
             {competition?.description ??
               "The flagship GrooVVee build competition — solo or in teams of up to three."}
           </p>
           {competition?.prizeText && (
-            <p className="mt-4 font-mono text-sm uppercase tracking-[0.2em] text-white">
+            <p className="mt-4 font-mono text-sm uppercase tracking-[0.2em] text-ink">
               {competition.prizeText}
             </p>
           )}
@@ -84,32 +85,32 @@ export default async function HackWarsPage() {
           {STEPS.map((s) => (
             <div
               key={s.index}
-              className="border border-white/10 bg-panel p-6 transition-colors hover:border-volt/50"
+              className="border border-ink/15 bg-white/95 p-6 backdrop-blur-sm transition-colors hover:border-ink/40"
             >
-              <p className="font-display text-4xl text-outline-volt">
+              <p className="font-display text-4xl text-outline-ink">
                 {s.index}
               </p>
-              <h2 className="mt-4 font-display text-xl uppercase leading-tight">
+              <h2 className="mt-4 font-display text-xl uppercase leading-tight text-ink">
                 {s.title}
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
+              <p className="mt-3 text-sm leading-relaxed text-ink/70">
                 {s.description}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="mt-16 border border-white/10 bg-panel p-8 sm:p-10">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <div className="mt-16 border border-ink bg-volt p-8 text-ink shadow-[8px_8px_0_0_currentColor] sm:p-10">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em]">
             What the application asks
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {REQUIREMENTS.map((r) => (
               <li
                 key={r}
-                className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-white/80"
+                className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-ink/80"
               >
-                <span className="inline-block size-1.5 bg-volt" aria-hidden />
+                <span className="inline-block size-1.5 bg-ink" aria-hidden />
                 {r}
               </li>
             ))}
@@ -118,17 +119,17 @@ export default async function HackWarsPage() {
             {registrationOpen ? (
               <Link
                 href="/hack-wars/apply"
-                className="inline-flex items-center gap-2 bg-volt px-8 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                className="inline-flex items-center gap-2 border border-ink bg-ink px-8 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
               >
                 Apply now
                 <ArrowUpRight className="size-4" aria-hidden />
               </Link>
             ) : (
-              <p className="text-sm text-muted">
+              <p className="text-sm font-medium text-ink/75">
                 Registration is not open right now.{" "}
                 <Link
                   href="/contact"
-                  className="text-volt transition-colors hover:underline"
+                  className="font-semibold text-ink underline transition-colors hover:bg-ink hover:text-volt"
                 >
                   Contact the team
                 </Link>{" "}

@@ -19,13 +19,13 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-volt";
 
 const inputClass =
-  "w-full border border-white/15 bg-ink px-4 py-3.5 text-sm text-white placeholder:text-muted/50 outline-none transition-colors focus:border-volt aria-invalid:border-red-400";
+  "w-full border border-ink/20 bg-white px-4 py-3.5 text-sm text-ink placeholder:text-ink/40 outline-none transition-colors focus:border-ink aria-invalid:border-red-500";
 const labelClass =
-  "mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted";
+  "mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink/60";
 
 function Required() {
   return (
-    <span className="text-volt" aria-hidden>
+    <span className="text-ink" aria-hidden>
       *
     </span>
   );
@@ -34,7 +34,7 @@ function Required() {
 function FieldError({ id, errors }: { id: string; errors?: string[] }) {
   if (!errors?.length) return null;
   return (
-    <p id={id} className="mt-1.5 text-xs text-red-400">
+    <p id={id} className="mt-1.5 text-xs text-red-600">
       {errors[0]}
     </p>
   );
@@ -65,32 +65,32 @@ export function ContactForm({ token }: { token: string }) {
     return (
       <div
         role="status"
-        className="border border-volt/40 bg-panel p-8 text-center sm:p-12"
+        className="border border-ink bg-volt p-8 text-center text-ink shadow-[8px_8px_0_0_currentColor] sm:p-12"
       >
         <span
-          className="mx-auto grid size-14 place-items-center bg-volt text-ink"
+          className="mx-auto grid size-14 place-items-center border border-ink bg-ink text-volt"
           aria-hidden
         >
           <Check className="size-7" />
         </span>
         <h2 className="mt-6 font-display text-4xl uppercase leading-none sm:text-5xl">
-          Message sent<span className="text-volt">.</span>
+          Message sent.
         </h2>
-        <p className="mx-auto mt-5 max-w-md text-muted">
+        <p className="mx-auto mt-5 max-w-md font-medium text-ink/75">
           Thanks for reaching out
           {name ? `, ${name.split(" ")[0]}` : ""}. Your message is in the inbox
           and someone from the team will get back to you
           {email ? (
             <>
               {" "}
-              at <span className="text-white">{email}</span>
+              at <span className="font-semibold text-ink">{email}</span>
             </>
           ) : null}
           .
         </p>
         <Link
           href="/"
-          className={`mt-8 inline-flex min-h-12 items-center border border-white/25 px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt ${focusRing}`}
+          className={`mt-8 inline-flex min-h-12 items-center border border-ink px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-volt ${focusRing}`}
         >
           Back to home
         </Link>
@@ -103,7 +103,7 @@ export function ContactForm({ token }: { token: string }) {
   return (
     <form
       action={formAction}
-      className="relative border border-white/10 bg-panel p-6 sm:p-8"
+      className="relative border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-8"
     >
       <input type="hidden" name="started" value={token} />
       {/* Honeypot — invisible to humans, tempting to bots. Nonstandard name
@@ -131,7 +131,7 @@ export function ContactForm({ token }: { token: string }) {
                 onChange={() => setType(t.value)}
                 className="peer sr-only"
               />
-              <span className="inline-flex min-h-11 items-center border border-white/15 px-4 text-sm text-white/80 transition-colors hover:border-white/40 peer-checked:border-volt peer-checked:bg-volt peer-checked:font-semibold peer-checked:text-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-volt">
+              <span className="inline-flex min-h-11 items-center border border-ink/20 px-4 text-sm text-ink/70 transition-colors hover:border-ink peer-checked:border-ink peer-checked:bg-volt peer-checked:font-semibold peer-checked:text-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-volt">
                 {t.label}
               </span>
             </label>
@@ -139,14 +139,14 @@ export function ContactForm({ token }: { token: string }) {
         </div>
         <FieldError id="type-error" errors={state.errors?.type} />
         {type === "SPEAKER_APPLICATION" && (
-          <div className="mt-4 flex items-start justify-between gap-4 border border-volt/40 bg-volt/10 p-4 text-sm text-white/90">
+          <div className="mt-4 flex items-start justify-between gap-4 border border-ink/30 bg-volt/70 p-4 text-sm font-medium text-ink">
             <p>
               Want to apply to speak? The dedicated application is the fastest
               route. Or keep going if you have questions first.
             </p>
             <Link
               href="/speakers/apply"
-              className={`inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-volt hover:underline ${focusRing}`}
+              className={`inline-flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink hover:underline ${focusRing}`}
             >
               Apply
               <ArrowRight className="size-3.5" aria-hidden />
@@ -200,7 +200,7 @@ export function ContactForm({ token }: { token: string }) {
       <div className="mt-6">
         <label htmlFor="subject" className={labelClass}>
           Subject
-          <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-muted/70">
+          <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-ink/50">
             optional
           </span>
         </label>
@@ -242,7 +242,7 @@ export function ContactForm({ token }: { token: string }) {
           <p
             id="message-count"
             className={`ml-auto shrink-0 font-mono text-[11px] ${
-              nearLimit ? "text-amber-300" : "text-muted/70"
+              nearLimit ? "text-amber-600" : "text-ink/50"
             }`}
           >
             {message.length} / {MESSAGE_MAX}
@@ -256,20 +256,20 @@ export function ContactForm({ token }: { token: string }) {
         <p
           ref={alertRef}
           role="alert"
-          className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+          className="mt-6 border border-red-500/40 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {state.message}
         </p>
       )}
 
       <div className="mt-8 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-muted">
-          <span className="text-volt">*</span> Required
+        <p className="text-xs text-ink/60">
+          <span className="font-bold text-ink">*</span> Required
         </p>
         <button
           type="submit"
           disabled={pending}
-          className={`inline-flex min-h-12 items-center justify-center gap-2 bg-volt px-8 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white disabled:opacity-60 ${focusRing}`}
+          className={`inline-flex min-h-12 items-center justify-center gap-2 border border-ink bg-ink px-8 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel disabled:opacity-60 ${focusRing}`}
         >
           {pending ? (
             <>

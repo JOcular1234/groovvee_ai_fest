@@ -7,6 +7,7 @@ import { connection } from "next/server";
 
 import { EventCard } from "@/components/events/EventCard";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
 import { getEventProgramme } from "@/lib/public/agenda";
 import { getEventBySlug, getRelatedEvents } from "@/lib/public/events";
@@ -74,32 +75,32 @@ export default async function EventPage({
       <JsonLd
         data={eventJsonLd(event, { registrationOpen: isRegistrationOpen(event) })}
       />
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-5xl">
         <Link
           href="/events"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All events
         </Link>
 
         <div className="mt-8">
-          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             <span className="inline-block size-2 bg-volt" aria-hidden />
             {event.isOnline ? "Online" : "In-person"}
             {event.source === "EXTERNAL" && (
-              <span className="text-muted">· Community-discovered</span>
+              <span className="text-ink/50">· Community-discovered</span>
             )}
           </p>
-          <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
+          <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
             {event.title}
           </h1>
         </div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr]">
           <div>
-            <div className="relative aspect-video overflow-hidden border border-white/10 bg-ink">
+            <div className="relative aspect-video overflow-hidden border border-ink/15 bg-ink">
               {event.imageUrl ? (
                 <Image
                   src={event.imageUrl}
@@ -118,40 +119,40 @@ export default async function EventPage({
                 </span>
               )}
             </div>
-            <p className="mt-8 whitespace-pre-line leading-relaxed text-muted">
+            <p className="mt-8 whitespace-pre-line border border-ink/15 bg-white/95 p-6 leading-relaxed text-ink/75 backdrop-blur-sm sm:p-8">
               {event.description}
             </p>
           </div>
 
-          <aside className="self-start border border-white/10 bg-panel p-6 sm:p-8">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+          <aside className="self-start border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
               When
             </p>
-            <p className="mt-3 font-mono text-sm uppercase tracking-[0.15em] text-white">
+            <p className="mt-3 font-mono text-sm uppercase tracking-[0.15em] text-ink">
               {formatEventDateTime(event.startsAt, event.timezone)}
             </p>
             {event.endsAt && (
-              <p className="mt-1 font-mono text-sm uppercase tracking-[0.15em] text-muted">
+              <p className="mt-1 font-mono text-sm uppercase tracking-[0.15em] text-ink/60">
                 → {formatEventDateTime(event.endsAt, event.timezone)}
               </p>
             )}
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-xs text-ink/60">
               {timeZoneLabel(event.startsAt, event.timezone)}
             </p>
 
-            <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+            <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
               Where
             </p>
-            <p className="mt-3 text-sm text-white">{location || "Location TBA"}</p>
+            <p className="mt-3 text-sm text-ink">{location || "Location TBA"}</p>
 
             {event.community && (
               <>
-                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   Hosted by
                 </p>
                 <Link
                   href={`/communities/${event.community.slug}`}
-                  className="mt-3 inline-block text-sm text-volt transition-colors hover:text-white"
+                  className="mt-3 inline-block text-sm font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 transition-colors hover:bg-volt"
                 >
                   {event.community.name}
                 </Link>
@@ -161,7 +162,7 @@ export default async function EventPage({
             {isRegistrationOpen(event) && (
               <Link
                 href={`/events/${event.slug}/register`}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 bg-volt px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 border border-ink bg-ink px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
               >
                 Register for this event
               </Link>
@@ -171,7 +172,7 @@ export default async function EventPage({
                 href={event.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${isRegistrationOpen(event) ? "mt-3 border border-white/25 text-white hover:border-volt hover:text-volt" : "mt-8 bg-volt text-ink hover:opacity-90"} inline-flex w-full items-center justify-center gap-2 px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors`}
+                className={`${isRegistrationOpen(event) ? "mt-3 border border-ink/25 text-ink hover:bg-ink hover:text-volt" : "mt-8 border border-ink bg-ink text-volt hover:bg-panel"} inline-flex w-full items-center justify-center gap-2 px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors`}
               >
                 {event.source === "EXTERNAL" ? "Register on organiser's site" : "Event link"}
                 <ArrowUpRight className="size-4" aria-hidden />
@@ -182,22 +183,22 @@ export default async function EventPage({
 
         {programme.length > 0 && (
           <div className="mt-16">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               Programme
             </p>
-            <div className="mt-6 divide-y divide-white/5 border border-white/10 bg-panel">
+            <div className="mt-6 divide-y divide-ink/10 border border-ink/15 bg-white/95 backdrop-blur-sm">
               {programme.map((s) => (
                 <div
                   key={s.id}
                   className="grid gap-4 p-6 sm:grid-cols-[10rem_1fr] sm:gap-8"
                 >
-                  <div className="font-mono text-xs uppercase tracking-[0.15em] text-volt">
+                  <div className="font-mono text-xs font-bold uppercase tracking-[0.15em] text-ink">
                     {new Intl.DateTimeFormat("en-GB", {
                       timeZone: event.timezone,
                       hour: "2-digit",
                       minute: "2-digit",
                     }).format(s.startsAt)}
-                    <span className="text-muted">
+                    <span className="text-ink/60">
                       {" "}
                       –{" "}
                       {new Intl.DateTimeFormat("en-GB", {
@@ -209,23 +210,23 @@ export default async function EventPage({
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="font-display text-xl uppercase leading-tight">
+                      <h3 className="font-display text-xl uppercase leading-tight text-ink">
                         {s.title}
                       </h3>
-                      <span className="bg-white/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-muted">
+                      <span className="bg-volt px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink">
                         {SESSION_TYPE_LABELS[s.type] ?? s.type}
                       </span>
                     </div>
                     {s.location && (
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.15em] text-muted">
+                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.15em] text-ink/60">
                         {s.location}
                       </p>
                     )}
-                    <p className="mt-3 text-sm leading-relaxed text-muted">
+                    <p className="mt-3 text-sm leading-relaxed text-ink/70">
                       {s.description}
                     </p>
                     {s.speakers.length > 0 && (
-                      <p className="mt-3 text-xs text-white">
+                      <p className="mt-3 text-xs font-medium text-ink">
                         {s.speakers
                           .map((sp) => `${sp.name} · ${sp.organization}`)
                           .join("  ·  ")}
@@ -240,12 +241,12 @@ export default async function EventPage({
 
         {related.length > 0 && (
           <div className="mt-20">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-muted">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               More events
             </p>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((e) => (
-                <EventCard key={e.id} event={e} />
+                <EventCard key={e.id} event={e} theme="light" />
               ))}
             </div>
           </div>

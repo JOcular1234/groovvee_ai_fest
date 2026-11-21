@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { NewsArticle } from "@/components/news/NewsArticle";
 import { NewsCard } from "@/components/news/NewsCard";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getLatestNewsPosts, getNewsPostBySlug } from "@/lib/public/news";
 import { articleJsonLd } from "@/lib/seo/article-json-ld";
@@ -56,21 +57,23 @@ export default async function NewsPostPage({
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
       <JsonLd data={articleJsonLd(post)} />
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-4xl">
         <Link
           href="/news"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All news
         </Link>
 
-        <NewsArticle post={post} shareUrl={absoluteUrl(`/news/${post.slug}`)} />
+        <div className="mt-8 border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-10">
+          <NewsArticle post={post} shareUrl={absoluteUrl(`/news/${post.slug}`)} />
+        </div>
 
         {latest.length > 0 && (
           <div className="mt-20">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               Latest news
             </p>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

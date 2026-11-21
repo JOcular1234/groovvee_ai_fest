@@ -22,16 +22,16 @@ const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-volt";
 
 const inputClass =
-  "w-full border border-white/15 bg-ink px-4 py-3.5 text-sm text-white placeholder:text-muted/50 outline-none transition-colors focus:border-volt aria-invalid:border-red-400 [color-scheme:dark]";
+  "w-full border border-ink/20 bg-white px-4 py-3.5 text-sm text-ink placeholder:text-ink/40 outline-none transition-colors focus:border-ink aria-invalid:border-red-500 [color-scheme:light]";
 const labelClass =
-  "mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted";
+  "mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink/60";
 
 type Member = { id: number; name: string; email: string; school: string };
 
 function FieldError({ id, errors }: { id: string; errors?: string[] }) {
   if (!errors?.length) return null;
   return (
-    <p id={id} className="mt-1.5 text-xs text-red-400">
+    <p id={id} className="mt-1.5 text-xs text-red-600">
       {errors[0]}
     </p>
   );
@@ -72,11 +72,11 @@ function TextField({
       <label htmlFor={id} className={labelClass}>
         {label}
         {required ? (
-          <span className="text-volt" aria-hidden>
+          <span className="text-ink" aria-hidden>
             *
           </span>
         ) : (
-          <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-muted/70">
+          <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-ink/50">
             optional
           </span>
         )}
@@ -105,7 +105,7 @@ function Counter({ value, max }: { value: number; max: number }) {
   return (
     <p
       className={`ml-auto shrink-0 font-mono text-[11px] ${
-        value > max * 0.9 ? "text-amber-300" : "text-muted/70"
+        value > max * 0.9 ? "text-amber-600" : "text-ink/50"
       }`}
     >
       {value} / {max}
@@ -125,14 +125,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border border-white/10 bg-panel">
-      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-white/10 px-6 py-5 sm:px-8">
-        <span className="font-mono text-xs font-bold text-volt">{step}</span>
-        <h2 className="font-display text-2xl uppercase leading-none sm:text-3xl">
+    <section className="border border-ink/15 bg-white/95 backdrop-blur-sm">
+      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-ink/15 px-6 py-5 sm:px-8">
+        <span className="bg-volt px-1.5 py-0.5 font-mono text-xs font-bold text-ink">{step}</span>
+        <h2 className="font-display text-2xl uppercase leading-none text-ink sm:text-3xl">
           {title}
         </h2>
         {hint && (
-          <p className="w-full text-sm text-muted sm:ml-auto sm:w-auto">{hint}</p>
+          <p className="w-full text-sm text-ink/60 sm:ml-auto sm:w-auto">{hint}</p>
         )}
       </header>
       <div className="p-6 sm:p-8">{children}</div>
@@ -196,24 +196,24 @@ export function HackWarsApplyForm({ token }: { token: string }) {
     return (
       <div
         role="status"
-        className="border border-volt/40 bg-panel p-8 text-center sm:p-12"
+        className="border border-ink bg-volt p-8 text-center text-ink shadow-[8px_8px_0_0_currentColor] sm:p-12"
       >
         <span
-          className="mx-auto grid size-14 place-items-center bg-volt text-ink"
+          className="mx-auto grid size-14 place-items-center border border-ink bg-ink text-volt"
           aria-hidden
         >
           <Check className="size-7" />
         </span>
         <h2 className="mt-6 font-display text-4xl uppercase leading-none sm:text-5xl">
-          Application received<span className="text-volt">.</span>
+          Application received.
         </h2>
-        <p className="mx-auto mt-5 max-w-md text-muted">
+        <p className="mx-auto mt-5 max-w-md font-medium text-ink/75">
           Your AI Hack Wars entry is in. The organizing team reviews every
           application and will reach out with next steps
           {email ? (
             <>
               {" "}
-              at <span className="text-white">{email}</span>
+              at <span className="font-semibold text-ink">{email}</span>
             </>
           ) : null}
           .
@@ -221,13 +221,13 @@ export function HackWarsApplyForm({ token }: { token: string }) {
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             href="/competitions"
-            className={`inline-flex min-h-12 items-center bg-volt px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white ${focusRing}`}
+            className={`inline-flex min-h-12 items-center border border-ink bg-ink px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel ${focusRing}`}
           >
             See competitions
           </Link>
           <Link
             href="/"
-            className={`inline-flex min-h-12 items-center border border-white/25 px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt ${focusRing}`}
+            className={`inline-flex min-h-12 items-center border border-ink px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-volt ${focusRing}`}
           >
             Back to home
           </Link>
@@ -265,8 +265,8 @@ export function HackWarsApplyForm({ token }: { token: string }) {
                   key={value}
                   className={`flex cursor-pointer items-center gap-4 border p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-volt ${
                     selected
-                      ? "border-volt bg-volt/10"
-                      : "border-white/15 hover:border-white/40"
+                      ? "border-ink bg-volt"
+                      : "border-ink/20 bg-white/80 hover:border-ink"
                   }`}
                 >
                   <input
@@ -279,17 +279,17 @@ export function HackWarsApplyForm({ token }: { token: string }) {
                   />
                   <span
                     className={`grid size-11 shrink-0 place-items-center ${
-                      selected ? "bg-volt text-ink" : "border border-white/20 text-white"
+                      selected ? "bg-ink text-volt" : "border border-ink/20 text-ink"
                     }`}
                     aria-hidden
                   >
                     <Icon className="size-5" />
                   </span>
                   <span>
-                    <span className="block font-display text-xl uppercase leading-none">
+                    <span className="block font-display text-xl uppercase leading-none text-ink">
                       {title}
                     </span>
-                    <span className="mt-1.5 block text-sm text-muted">{desc}</span>
+                    <span className="mt-1.5 block text-sm text-ink/70">{desc}</span>
                   </span>
                 </label>
               );
@@ -332,7 +332,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
           <div>
             <label htmlFor="phone" className={labelClass}>
               Phone number
-              <span className="text-volt" aria-hidden>
+              <span className="text-ink" aria-hidden>
                 *
               </span>
             </label>
@@ -381,7 +381,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
           <div className="sm:col-span-2">
             <label htmlFor="sector" className={labelClass}>
               Industry / sector you&apos;ll compete in
-              <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-muted/70">
+              <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-ink/50">
                 optional
               </span>
             </label>
@@ -415,11 +415,11 @@ export function HackWarsApplyForm({ token }: { token: string }) {
         <div>
           <label htmlFor="intro" className={labelClass}>
             Introduction
-            <span className="text-volt" aria-hidden>
+            <span className="text-ink" aria-hidden>
               *
             </span>
           </label>
-          <p id="intro-help" className="-mt-1 mb-2 text-sm text-muted">
+          <p id="intro-help" className="-mt-1 mb-2 text-sm text-ink/60">
             Who are you, in about four sentences?
           </p>
           <textarea
@@ -444,7 +444,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
         <div className="mt-6">
           <label htmlFor="previousExperience" className={labelClass}>
             Previous TV competition or contest experience
-            <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-muted/70">
+            <span className="font-sans text-[11px] font-normal normal-case tracking-normal text-ink/50">
               optional
             </span>
           </label>
@@ -494,9 +494,9 @@ export function HackWarsApplyForm({ token }: { token: string }) {
 
           <ul className="mt-6 space-y-4">
             {members.map((m, i) => (
-              <li key={m.id} className="border border-white/10 bg-ink/50 p-5">
+              <li key={m.id} className="border border-ink/15 bg-white/80 p-5">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="font-display text-xl uppercase leading-none">
+                  <p className="font-display text-xl uppercase leading-none text-ink">
                     Teammate {i + 1}
                   </p>
                   {members.length > 1 && (
@@ -506,7 +506,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
                         setMembers((ms) => ms.filter((x) => x.id !== m.id))
                       }
                       aria-label={`Remove teammate ${i + 1}`}
-                      className={`inline-flex min-h-9 items-center px-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-muted transition-colors hover:text-red-400 ${focusRing}`}
+                      className={`inline-flex min-h-9 items-center px-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink/60 transition-colors hover:text-red-600 ${focusRing}`}
                     >
                       Remove
                     </button>
@@ -556,7 +556,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
                   { id: nextId.current++, name: "", email: "", school: "" },
                 ])
               }
-              className={`mt-4 inline-flex min-h-11 items-center gap-2 border border-dashed border-white/25 px-5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-white transition-colors hover:border-volt hover:text-volt ${focusRing}`}
+              className={`mt-4 inline-flex min-h-11 items-center gap-2 border border-dashed border-ink/30 px-5 font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:border-ink hover:bg-volt ${focusRing}`}
             >
               <Plus className="size-4" aria-hidden />
               Add teammate
@@ -576,7 +576,7 @@ export function HackWarsApplyForm({ token }: { token: string }) {
           <p
             ref={alertRef}
             role="alert"
-            className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+            className="mt-6 border border-red-500/40 bg-red-50 px-4 py-3 text-sm text-red-700"
           >
             {state.message}
           </p>
@@ -584,17 +584,17 @@ export function HackWarsApplyForm({ token }: { token: string }) {
       </Section>
 
       {/* Floating action bar */}
-      <div className="sticky bottom-4 z-10 flex items-center justify-between gap-4 border border-white/15 bg-ink/95 p-4 backdrop-blur">
+      <div className="sticky bottom-4 z-10 flex items-center justify-between gap-4 border border-ink/20 bg-white/95 p-4 backdrop-blur">
         <Link
           href="/competitions"
-          className={`inline-flex min-h-11 items-center px-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-volt ${focusRing}`}
+          className={`inline-flex min-h-11 items-center px-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink/60 transition-colors hover:text-ink ${focusRing}`}
         >
           Cancel
         </Link>
         <button
           type="submit"
           disabled={pending}
-          className={`inline-flex min-h-12 items-center justify-center gap-2 bg-volt px-8 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white disabled:opacity-60 ${focusRing}`}
+          className={`inline-flex min-h-12 items-center justify-center gap-2 border border-ink bg-ink px-8 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel disabled:opacity-60 ${focusRing}`}
         >
           {pending ? (
             <>

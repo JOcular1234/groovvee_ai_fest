@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RegisterForm } from "@/components/events/RegisterForm";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { formatEventDateTime, timeZoneLabel } from "@/lib/datetime";
 import { issueFormToken } from "@/lib/form-token";
 import { getEventBySlug } from "@/lib/public/events";
@@ -33,23 +34,23 @@ export default async function EventRegisterPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-3xl">
         <Link
           href={`/events/${event.slug}`}
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           {event.title}
         </Link>
 
-        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           {formatEventDateTime(event.startsAt, event.timezone)} ·{" "}
           {timeZoneLabel(event.startsAt, event.timezone)}
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
-          Register<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
+          <span className="bg-volt px-2 text-ink">Register.</span>
         </h1>
 
         {open ? (
@@ -61,8 +62,8 @@ export default async function EventRegisterPage({
             />
           </div> 
         ) : (
-          <div className="mt-10 border border-white/10 bg-panel p-8 sm:p-10">
-            <p className="text-muted">
+          <div className="mt-10 border border-ink/15 bg-white/95 p-8 backdrop-blur-sm sm:p-10">
+            <p className="text-ink/70">
               Registration isn&apos;t available for this event.{" "}
               {event.url ? (
                 <>
@@ -71,7 +72,7 @@ export default async function EventRegisterPage({
                     href={event.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-volt underline underline-offset-4 transition-colors hover:text-white"
+                    className="font-medium text-ink underline decoration-volt decoration-2 underline-offset-4 transition-colors hover:bg-volt"
                   >
                     the organiser&apos;s page
                   </a>{" "}
@@ -83,7 +84,7 @@ export default async function EventRegisterPage({
             </p>
             <Link
               href="/events"
-              className="mt-8 inline-flex items-center border border-white/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+              className="mt-8 inline-flex items-center border border-ink/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
             >
               Browse events
             </Link>

@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { Reveal } from "@/components/ui/Reveal";
 import { getPublishedCompetitions } from "@/lib/public/competitions";
 import {
@@ -26,7 +27,7 @@ function StatusPill({ status }: { status: string }) {
   return (
     <span
       className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] ${
-        live ? "bg-volt/15 text-volt" : "bg-white/10 text-muted"
+        live ? "bg-volt text-ink" : "bg-ink/10 text-ink/60"
       }`}
     >
       {COMPETITION_STATUS_LABELS[status] ?? status}
@@ -49,7 +50,7 @@ function CompetitionCard({
             ? "/hack-wars"
             : `/competitions/${competition.slug}`
         }
-        className="group flex h-full flex-col border border-white/10 bg-panel transition-colors hover:border-volt/60"
+        className="group flex h-full flex-col border border-ink/15 bg-white/95 backdrop-blur-sm transition-colors hover:border-ink/40"
       >
         <div className="relative aspect-video overflow-hidden bg-ink">
           <div
@@ -75,20 +76,20 @@ function CompetitionCard({
         </div>
         <div className="flex flex-1 flex-col p-6">
           <div className="flex items-center gap-3">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
+            <p className="bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink">
               {COMPETITION_KIND_LABELS[competition.kind] ?? competition.kind}
             </p>
             <StatusPill status={competition.status} />
           </div>
-          <h3 className="mt-3 font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt">
+          <h3 className="mt-3 font-display text-2xl uppercase leading-tight text-ink transition-colors group-hover:underline group-hover:decoration-volt group-hover:decoration-[0.08em] group-hover:underline-offset-4">
             {competition.title}
           </h3>
           {competition.prizeText && (
-            <p className="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-white">
+            <p className="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-ink">
               {competition.prizeText}
             </p>
           )}
-          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
+          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-ink/70">
             {competition.description}
           </p>
         </div>
@@ -118,31 +119,31 @@ export default async function CompetitionsPage() {
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-7xl">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Prove it
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          Competitions<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          <span className="bg-volt px-2 text-ink">Competitions.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           AI Hack Wars, open AI contests and community-vs-community showdowns
           — brackets, challenges and prizes on the GrooVVee stage.
         </p>
 
         {/* AI Hack Wars — the flagship */}
         <div className="mt-16">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-muted">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             Flagship
           </p>
           {hackWars.length === 0 ? (
-            <div className="mt-6 border border-white/10 bg-panel p-10 text-center">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+            <div className="mt-6 border border-ink/15 bg-white/95 p-10 text-center backdrop-blur-sm">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
                 AI Hack Wars
               </p>
-              <p className="mx-auto mt-4 max-w-md text-muted">
+              <p className="mx-auto mt-4 max-w-md text-ink/70">
                 Solo or teams of three, filmed over 30 days, three rounds, one
                 winner. The next edition is being scheduled.
               </p>
@@ -151,7 +152,7 @@ export default async function CompetitionsPage() {
             hackWars.map((c) => (
               <div
                 key={c.id}
-                className="group mt-6 grid overflow-hidden border border-volt/40 bg-panel transition-colors hover:border-volt lg:grid-cols-[3fr_2fr]"
+                className="group mt-6 grid overflow-hidden border border-ink bg-white/95 backdrop-blur-sm lg:grid-cols-[3fr_2fr]"
               >
                 <div className="relative min-h-64 bg-ink lg:min-h-96">
                   {c.imageUrl ? (
@@ -174,27 +175,27 @@ export default async function CompetitionsPage() {
                 </div>
                 <div className="flex flex-col justify-center p-8 sm:p-10">
                   <div className="flex items-center gap-3">
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-volt">
+                    <p className="bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink">
                       AI Hack Wars
                     </p>
                     <StatusPill status={c.status} />
                   </div>
-                  <h2 className="mt-4 font-display text-3xl uppercase leading-tight sm:text-4xl">
+                  <h2 className="mt-4 font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
                     {c.title}
                   </h2>
                   {c.prizeText && (
-                    <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-white">
+                    <p className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-ink">
                       {c.prizeText}
                     </p>
                   )}
-                  <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-muted">
+                  <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-ink/70">
                     {c.description}
                   </p>
                   <div className="mt-8 flex flex-wrap gap-4">
                     {c.status === "REGISTRATION_OPEN" && (
                       <Link
                         href="/hack-wars/apply"
-                        className="inline-flex items-center gap-2 bg-volt px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                        className="inline-flex items-center gap-2 border border-ink bg-ink px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
                       >
                         Apply now
                         <ArrowUpRight className="size-4" aria-hidden />
@@ -202,7 +203,7 @@ export default async function CompetitionsPage() {
                     )}
                     <Link
                       href="/hack-wars"
-                      className="inline-flex items-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+                      className="inline-flex items-center gap-2 border border-ink/25 px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
                     >
                       How it works
                     </Link>
@@ -218,12 +219,12 @@ export default async function CompetitionsPage() {
           const items = byKind(section.kind);
           return (
             <div key={section.kind} className="mt-16">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-muted">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
                 {section.title}
               </p>
               {items.length === 0 ? (
-                <div className="mt-6 border border-white/10 bg-panel p-10 text-center">
-                  <p className="mx-auto max-w-md text-muted">
+                <div className="mt-6 border border-ink/15 bg-white/95 p-10 text-center backdrop-blur-sm">
+                  <p className="mx-auto max-w-md text-ink/70">
                     {section.blurb} Announcing soon.
                   </p>
                 </div>

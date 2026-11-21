@@ -41,6 +41,11 @@ body {
   color: transparent;
 }
 
+.text-outline-ink {
+  -webkit-text-stroke: 2px var(--color-ink);
+  color: transparent;
+}
+
 .text-outline-white {
   -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.85);
   color: transparent;
@@ -84,25 +89,25 @@ body {
   }
 }
 
-/* react-phone-number-input — dark theme to match .phone-field forms */
+/* react-phone-number-input — light theme to match .phone-field forms */
 .phone-field {
   display: flex;
   align-items: center;
   gap: 0.625rem;
   width: 100%;
-  border: 1px solid rgb(255 255 255 / 0.15);
-  background: var(--color-ink);
+  border: 1px solid rgb(11 11 11 / 0.2);
+  background: #fff;
   padding: 0.75rem 1rem;
   transition: border-color 150ms;
 }
 .phone-field:focus-within {
-  border-color: var(--color-volt);
+  border-color: var(--color-ink);
 }
 .phone-field .PhoneInputCountry {
   margin-right: 0;
 }
 .phone-field .PhoneInputCountrySelectArrow {
-  color: var(--color-muted);
+  color: var(--color-ink);
 }
 .phone-field .PhoneInputInput {
   flex: 1;
@@ -112,19 +117,19 @@ body {
   background: transparent;
   font: inherit;
   font-size: 0.875rem;
-  color: #fff;
+  color: var(--color-ink);
 }
 .phone-field .PhoneInputInput::placeholder {
-  color: rgb(163 163 163 / 0.5);
+  color: rgb(11 11 11 / 0.4);
 }
 
 /* The country select is invisible over the flag, but its native dropdown
-   popup is browser-styled — force the dark scheme and paint the options so
-   the list isn't white-on-white. */
+   popup is browser-styled — force the light scheme and paint the options so
+   the list isn't dark-on-dark. */
 .phone-field .PhoneInputCountrySelect {
-  color-scheme: dark;
+  color-scheme: light;
 }
 .phone-field .PhoneInputCountrySelect option {
-  background: var(--color-panel);
-  color: #fff;
+  background: #fff;
+  color: var(--color-ink);
 }

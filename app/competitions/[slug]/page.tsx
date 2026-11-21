@@ -4,6 +4,7 @@ import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { formatEventDateTime } from "@/lib/datetime";
 import { getCompetitionBySlug } from "@/lib/public/competitions";
 import { pageMetadata } from "@/lib/site";
@@ -56,32 +57,32 @@ export default async function CompetitionPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-5xl">
         <Link
           href="/competitions"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All competitions
         </Link>
 
         <div className="mt-8">
-          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             <span className="inline-block size-2 bg-volt" aria-hidden />
             {COMPETITION_KIND_LABELS[competition.kind] ?? competition.kind}
-            <span className="text-muted">
+            <span className="text-ink/50">
               · {COMPETITION_STATUS_LABELS[competition.status] ?? competition.status}
             </span>
           </p>
-          <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
+          <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
             {competition.title}
           </h1>
         </div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[3fr_2fr]">
           <div>
-            <div className="relative aspect-video overflow-hidden border border-white/10 bg-ink">
+            <div className="relative aspect-video overflow-hidden border border-ink/15 bg-ink">
               {competition.imageUrl ? (
                 <Image
                   src={competition.imageUrl}
@@ -100,35 +101,35 @@ export default async function CompetitionPage({
                 </span>
               )}
             </div>
-            <p className="mt-8 whitespace-pre-line leading-relaxed text-muted">
+            <p className="mt-8 whitespace-pre-line border border-ink/15 bg-white/95 p-6 leading-relaxed text-ink/75 backdrop-blur-sm sm:p-8">
               {competition.description}
             </p>
 
             {competition.rounds.length > 0 && (
               <div className="mt-12">
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   Rounds
                 </p>
-                <div className="mt-6 divide-y divide-white/5 border border-white/10 bg-panel">
+                <div className="mt-6 divide-y divide-ink/10 border border-ink/15 bg-white/95 backdrop-blur-sm">
                   {competition.rounds.map((r, i) => (
                     <div key={r.id} className="p-6">
                       <div className="flex flex-wrap items-center gap-3">
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
+                        <span className="bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink">
                           R.{String(i + 1).padStart(2, "0")}
                         </span>
-                        <h3 className="font-display text-xl uppercase leading-tight">
+                        <h3 className="font-display text-xl uppercase leading-tight text-ink">
                           {r.name}
                         </h3>
                       </div>
                       {(r.startsAt || r.endsAt) && (
-                        <p className="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-muted">
+                        <p className="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-ink/60">
                           {r.startsAt ? dateFmt.format(r.startsAt) : "TBA"}
                           {" → "}
                           {r.endsAt ? dateFmt.format(r.endsAt) : "TBA"}
                         </p>
                       )}
                       {r.description && (
-                        <p className="mt-3 text-sm leading-relaxed text-muted">
+                        <p className="mt-3 text-sm leading-relaxed text-ink/70">
                           {r.description}
                         </p>
                       )}
@@ -139,20 +140,20 @@ export default async function CompetitionPage({
             )}
           </div>
 
-          <aside className="self-start border border-white/10 bg-panel p-6 sm:p-8">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+          <aside className="self-start border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
               Status
             </p>
-            <p className="mt-3 font-mono text-sm uppercase tracking-[0.15em] text-volt">
+            <p className="mt-3 w-fit bg-volt px-1.5 py-0.5 font-mono text-sm uppercase tracking-[0.15em] text-ink">
               {COMPETITION_STATUS_LABELS[competition.status] ?? competition.status}
             </p>
 
             {(competition.startsAt || competition.endsAt) && (
               <>
-                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   When
                 </p>
-                <p className="mt-3 font-mono text-sm uppercase tracking-[0.15em] text-white">
+                <p className="mt-3 font-mono text-sm uppercase tracking-[0.15em] text-ink">
                   {competition.startsAt
                     ? formatEventDateTime(
                         competition.startsAt,
@@ -161,7 +162,7 @@ export default async function CompetitionPage({
                     : "TBA"}
                 </p>
                 {competition.endsAt && (
-                  <p className="mt-1 font-mono text-sm uppercase tracking-[0.15em] text-muted">
+                  <p className="mt-1 font-mono text-sm uppercase tracking-[0.15em] text-ink/60">
                     →{" "}
                     {formatEventDateTime(
                       competition.endsAt,
@@ -174,21 +175,21 @@ export default async function CompetitionPage({
 
             {competition.prizeText && (
               <>
-                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   Prize
                 </p>
-                <p className="mt-3 text-sm text-white">{competition.prizeText}</p>
+                <p className="mt-3 text-sm font-medium text-ink">{competition.prizeText}</p>
               </>
             )}
 
             {competition.event && (
               <>
-                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-muted">
+                <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-ink/60">
                   Part of
                 </p>
                 <Link
                   href={`/events/${competition.event.slug}`}
-                  className="mt-3 inline-block text-sm text-volt transition-colors hover:text-white"
+                  className="mt-3 inline-block text-sm font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 transition-colors hover:bg-volt"
                 >
                   {competition.event.title}
                 </Link>
@@ -198,7 +199,7 @@ export default async function CompetitionPage({
             {applyOpen && (
               <Link
                 href="/hack-wars/apply"
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 bg-volt px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 border border-ink bg-ink px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
               >
                 Apply now
                 <ArrowUpRight className="size-4" aria-hidden />
@@ -209,7 +210,7 @@ export default async function CompetitionPage({
                 href={competition.rulesUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-white/25 px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-ink/25 px-6 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
               >
                 Rules &amp; terms
                 <ArrowUpRight className="size-4" aria-hidden />

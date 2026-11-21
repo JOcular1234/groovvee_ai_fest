@@ -4,6 +4,7 @@ import Image from "@/components/ui/AppImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { getCommunityBySlug } from "@/lib/public/communities";
 import { pageMetadata } from "@/lib/site";
 import {
@@ -45,11 +46,11 @@ export default async function CommunityPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-5xl">
         <Link
           href="/communities"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All communities
@@ -57,20 +58,20 @@ export default async function CommunityPage({
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[3fr_2fr]">
           <div>
-            <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+            <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               <span className="inline-block size-2 bg-volt" aria-hidden />
               {COMMUNITY_TYPE_LABELS[community.type] ?? community.type}
               {community.category && (
-                <span className="text-muted">
+                <span className="text-ink/50">
                   · {COMMUNITY_CATEGORY_LABELS[community.category] ?? community.category}
                 </span>
               )}
-              {location && <span className="text-muted">· {location}</span>}
+              {location && <span className="text-ink/50">· {location}</span>}
             </p>
-            <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl">
+            <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl">
               {community.name}
             </h1>
-            <p className="mt-8 whitespace-pre-line leading-relaxed text-muted">
+            <p className="mt-8 whitespace-pre-line border border-ink/15 bg-white/95 p-6 leading-relaxed text-ink/75 backdrop-blur-sm sm:p-8">
               {community.description}
             </p>
             {community.joinUrl && (
@@ -78,7 +79,7 @@ export default async function CommunityPage({
                 href={community.joinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-10 inline-flex items-center gap-2 bg-volt px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+                className="mt-10 inline-flex items-center gap-2 border border-ink bg-ink px-7 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
               >
                 Join this community
                 <ArrowUpRight className="size-4" aria-hidden />
@@ -86,7 +87,7 @@ export default async function CommunityPage({
             )}
           </div>
 
-          <div className="relative aspect-4/3 self-start overflow-hidden border border-white/10 bg-panel">
+          <div className="relative aspect-4/3 self-start overflow-hidden border border-ink/15 bg-ink">
             <div
               className="bg-halftone absolute right-0 top-0 z-10 size-24 opacity-40"
               aria-hidden

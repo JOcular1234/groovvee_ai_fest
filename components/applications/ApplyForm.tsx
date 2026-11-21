@@ -12,13 +12,13 @@ import { ConsentField } from "@/components/forms/ConsentField";
 const initialState: ApplyFormState = { ok: false };
 
 const inputClass =
-  "w-full border border-white/15 bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/50 outline-none transition-colors focus:border-volt";
+  "w-full border border-ink/20 bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/40 outline-none transition-colors focus:border-ink";
 const labelClass =
-  "mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted";
+  "mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink/60";
 
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
-  return <p className="mt-1 text-xs text-red-400">{errors[0]}</p>;
+  return <p className="mt-1 text-xs text-red-600">{errors[0]}</p>;
 }
 
 export function ApplyForm({ token }: { token: string }) {
@@ -30,17 +30,17 @@ export function ApplyForm({ token }: { token: string }) {
 
   if (state.done) {
     return (
-      <div className="border border-volt/40 bg-panel p-10 text-center">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+      <div className="border border-ink bg-volt p-10 text-center text-ink shadow-[8px_8px_0_0_currentColor]">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em]">
           Application received
         </p>
-        <p className="mx-auto mt-4 max-w-md text-muted">
+        <p className="mx-auto mt-4 max-w-md font-medium text-ink/75">
           Thanks for applying. The curation team reviews every application and
           will reach out if it&apos;s a fit.
         </p>
         <Link
           href="/speakers"
-          className="mt-8 inline-flex items-center border border-white/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+          className="mt-8 inline-flex items-center border border-ink px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-volt"
         >
           Back to speakers
         </Link>
@@ -49,7 +49,7 @@ export function ApplyForm({ token }: { token: string }) {
   }
 
   return (
-    <form action={formAction} className="border border-white/10 bg-panel p-6 sm:p-8">
+    <form action={formAction} className="border border-ink/15 bg-white/95 p-6 backdrop-blur-sm sm:p-8">
       <input type="hidden" name="started" value={token} />
       {/* Honeypot — invisible to humans, tempting to bots. Nonstandard name
           prevents browser autofill from populating it for real users. */}
@@ -152,7 +152,7 @@ export function ApplyForm({ token }: { token: string }) {
               <button
                 type="button"
                 onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                className="border border-white/15 px-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted transition-colors hover:border-red-400 hover:text-red-400"
+                className="border border-ink/20 px-3 font-mono text-[10px] uppercase tracking-[0.15em] text-ink/60 transition-colors hover:border-red-500 hover:text-red-600"
               >
                 Remove
               </button>
@@ -163,7 +163,7 @@ export function ApplyForm({ token }: { token: string }) {
           <button
             type="button"
             onClick={() => setLinks([...links, { label: "", url: "" }])}
-            className="mt-3 border border-white/15 px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-muted transition-colors hover:border-volt hover:text-volt"
+            className="mt-3 border border-ink/20 px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink/60 transition-colors hover:border-ink hover:bg-volt hover:text-ink"
           >
             + Add link
           </button>
@@ -174,7 +174,7 @@ export function ApplyForm({ token }: { token: string }) {
       <ConsentField errors={state.errors?.consent} />
 
       {state.message && (
-        <p className="mt-6 border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">
+        <p className="mt-6 border border-red-500/40 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}
         </p>
       )}
@@ -183,13 +183,13 @@ export function ApplyForm({ token }: { token: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 bg-volt px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="inline-flex items-center gap-2 border border-ink bg-ink px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel disabled:opacity-60"
         >
           {pending ? "Submitting…" : "Submit application"}
         </button>
         <Link
           href="/speakers"
-          className="inline-flex items-center border border-white/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+          className="inline-flex items-center border border-ink/25 px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
         >
           Cancel
         </Link>

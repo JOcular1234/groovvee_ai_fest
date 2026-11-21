@@ -31,8 +31,8 @@ export function NewsCard({
   return (
     <Link
       href={`/news/${post.slug}`}
-      className={`group flex h-full flex-col border bg-panel transition-colors hover:border-volt/60 ${
-        featured ? "border-volt/40 lg:flex-row" : "border-white/10"
+      className={`group flex h-full flex-col border bg-white/95 backdrop-blur-sm transition-colors hover:border-ink/40 ${
+        featured ? "border-ink lg:flex-row" : "border-ink/15"
       }`}
     >
       <div
@@ -72,22 +72,22 @@ export function NewsCard({
             Featured
           </p>
         )}
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink">
           {formatPostDate(post)}
-          <span className="text-muted">
+          <span className="text-ink/60">
             {" "}
             · {readingTimeLabel(post.readingMinutes)}
           </span>
         </p>
         <h2
-          className={`mt-3 font-display uppercase leading-tight transition-colors group-hover:text-volt ${
+          className={`mt-3 font-display uppercase leading-tight text-ink transition-colors group-hover:underline group-hover:decoration-volt group-hover:decoration-[0.08em] group-hover:underline-offset-4 ${
             featured ? "text-3xl sm:text-5xl" : "text-2xl"
           }`}
         >
           {post.title}
         </h2>
         <p
-          className={`mt-3 text-sm leading-relaxed text-muted ${featured ? "line-clamp-4 sm:text-base" : "line-clamp-3"}`}
+          className={`mt-3 text-sm leading-relaxed text-ink/70 ${featured ? "line-clamp-4 sm:text-base" : "line-clamp-3"}`}
         >
           {post.excerpt}
         </p>
@@ -96,7 +96,7 @@ export function NewsCard({
             {post.tags.slice(0, 3).map((t) => (
               <li
                 key={t}
-                className="border border-white/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted"
+                className="border border-ink/20 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-ink/60"
               >
                 {formatTag(t)}
               </li>

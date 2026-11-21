@@ -4,7 +4,7 @@ import Link from "next/link";
 import { parseBody, type Inline } from "@/lib/news-body";
 
 const linkClass =
-  "text-volt underline decoration-volt/40 underline-offset-4 transition-colors hover:decoration-volt";
+  "font-medium text-ink underline decoration-volt decoration-2 underline-offset-4 transition-colors hover:bg-volt";
 
 function renderInline(nodes: Inline[]): ReactNode {
   return nodes.map((n, i) => {
@@ -13,7 +13,7 @@ function renderInline(nodes: Inline[]): ReactNode {
         return <Fragment key={i}>{n.v}</Fragment>;
       case "strong":
         return (
-          <strong key={i} className="font-semibold text-white">
+          <strong key={i} className="font-semibold text-ink">
             {renderInline(n.c)}
           </strong>
         );
@@ -49,14 +49,14 @@ const withBreaks = (lines: Inline[][]) =>
 
 export function PostBody({ body }: { body: string }) {
   return (
-    <div className="space-y-5 leading-relaxed text-muted">
+    <div className="space-y-5 leading-relaxed text-ink/75">
       {parseBody(body).map((b, i) => {
         switch (b.t) {
           case "h2":
             return (
               <h2
                 key={i}
-                className="pt-6 font-display text-3xl uppercase leading-tight text-white"
+                className="pt-6 font-display text-3xl uppercase leading-tight text-ink"
               >
                 {renderInline(b.c)}
               </h2>
@@ -65,7 +65,7 @@ export function PostBody({ body }: { body: string }) {
             return (
               <h3
                 key={i}
-                className="pt-4 text-xl font-semibold leading-snug text-white"
+                className="pt-4 text-xl font-semibold leading-snug text-ink"
               >
                 {renderInline(b.c)}
               </h3>
@@ -88,7 +88,7 @@ export function PostBody({ body }: { body: string }) {
             return (
               <blockquote
                 key={i}
-                className="border-l-2 border-volt pl-5 text-lg italic text-white/90"
+                className="border-l-2 border-volt bg-white/70 py-2 pl-5 text-lg italic text-ink/90"
               >
                 {withBreaks(b.lines)}
               </blockquote>

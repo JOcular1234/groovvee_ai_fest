@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { ArrowUpRight } from "lucide-react";
 
 import { HackWarsApplyForm } from "@/components/hack-wars/ApplyForm";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { db, withDbRetry } from "@/lib/db";
 import { findOpenHackWarsCompetition } from "@/lib/hack-wars";
 import { issueFormToken } from "@/lib/form-token";
@@ -47,20 +48,20 @@ export default async function HackWarsApplyPage() {
   return (
     // overflow-x-clip (not hidden) so the sidebar can stay sticky
     <section className="relative overflow-x-clip px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-6xl">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           AI Hack Wars
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl">
-          Enter the arena<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-6xl lg:text-7xl">
+          Enter the <span className="bg-volt px-2 text-ink">arena.</span>
         </h1>
 
         {competition ? (
           <>
-            <p className="mt-6 max-w-2xl text-muted">
-              Compete in <span className="text-white">{competition.title}</span>{" "}
+            <p className="mt-6 max-w-2xl font-medium text-ink/70">
+              Compete in <span className="font-semibold text-ink">{competition.title}</span>{" "}
               — solo or with a team of up to three. Applications are reviewed by
               the organizing team before entries are confirmed.
             </p>
@@ -69,7 +70,7 @@ export default async function HackWarsApplyPage() {
               {FACTS.map((f) => (
                 <li
                   key={f}
-                  className="border border-white/15 px-3 py-1.5 text-xs text-white/80"
+                  className="border border-ink/20 bg-white/80 px-3 py-1.5 text-xs font-medium text-ink/80"
                 >
                   {f}
                 </li>
@@ -82,30 +83,30 @@ export default async function HackWarsApplyPage() {
                 aria-label="What happens next"
                 className="order-last lg:order-first lg:sticky lg:top-32 lg:self-start"
               >
-                <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted">
+                <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink/60">
                   What happens next
                 </h2>
-                <ol className="mt-4 border-l border-white/15">
+                <ol className="mt-4 border-l border-ink/20">
                   {STEPS.map((s, i) => (
                     <li key={s.title} className="relative pb-8 pl-6 last:pb-0">
                       <span
                         className={`absolute -left-[5px] top-1.5 size-2.5 ${
-                          i === 0 ? "bg-volt" : "border border-white/40 bg-ink"
+                          i === 0 ? "bg-volt" : "border border-ink/40 bg-white"
                         }`}
                         aria-hidden
                       />
-                      <p className="font-display text-xl uppercase leading-none text-white">
+                      <p className="font-display text-xl uppercase leading-none text-ink">
                         {s.title}
                       </p>
-                      <p className="mt-1.5 text-sm text-muted">{s.desc}</p>
+                      <p className="mt-1.5 text-sm text-ink/70">{s.desc}</p>
                     </li>
                   ))}
                 </ol>
-                <p className="mt-8 text-sm text-muted">
+                <p className="mt-8 text-sm text-ink/70">
                   Questions first?{" "}
                   <Link
                     href="/contact"
-                    className={`text-volt hover:underline ${focusRing}`}
+                    className={`font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 hover:bg-volt ${focusRing}`}
                   >
                     Contact the team
                   </Link>
@@ -117,29 +118,29 @@ export default async function HackWarsApplyPage() {
             </div>
           </>
         ) : (
-          <div className="mt-10 max-w-3xl border border-white/10 bg-panel p-8 sm:p-12">
-            <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
-              <span className="inline-block size-2 border border-volt" aria-hidden />
+          <div className="mt-10 max-w-3xl border border-ink/15 bg-white/95 p-8 backdrop-blur-sm sm:p-12">
+            <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
+              <span className="inline-block size-2 border border-ink" aria-hidden />
               Registration closed
             </p>
-            <h2 className="mt-5 font-display text-4xl uppercase leading-none sm:text-5xl">
-              Not open right now<span className="text-volt">.</span>
+            <h2 className="mt-5 font-display text-4xl uppercase leading-none text-ink sm:text-5xl">
+              Not open right now.
             </h2>
-            <p className="mt-5 max-w-lg text-muted">
+            <p className="mt-5 max-w-lg text-ink/70">
               AI Hack Wars registration is not open right now. Check back when
               registration opens, or contact the team for updates.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/contact"
-                className={`inline-flex min-h-12 items-center gap-2 bg-volt px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white ${focusRing}`}
+                className={`inline-flex min-h-12 items-center gap-2 border border-ink bg-ink px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel ${focusRing}`}
               >
                 Contact the team
                 <ArrowUpRight className="size-4" aria-hidden />
               </Link>
               <Link
                 href="/competitions"
-                className={`inline-flex min-h-12 items-center border border-white/25 px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt ${focusRing}`}
+                className={`inline-flex min-h-12 items-center border border-ink/25 px-7 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt ${focusRing}`}
               >
                 See competitions
               </Link>

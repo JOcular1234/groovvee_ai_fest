@@ -22,19 +22,19 @@ export function NewsArticle({
 }) {
   return (
     <article>
-      <p className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
         <span className="inline-block size-2 bg-volt" aria-hidden />
         <time dateTime={(post.publishedAt ?? post.createdAt).toISOString()}>
           {formatPostDate(post)}
         </time>
-        <span className="text-muted">
+        <span className="text-ink/60">
           · {readingTimeLabel(post.readingMinutes)}
         </span>
         {post.authorName && (
-          <span className="text-muted">· {post.authorName}</span>
+          <span className="text-ink/60">· {post.authorName}</span>
         )}
       </p>
-      <h1 className="mt-5 font-display text-4xl uppercase leading-[0.95] sm:text-6xl">
+      <h1 className="mt-5 font-display text-4xl uppercase leading-[0.95] text-ink sm:text-6xl">
         {post.title}
       </h1>
 
@@ -44,7 +44,7 @@ export function NewsArticle({
             <li key={t}>
               <Link
                 href={`/news?tag=${encodeURIComponent(t)}`}
-                className="inline-block border border-white/15 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted transition-colors hover:border-volt hover:text-volt"
+                className="inline-block border border-ink/20 bg-white/80 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:bg-volt hover:text-ink"
               >
                 {formatTag(t)}
               </Link>
@@ -53,7 +53,7 @@ export function NewsArticle({
         </ul>
       )}
 
-      <div className="relative mt-10 aspect-video overflow-hidden border border-white/10 bg-ink">
+      <div className="relative mt-10 aspect-video overflow-hidden border border-ink/15 bg-ink">
         {post.coverImageUrl ? (
           <Image
             src={post.coverImageUrl}
@@ -73,7 +73,7 @@ export function NewsArticle({
         )}
       </div>
 
-      <p className="mt-8 text-lg leading-relaxed text-white/90">
+      <p className="mt-8 text-lg font-medium leading-relaxed text-ink/80">
         {post.excerpt}
       </p>
       <div className="mt-6">
@@ -85,14 +85,14 @@ export function NewsArticle({
           href={post.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-10 inline-flex items-center gap-2 border border-white/25 px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+          className="mt-10 inline-flex items-center gap-2 border border-ink bg-white/80 px-6 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-ink hover:text-volt"
         >
           Read the original story
           <ArrowUpRight className="size-4" aria-hidden />
         </a>
       )}
 
-      <div className="mt-12 border-t border-white/10 pt-8">
+      <div className="mt-12 border-t border-ink/15 pt-8">
         <ShareButtons url={shareUrl} title={post.title} />
       </div>
     </article>

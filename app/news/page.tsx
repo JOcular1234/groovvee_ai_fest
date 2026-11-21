@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { NewsCard } from "@/components/news/NewsCard";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { Reveal } from "@/components/ui/Reveal";
 import { formatTag } from "@/lib/news-format";
 import { getNewsTags, getPublishedNewsPosts } from "@/lib/public/news";
@@ -68,22 +69,22 @@ export default async function NewsPage({
   const chip = (active: boolean) =>
     `border px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
       active
-        ? "border-volt bg-volt text-ink"
-        : "border-white/15 text-muted hover:border-volt hover:text-volt"
+        ? "border-ink bg-volt text-ink"
+        : "border-ink/20 bg-white/80 text-ink/70 hover:border-ink hover:bg-volt hover:text-ink"
     }`;
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-7xl">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Signal, not noise
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          News<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          <span className="bg-volt px-2 text-ink">News.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           AI news, discoveries and dispatches from across the Groovvee
           ecosystem.
         </p>
@@ -113,15 +114,15 @@ export default async function NewsPage({
         )}
 
         {nothing ? (
-          <div className="mt-16 border border-white/10 bg-panel p-12 text-center">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <div className="mt-16 border border-ink/15 bg-white/95 p-12 text-center backdrop-blur-sm">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               {tag ? "Nothing here yet" : "The newsroom is warming up"}
             </p>
-            <p className="mx-auto mt-4 max-w-md text-muted">
+            <p className="mx-auto mt-4 max-w-md text-ink/70">
               {tag ? (
                 <>
                   No posts tagged “{formatTag(tag)}”.{" "}
-                  <Link href="/news" className="text-volt hover:text-white">
+                  <Link href="/news" className="font-medium text-ink underline decoration-volt decoration-2 underline-offset-2 hover:bg-volt">
                     See all news
                   </Link>
                   .
@@ -160,13 +161,13 @@ export default async function NewsPage({
                   aria-disabled={page <= 1}
                   className={`border px-4 py-2 ${
                     page <= 1
-                      ? "pointer-events-none border-white/10 text-muted/40"
-                      : "border-white/25 text-white hover:border-volt hover:text-volt"
+                      ? "pointer-events-none border-ink/10 text-ink/30"
+                      : "border-ink/25 bg-white/80 text-ink hover:bg-volt hover:border-ink"
                   }`}
                 >
                   ← Prev
                 </Link>
-                <span className="text-muted">
+                <span className="text-ink/60">
                   Page {page} of {pages} · {total + (featured ? 1 : 0)} posts
                 </span>
                 <Link
@@ -174,8 +175,8 @@ export default async function NewsPage({
                   aria-disabled={page >= pages}
                   className={`border px-4 py-2 ${
                     page >= pages
-                      ? "pointer-events-none border-white/10 text-muted/40"
-                      : "border-white/25 text-white hover:border-volt hover:text-volt"
+                      ? "pointer-events-none border-ink/10 text-ink/30"
+                      : "border-ink/25 bg-white/80 text-ink hover:bg-volt hover:border-ink"
                   }`}
                 >
                   Next →

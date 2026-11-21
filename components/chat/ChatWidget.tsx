@@ -167,11 +167,11 @@ export function ChatWidget() {
             className="group fixed bottom-5 right-5 z-40 flex items-center gap-4"
           >
             <div
-              className="pointer-events-none hidden translate-x-2 border border-white/10 bg-panel px-4 py-3 shadow-lg transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 sm:block sm:opacity-0"
+              className="pointer-events-none hidden translate-x-2 border border-ink/15 bg-white px-4 py-3 shadow-lg transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 sm:block sm:opacity-0"
               aria-hidden
             >
-              <p className="text-sm font-semibold text-white">Need help?</p>
-              <p className="mt-0.5 text-sm text-muted">
+              <p className="text-sm font-semibold text-ink">Need help?</p>
+              <p className="mt-0.5 text-sm text-ink/60">
                 Chat with the GrooVVee AI Assistant.
               </p>
             </div>
@@ -181,7 +181,7 @@ export function ChatWidget() {
               onClick={() => setOpen(true)}
               aria-expanded={open}
               aria-label="Open GrooVVee AI Assistant"
-              className={`grid size-13 shrink-0 cursor-pointer place-items-center bg-volt text-ink shadow-lg transition-colors hover:bg-white ${focusRing}`}
+              className={`grid size-13 shrink-0 cursor-pointer place-items-center border border-ink bg-volt text-ink shadow-lg transition-colors hover:bg-white ${focusRing}`}
             >
               <Bot className="size-6" aria-hidden />
             </button>
@@ -200,10 +200,10 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed inset-0 z-60 flex flex-col border-white/10 bg-ink sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[min(620px,calc(100svh-9rem))] sm:w-100 sm:border sm:bg-panel"
+            className="fixed inset-0 z-60 flex flex-col border-ink/15 bg-white sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[min(620px,calc(100svh-9rem))] sm:w-100 sm:border"
           >
-            <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
-              <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt">
+            <div className="flex shrink-0 items-center justify-between border-b border-ink/15 px-5 py-4">
+              <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink">
                 <span
                   className="inline-block size-2 animate-pulse bg-volt"
                   aria-hidden
@@ -214,7 +214,7 @@ export function ChatWidget() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close chat"
-                className={`grid size-9 cursor-pointer place-items-center text-muted transition-colors hover:text-white ${focusRing}`}
+                className={`grid size-9 cursor-pointer place-items-center text-ink/60 transition-colors hover:text-ink ${focusRing}`}
               >
                 <X className="size-5" aria-hidden />
               </button>

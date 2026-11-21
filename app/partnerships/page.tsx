@@ -1,5 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { pageMetadata } from "@/lib/site";
 
 export const metadata = pageMetadata({
@@ -67,16 +69,16 @@ const STUDIO_TIERS = [
 export default function PartnershipsPage() {
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-7xl">
-        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           Build with us
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          Partnerships<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          <span className="bg-volt px-2 text-ink">Partnerships.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           Two ways to put your brand inside the GrooVVee ecosystem — plus
           participation packages for studios ready to take the stage.
         </p>
@@ -86,22 +88,22 @@ export default function PartnershipsPage() {
           {CATEGORIES.map((c) => (
             <div
               key={c.title}
-              className="border border-white/10 bg-panel p-8 transition-colors hover:border-volt/50"
+              className="border border-ink/15 bg-white/95 p-8 backdrop-blur-sm transition-colors hover:border-ink/40"
             >
-              <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
+              <p className="w-fit bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink">
                 {c.tag} sponsorship
               </p>
-              <h2 className="mt-3 font-display text-3xl uppercase leading-none">
+              <h2 className="mt-3 font-display text-3xl uppercase leading-none text-ink">
                 {c.title}
               </h2>
-              <p className="mt-4 text-sm leading-relaxed text-muted">
+              <p className="mt-4 text-sm leading-relaxed text-ink/70">
                 {c.description}
               </p>
               <ul className="mt-6 space-y-2.5">
                 {c.points.map((p) => (
                   <li
                     key={p}
-                    className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-white/80"
+                    className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-ink/80"
                   >
                     <span className="inline-block size-1.5 bg-volt" aria-hidden />
                     {p}
@@ -114,43 +116,43 @@ export default function PartnershipsPage() {
 
         {/* Studio participation */}
         <div className="mt-20">
-          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <p className="flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
             <span className="inline-block size-2 bg-volt" aria-hidden />
             Studio participation
           </p>
-          <h2 className="mt-4 font-display text-4xl uppercase leading-none sm:text-5xl">
-            Take the stage<span className="text-volt">.</span>
+          <h2 className="mt-4 font-display text-4xl uppercase leading-none text-ink sm:text-5xl">
+            Take the <span className="bg-volt px-2 text-ink">stage.</span>
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             {STUDIO_TIERS.map((t) => (
               <div
                 key={t.name}
-                className={`relative border p-8 transition-colors ${
+                className={`relative border p-8 backdrop-blur-sm transition-colors ${
                   t.featured
-                    ? "border-volt/60 bg-panel"
-                    : "border-white/10 bg-panel hover:border-white/25"
+                    ? "border-ink bg-volt text-ink shadow-[8px_8px_0_0_currentColor]"
+                    : "border-ink/15 bg-white/95 hover:border-ink/40"
                 }`}
               >
                 {t.featured && (
-                  <span className="absolute -top-px right-6 bg-volt px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink">
+                  <span className="absolute -top-px right-6 border border-ink bg-ink px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-volt">
                     Premium
                   </span>
                 )}
-                <h3 className="font-display text-2xl uppercase">{t.name}</h3>
-                <p className="mt-2 text-sm text-muted">{t.description}</p>
-                <p className="mt-6 font-display text-6xl leading-none">
+                <h3 className="font-display text-2xl uppercase text-ink">{t.name}</h3>
+                <p className={`mt-2 text-sm ${t.featured ? "text-ink/75" : "text-ink/70"}`}>{t.description}</p>
+                <p className="mt-6 font-display text-6xl leading-none text-ink">
                   {t.price}
-                  <span className="ml-2 font-mono text-xs font-normal uppercase tracking-[0.15em] text-muted">
+                  <span className="ml-2 font-mono text-xs font-normal uppercase tracking-[0.15em] text-ink/60">
                     {t.note}
                   </span>
                 </p>
-                <ul className="mt-8 space-y-2.5 border-t border-white/10 pt-6">
+                <ul className="mt-8 space-y-2.5 border-t border-ink/15 pt-6">
                   {t.features.map((f) => (
                     <li
                       key={f}
-                      className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-white/80"
+                      className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.15em] text-ink/80"
                     >
-                      <span className="inline-block size-1.5 bg-volt" aria-hidden />
+                      <span className="inline-block size-1.5 bg-ink" aria-hidden />
                       {f}
                     </li>
                   ))}
@@ -160,17 +162,17 @@ export default function PartnershipsPage() {
           </div>
         </div>
 
-        <div className="mt-16 border border-white/10 bg-panel p-8 text-center sm:p-12">
-          <h2 className="font-display text-3xl uppercase leading-none">
-            Ready to partner<span className="text-volt">?</span>
+        <div className="mt-16 border border-ink/15 bg-white/95 p-8 text-center backdrop-blur-sm sm:p-12">
+          <h2 className="font-display text-3xl uppercase leading-none text-ink">
+            Ready to partner?
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm text-muted">
+          <p className="mx-auto mt-4 max-w-xl text-sm text-ink/70">
             Tell us which category fits — we&apos;ll send the full partnership
             deck and talk through placement.
           </p>
           <Link
             href="/contact"
-            className="mt-8 inline-flex items-center gap-2 bg-volt px-8 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink transition-opacity hover:opacity-90"
+            className="mt-8 inline-flex items-center gap-2 border border-ink bg-ink px-8 py-4 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
           >
             Get in touch
             <ArrowUpRight className="size-4" aria-hidden />

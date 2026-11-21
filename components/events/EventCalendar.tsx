@@ -49,13 +49,13 @@ function EventChip({ e }: { e: CalendarEventItem }) {
   return (
     <Link
       href={`/events/${e.slug}`}
-      className={`group/chip flex items-baseline gap-1.5 border-l-2 border-volt/60 bg-white/[0.03] py-1 pl-2 pr-1.5 text-left transition-colors hover:border-volt hover:bg-volt/15 ${focusRing}`}
+      className={`group/chip flex items-baseline gap-1.5 border-l-2 border-ink/30 bg-ink/[0.04] py-1 pl-2 pr-1.5 text-left transition-colors hover:border-ink hover:bg-volt/70 ${focusRing}`}
       title={`${e.title} — ${formatEventTime(e.startsAt, e.timezone)} · ${eventPlace(e) || "Location TBA"}`}
     >
-      <span className="shrink-0 font-mono text-[10px] font-bold text-volt">
+      <span className="shrink-0 font-mono text-[10px] font-bold text-ink">
         {formatEventTime(e.startsAt, e.timezone)}
       </span>
-      <span className="min-w-0 truncate text-[11px] leading-snug text-white transition-colors group-hover/chip:text-volt">
+      <span className="min-w-0 truncate text-[11px] leading-snug text-ink/80 transition-colors group-hover/chip:text-ink">
         {e.title}
       </span>
     </Link>
@@ -77,12 +77,12 @@ export function EventCalendar({
 
   if (total === 0) {
     return (
-      <div className="mt-8 border border-white/10 bg-panel p-8 text-center sm:p-12">
-        <p className="flex items-center justify-center gap-3 font-display text-3xl uppercase">
+      <div className="mt-8 border border-ink/15 bg-white/95 p-8 text-center backdrop-blur-sm sm:p-12">
+        <p className="flex items-center justify-center gap-3 font-display text-3xl uppercase text-ink">
           <span className="inline-block size-2.5 bg-volt" aria-hidden />
           {filtered ? "No matches" : "Quiet month"}
         </p>
-        <p className="mx-auto mt-4 max-w-md text-muted">
+        <p className="mx-auto mt-4 max-w-md text-ink/70">
           {filtered
             ? `No events in ${monthLabel(month)} match these filters.`
             : `No events scheduled in ${monthLabel(month)}. Try another month.`}
@@ -93,18 +93,18 @@ export function EventCalendar({
 
   return (
     <div className="mt-8">
-      <p className="mb-3 text-sm text-muted" role="status">
+      <p className="mb-3 text-sm text-ink/60" role="status">
         {total} {total === 1 ? "event" : "events"} in {monthLabel(month)}
       </p>
 
       {/* Desktop month grid (cells are too narrow for titles below lg) */}
-      <div className="hidden border border-white/10 bg-panel lg:block">
-        <div className="grid grid-cols-7 border-b border-white/10">
+      <div className="hidden border border-ink/15 bg-white/95 backdrop-blur-sm lg:block">
+        <div className="grid grid-cols-7 border-b border-ink/15">
           {WEEKDAYS.map((d, i) => (
             <div
               key={d}
               className={`px-3 py-3 font-mono text-[11px] font-bold uppercase tracking-[0.15em] ${
-                i >= 5 ? "text-muted/60" : "text-muted"
+                i >= 5 ? "text-ink/40" : "text-ink/60"
               }`}
             >
               {d}
@@ -115,7 +115,7 @@ export function EventCalendar({
         {weeks.map((week, i) => (
           <div
             key={i}
-            className="grid grid-cols-7 divide-x divide-white/5 border-b border-white/5 last:border-b-0"
+            className="grid grid-cols-7 divide-x divide-ink/10 border-b border-ink/10 last:border-b-0"
           >
             {week.map((cell, col) => {
               const dayEvents = cell.inMonth
@@ -129,27 +129,27 @@ export function EventCalendar({
                   key={cell.dateKey}
                   className={`flex min-h-32 flex-col p-2 transition-colors ${
                     !cell.inMonth
-                      ? "bg-ink/60"
+                      ? "bg-ink/[0.04]"
                       : isToday
-                        ? "bg-volt/[0.05] hover:bg-volt/[0.08]"
-                        : `${col >= 5 ? "bg-white/[0.02]" : ""} hover:bg-white/[0.04]`
+                        ? "bg-volt/50 hover:bg-volt/60"
+                        : `${col >= 5 ? "bg-ink/[0.02]" : ""} hover:bg-volt/30`
                   }`}
                 >
                   <div className="flex items-center justify-between gap-1">
                     <span
                       className={`inline-flex size-6 items-center justify-center font-mono text-[11px] font-bold ${
                         isToday
-                          ? "bg-volt text-ink"
+                          ? "bg-ink text-volt"
                           : cell.inMonth
-                            ? "text-white"
-                            : "text-muted/40"
+                            ? "text-ink"
+                            : "text-ink/30"
                       }`}
                       aria-label={isToday ? `Today, ${cell.day}` : undefined}
                     >
                       {cell.day}
                     </span>
                     {isToday && (
-                      <span className="font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-volt">
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-ink">
                         Today
                       </span>
                     )}
@@ -161,7 +161,7 @@ export function EventCalendar({
                     {rest.length > 0 && (
                       <details className="group">
                         <summary
-                          className={`cursor-pointer list-none px-1.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted transition-colors hover:text-volt [&::-webkit-details-marker]:hidden ${focusRing}`}
+                          className={`cursor-pointer list-none px-1.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-ink/50 transition-colors hover:text-ink [&::-webkit-details-marker]:hidden ${focusRing}`}
                         >
                           <span className="group-open:hidden">
                             +{rest.length} more
@@ -195,13 +195,13 @@ export function EventCalendar({
             return (
               <li
                 key={key}
-                className="grid grid-cols-[3.75rem_1fr] gap-x-4 border-t border-white/10 py-6 first:border-t-0 sm:grid-cols-[5rem_1fr] sm:gap-x-6"
+                className="grid grid-cols-[3.75rem_1fr] gap-x-4 border-t border-ink/15 py-6 first:border-t-0 sm:grid-cols-[5rem_1fr] sm:gap-x-6"
               >
                 <div
                   className={`self-start border px-2 py-2.5 text-center ${
                     isToday
-                      ? "border-volt bg-volt text-ink"
-                      : "border-white/15 text-white"
+                      ? "border-ink bg-volt text-ink"
+                      : "border-ink/20 bg-white/80 text-ink"
                   }`}
                 >
                   <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em]">
@@ -218,25 +218,25 @@ export function EventCalendar({
                 <div className="min-w-0">
                   <h3 className="sr-only">{p.full}</h3>
                   {isToday && (
-                    <p className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-volt">
+                    <p className="mb-3 w-fit bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-ink">
                       Today
                     </p>
                   )}
-                  <ul className="divide-y divide-white/5 border-t border-white/5">
+                  <ul className="divide-y divide-ink/10 border-t border-ink/10">
                     {dayEvents.map((e) => (
                       <li key={`${key}-${e.slug}`}>
                         <Link
                           href={`/events/${e.slug}`}
-                          className={`group flex gap-4 py-3.5 transition-colors hover:bg-white/[0.02] ${focusRing}`}
+                          className={`group flex gap-4 py-3.5 transition-colors hover:bg-white/60 ${focusRing}`}
                         >
-                          <span className="w-12 shrink-0 pt-0.5 font-mono text-[11px] font-bold text-volt">
+                          <span className="w-12 shrink-0 pt-0.5 font-mono text-[11px] font-bold text-ink">
                             {formatEventTime(e.startsAt, e.timezone)}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block break-words font-display text-lg uppercase leading-tight text-white transition-colors group-hover:text-volt">
+                            <span className="block break-words font-display text-lg uppercase leading-tight text-ink transition-colors group-hover:underline group-hover:decoration-volt group-hover:decoration-[0.08em] group-hover:underline-offset-4">
                               {e.title}
                             </span>
-                            <span className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+                            <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink/60">
                               <MapPin
                                 className="size-3.5 shrink-0"
                                 aria-hidden
@@ -247,7 +247,7 @@ export function EventCalendar({
                             </span>
                           </span>
                           <ArrowUpRight
-                            className="mt-1 size-4 shrink-0 text-muted transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-volt"
+                            className="mt-1 size-4 shrink-0 text-ink/40 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
                             aria-hidden
                           />
                         </Link>

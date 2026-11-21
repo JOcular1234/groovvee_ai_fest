@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { EventCard } from "@/components/events/EventCard";
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { getPublicEvents } from "@/lib/public/events";
 import { getCityBySlug, getCityIndex } from "@/lib/public/locations";
 import { pageMetadata } from "@/lib/site";
@@ -61,50 +62,49 @@ export default async function CityEventsPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-7xl">
         <Link
           href="/events/cities"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All cities
         </Link>
-        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           City
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          {city.name}
-          <span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          <span className="bg-volt px-2 text-ink">{city.name}.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           {geoLine(city)} — {counts?.publishedCount ?? 0} published event
           {(counts?.publishedCount ?? 0) === 1 ? "" : "s"},{" "}
           {counts?.upcomingCount ?? 0} upcoming.
         </p>
         <Link
           href={`/events?location=${city.id}`}
-          className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt transition-colors hover:text-white"
+          className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink underline decoration-volt decoration-2 underline-offset-4 transition-colors hover:bg-volt"
         >
           View in events directory
           <ArrowUpRight className="size-4" aria-hidden />
         </Link>
 
         <div className="mt-14">
-          <p className="border-b border-white/10 pb-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt">
+          <p className="border-b border-ink/15 pb-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60">
             Upcoming events
           </p>
           {upcoming.events.length === 0 ? (
-            <div className="mt-8 border border-white/10 bg-panel p-10 text-center">
-              <p className="text-muted">
+            <div className="mt-8 border border-ink/15 bg-white/95 p-10 text-center backdrop-blur-sm">
+              <p className="text-ink/70">
                 No upcoming events in {city.name} yet — check back soon.
               </p>
             </div>
           ) : (
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {upcoming.events.map((e) => (
-                <EventCard key={e.id} event={e} />
+                <EventCard key={e.id} event={e} theme="light" />
               ))}
             </div>
           )}
@@ -112,12 +112,12 @@ export default async function CityEventsPage({
 
         {past.events.length > 0 && (
           <div className="mt-16">
-            <p className="border-b border-white/10 pb-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted">
+            <p className="border-b border-ink/15 pb-3 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60">
               Past events
             </p>
             <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {past.events.map((e) => (
-                <EventCard key={e.id} event={e} />
+                <EventCard key={e.id} event={e} theme="light" />
               ))}
             </div>
           </div>

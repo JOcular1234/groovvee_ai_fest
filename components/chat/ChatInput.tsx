@@ -21,7 +21,7 @@ export const ChatInput = forwardRef<
 
   return (
     <form
-      className="flex shrink-0 items-center gap-2 border-t border-white/10 px-4 py-3"
+      className="flex shrink-0 items-center gap-2 border-t border-ink/15 px-4 py-3"
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -40,13 +40,13 @@ export const ChatInput = forwardRef<
         maxLength={500}
         disabled={sending}
         autoComplete="off"
-        className={`min-w-0 flex-1 border border-white/15 bg-ink px-4 py-3 text-sm text-white placeholder:text-muted/60 disabled:opacity-50 ${focusRing}`}
+        className={`min-w-0 flex-1 border border-ink/20 bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/40 disabled:opacity-50 ${focusRing}`}
       />
       <button
         type="submit"
         disabled={sending || !value.trim()}
         aria-label="Send message"
-        className={`grid size-11 shrink-0 cursor-pointer place-items-center bg-volt text-ink transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-40 ${focusRing}`}
+        className={`grid size-11 shrink-0 cursor-pointer place-items-center border border-ink bg-volt text-ink transition-colors hover:bg-white disabled:pointer-events-none disabled:opacity-40 ${focusRing}`}
       >
         <SendHorizontal className="size-5" aria-hidden />
       </button>

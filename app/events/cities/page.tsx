@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight, Search } from "lucide-react";
 import Link from "next/link";
 
+import { CollageBackground } from "@/components/ui/CollageBackground";
 import { getCityIndex } from "@/lib/public/locations";
 import { pageMetadata } from "@/lib/site";
 
@@ -15,7 +16,7 @@ export const metadata = pageMetadata({
 export const instant = false;
 
 const selectClass =
-  "border border-white/15 bg-ink px-3 py-3 text-sm text-white outline-none focus:border-volt";
+  "border border-ink/20 bg-white px-3 py-3 text-sm text-ink outline-none [color-scheme:light] focus:border-ink";
 
 export default async function EventCitiesPage({
   searchParams,
@@ -36,23 +37,23 @@ export default async function EventCitiesPage({
 
   return (
     <section className="relative overflow-hidden px-5 pt-32 pb-24 sm:px-8 sm:pb-32">
-      <div className="bg-grid absolute inset-0" aria-hidden />
+      <CollageBackground />
       <div className="relative mx-auto max-w-7xl">
         <Link
           href="/events"
-          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted transition-colors hover:text-volt"
+          className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink/60 transition-colors hover:text-ink"
         >
           <ArrowLeft className="size-4" aria-hidden />
           All events
         </Link>
-        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+        <p className="mt-8 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
           <span className="inline-block size-2 bg-volt" aria-hidden />
           City discovery
         </p>
-        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-          Find your city<span className="text-volt">.</span>
+        <h1 className="mt-5 font-display text-5xl uppercase leading-[0.95] text-ink sm:text-7xl">
+          Find your <span className="bg-volt px-2 text-ink">city.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-muted">
+        <p className="mt-6 max-w-2xl font-medium text-ink/70">
           Cities hosting published GrooVVee events — community meetups,
           hackathons and festivals. Pick a city to see what&apos;s on.
         </p>
@@ -60,7 +61,7 @@ export default async function EventCitiesPage({
         <form action="/events/cities" className="mt-12 flex flex-wrap items-end gap-2">
           <div className="relative min-w-55 flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink/50"
               aria-hidden
             />
             <input
@@ -68,7 +69,7 @@ export default async function EventCitiesPage({
               name="q"
               defaultValue={q}
               placeholder="Search cities…"
-              className="w-full border border-white/15 bg-ink py-3 pl-10 pr-4 text-sm text-white placeholder:text-muted/50 outline-none focus:border-volt"
+              className="w-full border border-ink/20 bg-white py-3 pl-10 pr-4 text-sm text-ink placeholder:text-ink/40 outline-none focus:border-ink"
             />
           </div>
           <select name="region" defaultValue={region ?? ""} className={selectClass}>
@@ -89,14 +90,14 @@ export default async function EventCitiesPage({
           </select>
           <button
             type="submit"
-            className="border border-white/25 px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-white transition-colors hover:border-volt hover:text-volt"
+            className="border border-ink bg-ink px-5 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-volt transition-colors hover:bg-panel"
           >
             Filter
           </button>
           {filtered && (
             <Link
               href="/events/cities"
-              className="px-2 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-muted transition-colors hover:text-volt"
+              className="px-2 py-3 font-mono text-xs font-bold uppercase tracking-[0.2em] text-ink/60 transition-colors hover:text-ink"
             >
               Clear
             </Link>
@@ -104,11 +105,11 @@ export default async function EventCitiesPage({
         </form>
 
         {cities.length === 0 ? (
-          <div className="mt-12 border border-white/10 bg-panel p-12 text-center">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-volt">
+          <div className="mt-12 border border-ink/15 bg-white/95 p-12 text-center backdrop-blur-sm">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.3em] text-ink/60">
               {filtered ? "No matches" : "Coming soon"}
             </p>
-            <p className="mx-auto mt-4 max-w-md text-muted">
+            <p className="mx-auto mt-4 max-w-md text-ink/70">
               {filtered
                 ? "No cities match these filters. Try widening your search."
                 : "No cities have published events yet — check back soon."}
@@ -120,24 +121,24 @@ export default async function EventCitiesPage({
               <Link
                 key={c.id}
                 href={`/events/cities/${c.slug}`}
-                className="group flex flex-col border border-white/10 bg-panel p-6 transition-colors hover:border-volt/60"
+                className="group flex flex-col border border-ink/15 bg-white/95 p-6 backdrop-blur-sm transition-colors hover:border-ink/40"
               >
-                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-volt">
+                <p className="w-fit bg-volt px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-ink">
                   {c.region}
                 </p>
-                <h2 className="mt-3 font-display text-2xl uppercase leading-tight transition-colors group-hover:text-volt">
+                <h2 className="mt-3 font-display text-2xl uppercase leading-tight text-ink transition-colors group-hover:underline group-hover:decoration-volt group-hover:decoration-[0.08em] group-hover:underline-offset-4">
                   {c.name}
                 </h2>
-                <p className="mt-2 text-sm text-muted">
+                <p className="mt-2 text-sm text-ink/70">
                   {[c.stateProvince, c.country].filter(Boolean).join(", ")}
                 </p>
-                <p className="mt-auto pt-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
+                <p className="mt-auto pt-5 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink/60">
                   {c.upcomingCount > 0
                     ? `${c.upcomingCount} upcoming`
                     : "No upcoming"}{" "}
                   · {c.publishedCount} published
                 </p>
-                <span className="mt-3 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-volt">
+                <span className="mt-3 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-ink">
                   View events
                   <ArrowUpRight className="size-4" aria-hidden />
                 </span>
