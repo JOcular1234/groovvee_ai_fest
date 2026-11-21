@@ -102,24 +102,34 @@ rollback() {
 # Parse `pm2 jlist` JSON from stdin and print two lines:
 #   line 1: "exists" or "absent"  — whether $APP_NAME is registered
 #   line 2: its pm2_env.pm_exec_path, or an empty string
-# Reads stdin (no giant env var), verifies the payload is a JSON array,
-# and exits non-zero on any parse/shape failure so callers fail closed.
+# Reads stdin (no giant env var). `pm2` sometimes prints non-JSON banners
+# on stdout (out-of-date warnings etc.), so the parser extracts the array
+# between the first "[" and last "]" rather than requiring the whole
+# stream to parse. Verifies the payload is an array and exits non-zero on
+# any parse/shape failure so callers fail closed.
 pm2_app_state() {
   if command -v node >/dev/null 2>&1; then
     APP_NAME="$APP_NAME" node -e '
-      const list = JSON.parse(require("fs").readFileSync(0, "utf8"));
+      const raw = require("fs").readFileSync(0, "utf8");
+      const i = raw.indexOf("["), j = raw.lastIndexOf("]");
+      if (i < 0 || j <= i) process.exit(1);
+      const list = JSON.parse(raw.slice(i, j + 1));
       if (!Array.isArray(list)) process.exit(1);
-      const a = list.find(p => p.name === process.env.APP_NAME);
+      const a = list.find(p => p && p.name === process.env.APP_NAME);
       console.log(a ? "exists" : "absent");
       console.log(a ? ((a.pm2_env || {}).pm_exec_path || "") : "");
     '
   elif command -v python3 >/dev/null 2>&1; then
     APP_NAME="$APP_NAME" python3 -c '
 import json, os, sys
-list_ = json.load(sys.stdin)
+raw = sys.stdin.read()
+i, j = raw.find("["), raw.rfind("]")
+if i < 0 or j <= i:
+    sys.exit(1)
+list_ = json.loads(raw[i:j + 1])
 if not isinstance(list_, list):
     sys.exit(1)
-a = next((p for p in list_ if p.get("name") == os.environ["APP_NAME"]), None)
+a = next((p for p in list_ if isinstance(p, dict) and p.get("name") == os.environ["APP_NAME"]), None)
 print("exists" if a else "absent")
 print(((a.get("pm2_env") or {}).get("pm_exec_path") or "") if a else "")
 '
@@ -161,12 +171,19 @@ if ! pm2 ping >/dev/null 2>&1; then
   exit 1
 fi
 
-# `pm2 jlist` output is piped straight into the parser — never stored in
-# a variable passed through the environment. If jlist fails, stdin is
-# empty and the parse fails; a broken inspection always fails the deploy,
-# never masquerades as a "first deployment".
-if ! APP_STATE="$(pm2 jlist 2>/dev/null | pm2_app_state 2>/dev/null)"; then
+# `pm2 jlist` output is piped straight into the parser. If jlist fails,
+# stdin is empty and the parse fails; a broken inspection always fails
+# the deploy, never masquerades as a "first deployment". On failure we
+# report diagnostics only (sizes/tool availability — jlist contents can
+# include managed apps' env vars and are never echoed).
+if ! PM2_JLIST_RAW="$(pm2 jlist 2>/dev/null)" || [ -z "$PM2_JLIST_RAW" ]; then
+  echo "ERROR: 'pm2 jlist' returned no output — daemon unreadable." >&2
+  exit 1
+fi
+if ! APP_STATE="$(printf '%s' "$PM2_JLIST_RAW" | pm2_app_state 2>/dev/null)"; then
   echo "ERROR: could not parse 'pm2 jlist' output — refusing to guess deployment state." >&2
+  echo "  diag: jlist_bytes=${#PM2_JLIST_RAW} starts_with_bracket=$(case "$PM2_JLIST_RAW" in '['*) echo yes;; *) echo no;; esac)" >&2
+  echo "  diag: node=$(command -v node || echo missing) python3=$(command -v python3 || echo missing)" >&2
   exit 1
 fi
 
