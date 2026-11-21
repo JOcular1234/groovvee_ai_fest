@@ -71,7 +71,7 @@ function transientCode(err: unknown): string | null {
 
 export async function withDbRetry<T>(
   fn: () => Promise<T>,
-  retries = 6
+  retries = 25
 ): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {

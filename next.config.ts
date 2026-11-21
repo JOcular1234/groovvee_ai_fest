@@ -60,6 +60,10 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
+    // Fewer build workers → fewer simultaneous DB connections during
+    // prerendering. Each worker opens its own pg pool; on high-latency
+    // links (satellite/cellular) 7+ workers firing at once self-DDoSes.
+    staticGenerationMaxConcurrency: 4,
   },
   cacheComponents: true,
   partialPrefetching: true,

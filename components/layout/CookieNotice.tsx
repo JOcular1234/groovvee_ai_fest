@@ -2,25 +2,33 @@
 
 import Link from "next/link";
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "gv_cookies_notice_v1";
+
+// No subscription needed: dismissal is only written by this component and
+// tracked in local state below; the store just reads localStorage on mount.
+const subscribe = () => () => {};
+const getDismissed = () => localStorage.getItem(STORAGE_KEY) !== null;
+// Server snapshot "dismissed" keeps SSR and first client paint identical.
+const getDismissedServer = () => true;
 
 // An informational strip, not a consent gate — the site only sets strictly
 // necessary cookies (admin session, form security tokens), so nothing here
 // toggles tracking. Dismissal is remembered in localStorage, not a cookie.
 export function CookieNotice() {
-  const [visible, setVisible] = useState(false);
+  const storedDismissed = useSyncExternalStore(
+    subscribe,
+    getDismissed,
+    getDismissedServer
+  );
+  const [justDismissed, setJustDismissed] = useState(false);
 
-  useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
-  }, []);
-
-  if (!visible) return null;
+  if (storedDismissed || justDismissed) return null;
 
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, "1");
-    setVisible(false);
+    setJustDismissed(true);
   };
 
   return (
